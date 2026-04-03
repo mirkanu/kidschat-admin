@@ -23,20 +23,20 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Model Locking
 
-- [ ] **MODL-01**: Claude Haiku 4.5 is the only available model (`ANTHROPIC_MODELS=claude-haiku-4-5`)
-- [ ] **MODL-02**: Anthropic is the only available endpoint (`ENDPOINTS=anthropic`)
-- [ ] **MODL-03**: Model selection hidden from UI (`interface.modelSelect: false`)
-- [ ] **MODL-04**: Model lock enforced server-side (`modelSpecs.enforce: true`)
+- [x] **MODL-01**: Claude Haiku 4.5 is the only available model (`ANTHROPIC_MODELS=claude-haiku-4-5`)
+- [x] **MODL-02**: Anthropic is the only available endpoint (`ENDPOINTS=anthropic`)
+- [x] **MODL-03**: Model selection hidden from UI (`interface.modelSelect: false`)
+- [x] **MODL-04**: Model lock enforced server-side (`modelSpecs.enforce: true`)
 
 ### Safety System Prompt
 
-- [ ] **SAFE-01**: Safety system prompt enforced on all conversations via `promptPrefix`
-- [ ] **SAFE-02**: Content aligned with Reformed Christian values
-- [ ] **SAFE-03**: No profanity generated or reproduced, even if requested
-- [ ] **SAFE-04**: Age-appropriate content only — no violence, sexual content, drugs, or mature themes
-- [ ] **SAFE-05**: Anti-homework-cheating — guide and explain, never give direct answers
-- [ ] **SAFE-06**: System prompt addresses common jailbreak patterns by name
-- [ ] **SAFE-07**: System prompt is self-reinforcing — detects and redirects manipulation attempts
+- [x] **SAFE-01**: Safety system prompt enforced on all conversations via `promptPrefix`
+- [x] **SAFE-02**: Content aligned with Reformed Christian values
+- [x] **SAFE-03**: No profanity generated or reproduced, even if requested
+- [x] **SAFE-04**: Age-appropriate content only — no violence, sexual content, drugs, or mature themes
+- [x] **SAFE-05**: Anti-homework-cheating — guide and explain, never give direct answers
+- [x] **SAFE-06**: System prompt addresses common jailbreak patterns by name
+- [x] **SAFE-07**: System prompt is self-reinforcing — detects and redirects manipulation attempts
 
 ### Configuration
 
@@ -46,11 +46,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Tone Presets
 
-- [ ] **TONE-01**: Friendly Tutor preset — warm, encouraging, explains at their level
-- [ ] **TONE-02**: Casual Buddy preset — relaxed, fun, uses humor
-- [ ] **TONE-03**: Balanced Helper preset — helpful and kind, straightforward answers
-- [ ] **TONE-04**: Standard Formal preset — similar to default Claude Chat experience
-- [ ] **TONE-05**: Safety rules identical across all tone presets
+- [x] **TONE-01**: Friendly Tutor preset — warm, encouraging, explains at their level
+- [x] **TONE-02**: Casual Buddy preset — relaxed, fun, uses humor
+- [x] **TONE-03**: Balanced Helper preset — helpful and kind, straightforward answers
+- [x] **TONE-04**: Standard Formal preset — similar to default Claude Chat experience
+- [x] **TONE-05**: Safety rules identical across all tone presets
 - [ ] **TONE-06**: Kids can switch tone presets from the UI
 
 ### User Management
@@ -109,22 +109,22 @@ Requirements for initial release. Each maps to roadmap phases.
 | CONF-01 | Phase 1 | Pending |
 | CONF-02 | Phase 1 | Pending |
 | CONF-03 | Phase 1 | Pending |
-| MODL-01 | Phase 2 | Pending |
-| MODL-02 | Phase 2 | Pending |
-| MODL-03 | Phase 2 | Pending |
-| MODL-04 | Phase 2 | Pending |
-| SAFE-01 | Phase 2 | Pending |
-| SAFE-02 | Phase 2 | Pending |
-| SAFE-03 | Phase 2 | Pending |
-| SAFE-04 | Phase 2 | Pending |
-| SAFE-05 | Phase 2 | Pending |
-| SAFE-06 | Phase 2 | Pending |
-| SAFE-07 | Phase 2 | Pending |
-| TONE-01 | Phase 2 | Pending |
-| TONE-02 | Phase 2 | Pending |
-| TONE-03 | Phase 2 | Pending |
-| TONE-04 | Phase 2 | Pending |
-| TONE-05 | Phase 2 | Pending |
+| MODL-01 | Phase 2 | Complete |
+| MODL-02 | Phase 2 | Complete |
+| MODL-03 | Phase 2 | Complete |
+| MODL-04 | Phase 2 | Complete |
+| SAFE-01 | Phase 2 | Complete |
+| SAFE-02 | Phase 2 | Complete |
+| SAFE-03 | Phase 2 | Complete |
+| SAFE-04 | Phase 2 | Complete |
+| SAFE-05 | Phase 2 | Complete |
+| SAFE-06 | Phase 2 | Complete |
+| SAFE-07 | Phase 2 | Complete |
+| TONE-01 | Phase 2 | Complete |
+| TONE-02 | Phase 2 | Complete |
+| TONE-03 | Phase 2 | Complete |
+| TONE-04 | Phase 2 | Complete |
+| TONE-05 | Phase 2 | Complete |
 | TONE-06 | Phase 2 | Pending |
 | USER-01 | Phase 3 | Pending |
 | USER-02 | Phase 3 | Pending |
