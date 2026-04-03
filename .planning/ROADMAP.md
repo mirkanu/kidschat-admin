@@ -63,7 +63,12 @@ Plans:
   3. Model picker and endpoint selector are not visible when logged in as a child
   4. Jailbreak attempts from a child account fail — role-play, "ignore instructions", and encoding tricks are all rejected
   5. Logged-out users can only view shared links in read-only mode and cannot initiate conversations
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Verify admin accounts + create two child accounts via MongoDB
+- [ ] 03-02-PLAN.md — Verify admin oversight of child conversation logs
+- [ ] 03-03-PLAN.md — Parent acceptance testing (browser-based, child account perspective)
 
 ## Progress
 
@@ -74,4 +79,4 @@ Phases execute in numeric order: 1 → 2 → 3
 |-------|----------------|--------|-----------|
 | 1. Deployment | 0/4 | Not started | - |
 | 2. Safety Configuration | 1/3 | In Progress|  |
-| 3. Accounts and Acceptance | 0/? | Not started | - |
+| 3. Accounts and Acceptance | 0/3 | Not started | - |
