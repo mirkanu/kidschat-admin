@@ -79,4 +79,4 @@ Phases execute in numeric order: 1 → 2 → 3
 |-------|----------------|--------|-----------|
 | 1. Deployment | 0/4 | Not started | - |
 | 2. Safety Configuration | 1/3 | In Progress|  |
-| 3. Accounts and Acceptance | 1/3 | In Progress|  |
+| 3. Accounts and Acceptance | 2/3 | In Progress|  |

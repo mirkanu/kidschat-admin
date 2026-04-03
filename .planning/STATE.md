@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 03-accounts-and-acceptance-01-PLAN.md
-last_updated: "2026-04-03T21:33:52.099Z"
+stopped_at: Completed 03-accounts-and-acceptance-02-PLAN.md
+last_updated: "2026-04-03T21:43:50.971Z"
 last_activity: 2026-04-03 — Roadmap created, ready for Phase 1 planning
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 10
-  completed_plans: 8
+  completed_plans: 9
   percent: 0
 ---
 
@@ -54,6 +54,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02-safety-configuration P02 | 6 | 2 tasks | 0 files |
 | Phase 02-safety-configuration P03 | 15min | 2 tasks | 1 files |
 | Phase 03-accounts-and-acceptance P01 | 6min | 2 tasks | 3 files |
+| Phase 03-accounts-and-acceptance P02 | 5min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,8 @@ Recent decisions affecting current work:
 - [Phase 02-safety-configuration]: Gist CDN cache bypass: update CONFIG_PATH to commit-pinned URL (/{hash}/raw/) after Gist updates to guarantee Railway fetches latest content
 - [Phase 03-accounts-and-acceptance]: Used bcryptjs direct MongoDB insert for child accounts — no registration re-enable needed, no service disruption
 - [Phase 03-accounts-and-acceptance]: Child account emails use kidschat.local domain — clearly internal, no real email delivery needed
+- [Phase 03-accounts-and-acceptance]: MongoDB direct query is the definitive parental oversight method for child conversations — LibreChat /api/convos?userId= filter is silently ignored
+- [Phase 03-accounts-and-acceptance]: isCreatedByUser field in messages collection distinguishes child input from AI responses for targeted oversight
 
 ### Pending Todos
 
@@ -86,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T21:33:52.094Z
-Stopped at: Completed 03-accounts-and-acceptance-01-PLAN.md
+Last session: 2026-04-03T21:43:50.968Z
+Stopped at: Completed 03-accounts-and-acceptance-02-PLAN.md
 Resume file: None

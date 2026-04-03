@@ -62,8 +62,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Admin Oversight
 
-- [ ] **ADMN-01**: Admins can review full conversation logs for all child accounts
-- [ ] **ADMN-02**: Conversation logs include timestamps, user identity, and full message history
+- [x] **ADMN-01**: Admins can review full conversation logs for all child accounts
+- [x] **ADMN-02**: Conversation logs include timestamps, user identity, and full message history
 
 ### Acceptance Testing
 
@@ -130,8 +130,8 @@ Requirements for initial release. Each maps to roadmap phases.
 | USER-02 | Phase 3 | Complete |
 | USER-03 | Phase 3 | Complete |
 | USER-04 | Phase 3 | Complete |
-| ADMN-01 | Phase 3 | Pending |
-| ADMN-02 | Phase 3 | Pending |
+| ADMN-01 | Phase 3 | Complete |
+| ADMN-02 | Phase 3 | Complete |
 | TEST-01 | Phase 3 | Pending |
 | TEST-02 | Phase 3 | Pending |
 | TEST-03 | Phase 3 | Pending |
