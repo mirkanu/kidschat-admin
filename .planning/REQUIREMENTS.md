@@ -51,7 +51,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **TONE-03**: Balanced Helper preset — helpful and kind, straightforward answers
 - [x] **TONE-04**: Standard Formal preset — similar to default Claude Chat experience
 - [x] **TONE-05**: Safety rules identical across all tone presets
-- [ ] **TONE-06**: Kids can switch tone presets from the UI
+- [x] **TONE-06**: Kids can switch tone presets from the UI
 
 ### User Management
 
@@ -125,7 +125,7 @@ Requirements for initial release. Each maps to roadmap phases.
 | TONE-03 | Phase 2 | Complete |
 | TONE-04 | Phase 2 | Complete |
 | TONE-05 | Phase 2 | Complete |
-| TONE-06 | Phase 2 | Pending |
+| TONE-06 | Phase 2 | Complete |
 | USER-01 | Phase 3 | Pending |
 | USER-02 | Phase 3 | Pending |
 | USER-03 | Phase 3 | Pending |
