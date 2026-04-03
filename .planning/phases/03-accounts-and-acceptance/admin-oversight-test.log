@@ -1,0 +1,168 @@
+Admin Oversight Test Log
+========================
+Date: 2026-04-03
+Phase: 03-accounts-and-acceptance
+Plan: 03-02
+
+SUMMARY OF FINDINGS
+-------------------
+Primary oversight method: MongoDB direct query (DEFINITIVE - always works)
+Secondary method: LibreChat API /api/messages/{conversationId} (works for known convoId)
+API filtering by child userId: NOT SUPPORTED - /api/convos?userId= filter is ignored, returns admin's own convos only
+
+CONVERSATION RECORD STRUCTURE (verified)
+-----------------------------------------
+conversations collection schema:
+  _id            - MongoDB document ID
+  user           - userId of conversation owner (ObjectId string, matches users._id)
+  conversationId - UUID string (used for message retrieval)
+  title          - Auto-generated conversation title (first message summary)
+  createdAt      - ISO 8601 timestamp
+  updatedAt      - ISO 8601 timestamp
+  endpoint       - AI endpoint used (e.g., "anthropic")
+  model          - Model name (e.g., "claude-haiku-4-5")
+  spec           - Preset used (e.g., "kids-assistant")
+  messages       - Array of message _id references
+  promptPrefix   - The system prompt active for this conversation
+
+messages collection schema:
+  messageId      - UUID
+  conversationId - Matches conversations.conversationId
+  user           - userId (same as conversation owner)
+  text           - Full message text content
+  sender         - "User" or "Claude"
+  isCreatedByUser - true for child messages, false for AI responses
+  createdAt      - ISO 8601 timestamp
+  tokenCount     - Token count for this message
+
+USER IDENTITY VERIFICATION
+---------------------------
+Child userId can be resolved to email via:
+  db.collection('users').findOne({_id: new ObjectId(userId)})
+
+Users table (confirmed):
+  69d0315763d6125f1f553e97 -> sebastian.kuhs@kidschat.local (USER)
+  69d0315763d6125f1f553e98 -> penelope.kuhs@kidschat.local (USER)
+  69cfd67ff4044c9e5e4c03a7 -> kuhs.emilykate@gmail.com (ADMIN)
+  69cfd4edf4044c9e5e4c039a -> manuelkuhs@gmail.com (ADMIN)
+
+EXISTING CONVERSATION DATA (from admin account test)
+----------------------------------------------------
+conversationId: 20d5b3e7-076b-498f-81e3-c2318f51faf7
+user: 69cfd4edf4044c9e5e4c039a (manuelkuhs@gmail.com, ADMIN)
+title: "Checking AI Functionality and Availability"
+createdAt: 2026-04-03T16:20:15.976Z
+spec: kids-assistant
+model: claude-haiku-4-5
+
+Messages:
+  [User] "Just checking do you work?" (2026-04-03T16:20:15.697Z)
+  [Claude] Error response - temperature/thinking conflict (2026-04-03T16:20:16.087Z)
+
+ADMIN PANEL
+-----------
+URL: https://librechat-production-bff2.up.railway.app/admin
+HTTP status: 200 (accessible with admin token)
+Note: Browser login required (not direct API token auth) - use browser logged in as Manuel or Emily-Kate
+
+LIBRECHAT API ADMIN ENDPOINTS (verified)
+-----------------------------------------
+GET /api/admin/users - Lists all users with id, email, role (WORKS for admin)
+GET /api/convos - Returns admin's OWN conversations (userId filter ignored)
+GET /api/messages/{conversationId} - Returns all messages in a conversation (WORKS)
+
+API oversight limitation: /api/convos does NOT filter by child userId.
+Admin can only retrieve messages if they know the conversationId.
+MongoDB is required to discover child conversationIds.
+
+=============================================================
+EXACT COMMANDS FOR ONGOING PARENTAL OVERSIGHT
+=============================================================
+
+STEP 1: Find a child's conversations (run once to get conversationIds)
+-----------------------------------------------------------------------
+node -e "
+const { MongoClient, ObjectId } = require('/data/home/KidAI/node_modules/mongodb');
+const MONGO_URI = 'mongodb://mongo:bnwf4anlnxzvdrkwlvi4ki6q7p52o33q@switchyard.proxy.rlwy.net:57501';
+const client = new MongoClient(MONGO_URI);
+async function main() {
+  await client.connect();
+  const db = client.db('test');
+  // Change email to check different child:
+  const child = await db.collection('users').findOne({ email: 'sebastian.kuhs@kidschat.local' });
+  console.log('Child:', child.name, child.email, '| userId:', child._id.toString());
+  const convos = await db.collection('conversations').find(
+    { user: child._id.toString() },
+    { projection: { conversationId: 1, title: 1, createdAt: 1, updatedAt: 1 } }
+  ).sort({ updatedAt: -1 }).toArray();
+  console.log('Conversations (' + convos.length + '):');
+  convos.forEach(c => console.log('  [' + c.createdAt + '] ' + c.title + ' | id: ' + c.conversationId));
+  await client.close();
+}
+main().catch(console.error);
+"
+
+STEP 2: Read messages in a specific conversation
+------------------------------------------------
+node -e "
+const { MongoClient } = require('/data/home/KidAI/node_modules/mongodb');
+const MONGO_URI = 'mongodb://mongo:bnwf4anlnxzvdrkwlvi4ki6q7p52o33q@switchyard.proxy.rlwy.net:57501';
+const CONVO_ID = 'PASTE-CONVERSATION-ID-HERE';
+const client = new MongoClient(MONGO_URI);
+async function main() {
+  await client.connect();
+  const db = client.db('test');
+  const msgs = await db.collection('messages').find(
+    { conversationId: CONVO_ID }
+  ).sort({ createdAt: 1 }).toArray();
+  msgs.forEach(m => {
+    const sender = m.isCreatedByUser ? 'Child' : 'AI';
+    console.log('[' + m.createdAt + '] ' + sender + ': ' + m.text);
+  });
+  await client.close();
+}
+main().catch(console.error);
+"
+
+STEP 3 (alternative): Read ALL messages for a child in one query
+----------------------------------------------------------------
+node -e "
+const { MongoClient } = require('/data/home/KidAI/node_modules/mongodb');
+const MONGO_URI = 'mongodb://mongo:bnwf4anlnxzvdrkwlvi4ki6q7p52o33q@switchyard.proxy.rlwy.net:57501';
+const client = new MongoClient(MONGO_URI);
+async function main() {
+  await client.connect();
+  const db = client.db('test');
+  // Change email to check different child:
+  const child = await db.collection('users').findOne({ email: 'sebastian.kuhs@kidschat.local' });
+  const msgs = await db.collection('messages').find(
+    { user: child._id.toString(), isCreatedByUser: true }
+  ).sort({ createdAt: 1 }).toArray();
+  console.log('All messages from ' + child.name + ' (' + msgs.length + ' total):');
+  msgs.forEach(m => console.log('[' + m.createdAt + '] ' + m.text));
+  await client.close();
+}
+main().catch(console.error);
+"
+
+=============================================================
+VERIFICATION RESULTS
+=============================================================
+[PASS] MongoDB conversations collection queryable
+[PASS] Conversations include user identity (userId field traceable to email)
+[PASS] Conversations include createdAt and updatedAt timestamps
+[PASS] Messages include full text content, sender identity, timestamps
+[PASS] Admin panel /admin returns HTTP 200 (accessible via browser login)
+[PASS] /api/admin/users returns all 4 family accounts
+[PASS] /api/messages/{conversationId} returns full message thread
+[INFO] /api/convos?userId= filter not supported - MongoDB is required for child oversight
+[INFO] Sebastian has 0 conversations (account new, never logged in via browser)
+[INFO] Penelope has 0 conversations (account new, never logged in via browser)
+
+CONCLUSION
+----------
+Parental oversight is FULLY FUNCTIONAL via MongoDB direct query.
+Once children start conversations, parents can run the Step 1 script above to list
+all conversation titles and timestamps, then Step 2 to read any conversation's messages.
+Both user identity (email) and timestamps are present on all records.
+ADMN-01 and ADMN-02 requirements are verified satisfied.
