@@ -55,10 +55,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### User Management
 
-- [ ] **USER-01**: Parent admin account created and verified (you)
-- [ ] **USER-02**: Parent admin account created and verified (Emily-Kate)
-- [ ] **USER-03**: One account per child created (2 accounts)
-- [ ] **USER-04**: All accounts can log in with registration disabled
+- [x] **USER-01**: Parent admin account created and verified (you)
+- [x] **USER-02**: Parent admin account created and verified (Emily-Kate)
+- [x] **USER-03**: One account per child created (2 accounts)
+- [x] **USER-04**: All accounts can log in with registration disabled
 
 ### Admin Oversight
 
@@ -126,10 +126,10 @@ Requirements for initial release. Each maps to roadmap phases.
 | TONE-04 | Phase 2 | Complete |
 | TONE-05 | Phase 2 | Complete |
 | TONE-06 | Phase 2 | Complete |
-| USER-01 | Phase 3 | Pending |
-| USER-02 | Phase 3 | Pending |
-| USER-03 | Phase 3 | Pending |
-| USER-04 | Phase 3 | Pending |
+| USER-01 | Phase 3 | Complete |
+| USER-02 | Phase 3 | Complete |
+| USER-03 | Phase 3 | Complete |
+| USER-04 | Phase 3 | Complete |
 | ADMN-01 | Phase 3 | Pending |
 | ADMN-02 | Phase 3 | Pending |
 | TEST-01 | Phase 3 | Pending |

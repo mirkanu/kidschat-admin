@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 02-safety-configuration-03-PLAN.md
-last_updated: "2026-04-03T18:49:41.581Z"
+stopped_at: Completed 03-accounts-and-acceptance-01-PLAN.md
+last_updated: "2026-04-03T21:33:52.099Z"
 last_activity: 2026-04-03 — Roadmap created, ready for Phase 1 planning
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 10
+  completed_plans: 8
   percent: 0
 ---
 
@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02-safety-configuration P01 | 8 | 1 tasks | 1 files |
 | Phase 02-safety-configuration P02 | 6 | 2 tasks | 0 files |
 | Phase 02-safety-configuration P03 | 15min | 2 tasks | 1 files |
+| Phase 03-accounts-and-acceptance P01 | 6min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -70,6 +71,8 @@ Recent decisions affecting current work:
 - [Phase 02-safety-configuration]: Used gh gist edit --filename to replace Gist content in-place; /api/config is auth-gated so modelSpecs verified via Gist YAML parse directly
 - [Phase 02-safety-configuration]: endpoints.anthropic.models must be a flat YAML array not an object with default/fetch keys — LibreChat v0.8.4 ZodError otherwise
 - [Phase 02-safety-configuration]: Gist CDN cache bypass: update CONFIG_PATH to commit-pinned URL (/{hash}/raw/) after Gist updates to guarantee Railway fetches latest content
+- [Phase 03-accounts-and-acceptance]: Used bcryptjs direct MongoDB insert for child accounts — no registration re-enable needed, no service disruption
+- [Phase 03-accounts-and-acceptance]: Child account emails use kidschat.local domain — clearly internal, no real email delivery needed
 
 ### Pending Todos
 
@@ -83,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T18:47:00.803Z
-Stopped at: Completed 02-safety-configuration-03-PLAN.md
+Last session: 2026-04-03T21:33:52.094Z
+Stopped at: Completed 03-accounts-and-acceptance-01-PLAN.md
 Resume file: None
