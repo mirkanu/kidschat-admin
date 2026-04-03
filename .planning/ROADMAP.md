@@ -28,7 +28,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Navigating to /register shows an error, not a registration form
   4. Social login options (Google, GitHub) are absent from the login page
   5. The GitHub Gist hosts librechat.yaml and CONFIG_PATH points to its raw URL — opening the Gist in incognito shows no API keys
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Deploy LibreChat Lite Railway template and create admin account
+- [ ] 01-02-PLAN.md — Set env vars: Anthropic API key + complete registration lockdown
+- [ ] 01-03-PLAN.md — Create GitHub Gist with placeholder librechat.yaml and wire CONFIG_PATH
+- [ ] 01-04-PLAN.md — Phase 1 final verification checklist (all 5 success criteria)
 
 ### Phase 2: Safety Configuration
 **Goal**: The YAML configuration is live — model is locked to Claude Haiku 4.5, safety system prompt is enforced on every message, all four tone presets are available, and dangerous UI features are hidden
@@ -61,6 +67,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Deployment | 0/? | Not started | - |
+| 1. Deployment | 0/4 | Not started | - |
 | 2. Safety Configuration | 0/? | Not started | - |
 | 3. Accounts and Acceptance | 0/? | Not started | - |
