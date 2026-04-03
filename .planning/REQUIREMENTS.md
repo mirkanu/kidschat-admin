@@ -67,11 +67,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Acceptance Testing
 
-- [ ] **TEST-01**: Basic jailbreak attempts fail against system prompt (role-play, "ignore instructions", encoding tricks)
-- [ ] **TEST-02**: Model picker and endpoint selector are not visible
-- [ ] **TEST-03**: Tone switching works — each preset produces noticeably different conversational style
-- [ ] **TEST-04**: Web search respects safety guardrails
-- [ ] **TEST-05**: Logged-out users can only view shared links (read-only)
+- [x] **TEST-01**: Basic jailbreak attempts fail against system prompt (role-play, "ignore instructions", encoding tricks)
+- [x] **TEST-02**: Model picker and endpoint selector are not visible
+- [x] **TEST-03**: Tone switching works — each preset produces noticeably different conversational style
+- [x] **TEST-04**: Web search respects safety guardrails
+- [x] **TEST-05**: Logged-out users can only view shared links (read-only)
 
 ## v2 Requirements
 
@@ -132,11 +132,11 @@ Requirements for initial release. Each maps to roadmap phases.
 | USER-04 | Phase 3 | Complete |
 | ADMN-01 | Phase 3 | Complete |
 | ADMN-02 | Phase 3 | Complete |
-| TEST-01 | Phase 3 | Pending |
-| TEST-02 | Phase 3 | Pending |
-| TEST-03 | Phase 3 | Pending |
-| TEST-04 | Phase 3 | Pending |
-| TEST-05 | Phase 3 | Pending |
+| TEST-01 | Phase 3 | Complete |
+| TEST-02 | Phase 3 | Complete |
+| TEST-03 | Phase 3 | Complete |
+| TEST-04 | Phase 3 | Complete |
+| TEST-05 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 39 total
