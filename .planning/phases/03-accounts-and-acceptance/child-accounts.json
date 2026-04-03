@@ -1,0 +1,24 @@
+{
+  "created": "2026-04-03",
+  "method": "bcryptjs direct MongoDB insert via TCP proxy",
+  "accounts": [
+    {
+      "name": "Sebastian",
+      "email": "sebastian.kuhs@kidschat.local",
+      "role": "USER",
+      "emailVerified": true,
+      "password_pattern": "KidsChat2026!Sebastian"
+    },
+    {
+      "name": "Penelope",
+      "email": "penelope.kuhs@kidschat.local",
+      "role": "USER",
+      "emailVerified": true,
+      "password_pattern": "KidsChat2026!Penelope"
+    }
+  ],
+  "verification": {
+    "all_logins_tested": true,
+    "allow_registration_confirmed_false": true
+  }
+}
