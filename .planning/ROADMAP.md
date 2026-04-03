@@ -46,7 +46,12 @@ Plans:
   3. The safety prompt rejects requests for profanity, mature content, and direct homework answers
   4. A basic jailbreak attempt ("ignore your instructions", DAN-style roleplay, fictional framing) is redirected without complying
   5. Safety rules are identical across all four tone presets — switching tone does not weaken content guardrails
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Author full librechat.yaml (safety system prompt + 4 tone presets + UI lockdown)
+- [ ] 02-02-PLAN.md — Push YAML to GitHub Gist and redeploy LibreChat on Railway
+- [ ] 02-03-PLAN.md — Human verification of all 5 Phase 2 success criteria
 
 ### Phase 3: Accounts and Acceptance
 **Goal**: All four accounts (two parent admins, two children) are created and verified, admin conversation oversight is confirmed, and the app is accepted for child use
@@ -68,5 +73,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Deployment | 0/4 | Not started | - |
-| 2. Safety Configuration | 0/? | Not started | - |
+| 2. Safety Configuration | 0/3 | Not started | - |
 | 3. Accounts and Acceptance | 0/? | Not started | - |
