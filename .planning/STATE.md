@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Admin Dashboard
 status: planning
-stopped_at: Completed 05-03-PLAN.md
-last_updated: "2026-04-04T08:55:04.718Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-04-04T09:05:52.631Z"
 last_activity: 2026-04-04 — Roadmap created for v2.0
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
@@ -67,6 +67,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 05-conversations-and-user-management]: ConversationsList filters client-side from initialConversations (no re-fetch) for instant UX
 - [Phase 05-conversations-and-user-management]: Email is readonly in edit dialog — email changes not supported to avoid LibreChat user sync issues
 - [Phase 05-conversations-and-user-management]: UserSummary interface exported from API route and imported by UI components for single source of truth
+- [Phase 05-02]: MessageThread receives all data as props from server component — no client-side fetching needed
+- [Phase 05-02]: createdAt serialization in API handles both Date and string MongoDB values for robustness
 
 ### Pending Todos
 
@@ -78,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T08:55:04.714Z
-Stopped at: Completed 05-03-PLAN.md
+Last session: 2026-04-04T09:05:52.628Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None

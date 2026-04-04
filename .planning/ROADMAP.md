@@ -23,7 +23,7 @@ LibreChat deployed on Railway with MongoDB + Meilisearch, two admin and two chil
 **Milestone Goal:** A standalone Next.js admin dashboard on Railway that connects to the same MongoDB, giving parents a browser-based interface for conversation oversight, user management, usage statistics, and safety alerts.
 
 - [x] **Phase 4: Foundation** - Next.js app deployed on Railway, MongoDB connected, admin-only auth gate (completed 2026-04-04)
-- [ ] **Phase 5: Conversations & User Management** - Parents can read all children's chats and manage accounts
+- [x] **Phase 5: Conversations & User Management** - Parents can read all children's chats and manage accounts (completed 2026-04-04)
 - [ ] **Phase 6: Analytics & Safety Alerts** - Usage statistics charts and detected safety event log
 
 ## Phase Details
@@ -83,5 +83,5 @@ Plans:
 | 2. Configuration | v1.0 | — | Complete | 2026-04-04 |
 | 3. Safety & Accounts | v1.0 | — | Complete | 2026-04-04 |
 | 4. Foundation | 3/3 | Complete   | 2026-04-04 | - |
-| 5. Conversations & User Management | 2/3 | In Progress|  | - |
+| 5. Conversations & User Management | 3/3 | Complete   | 2026-04-04 | - |
 | 6. Analytics & Safety Alerts | v2.0 | 0/TBD | Not started | - |
