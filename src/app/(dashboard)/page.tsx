@@ -1,65 +1,167 @@
+import { Suspense } from "react";
+import Link from "next/link";
 import { auth } from "@/auth";
-import getMongoClient from "@/lib/mongodb";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, MessageSquare, Database, CheckCircle2 } from "lucide-react";
-import { Suspense } from "react";
-import { DashboardStats } from "./page-client";
-import { Skeleton } from "@/components/ui/skeleton";
+import { getSystemStatus, get24hDigest, getRecentAlerts } from "@/lib/trust-dashboard";
+import {
+  SafetyStatusCard,
+  ActivityDigestCard,
+  RecentAlertsCard,
+  QUICK_LINKS,
+} from "./page-client";
 
-async function getStats() {
-  const client = await getMongoClient();
-  const db = client.db("test");
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const [userCount, conversationCount, messageCount30d] = await Promise.all([
-    db.collection("users").countDocuments(),
-    db.collection("conversations").countDocuments(),
-    db.collection("messages").countDocuments({ createdAt: { $gte: thirtyDaysAgo } }),
-  ]);
-  return { userCount, conversationCount, messageCount30d };
+// ---------------------------------------------------------------------------
+// Async server sub-components — each fetches its own data slice
+// ---------------------------------------------------------------------------
+
+async function SafetyStatusSection() {
+  const status = await getSystemStatus();
+  return <SafetyStatusCard status={status} />;
 }
 
-export default async function DashboardPage() {
-  const session = await auth();
+async function DigestSection() {
+  const digest = await get24hDigest();
+  return <ActivityDigestCard digest={digest} />;
+}
 
+async function AlertsSection() {
+  const alerts = await getRecentAlerts(5);
+  return <RecentAlertsCard alerts={alerts} />;
+}
+
+// ---------------------------------------------------------------------------
+// Skeleton fallbacks
+// ---------------------------------------------------------------------------
+
+function StatusSkeleton() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">
-          Welcome back, {session?.user?.name?.split(" ")[0]}
-        </h2>
-        <p className="text-muted-foreground">Here&apos;s what&apos;s happening with KidsChat.</p>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <CheckCircle2 className="h-4 w-4 text-green-500" />
-        <span className="text-sm text-muted-foreground">Connected to MongoDB (test database)</span>
-        <Badge variant="outline" className="text-green-600 border-green-200">Live</Badge>
-      </div>
-
-      <Suspense fallback={<StatsSkeleton />}>
-        <DashboardStats statsPromise={getStats()} />
-      </Suspense>
-    </div>
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-8 w-8 rounded-full" />
+          <div className="space-y-1">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-3 w-28" />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-4 w-full" />
+        ))}
+      </CardContent>
+    </Card>
   );
 }
 
-function StatsSkeleton() {
+function DigestSkeleton() {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Card key={i}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-8 w-16 mb-1" />
-            <Skeleton className="h-3 w-32" />
-          </CardContent>
-        </Card>
-      ))}
+    <Card>
+      <CardHeader className="pb-3">
+        <Skeleton className="h-5 w-32" />
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex flex-col items-center gap-1 rounded-lg border p-3">
+              <Skeleton className="h-5 w-5 rounded" />
+              <Skeleton className="h-8 w-12" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+          ))}
+        </div>
+        <Skeleton className="h-4 w-36" />
+      </CardContent>
+    </Card>
+  );
+}
+
+function AlertsSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <Skeleton className="h-5 w-44" />
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="space-y-1 border-b pb-3 last:border-0 last:pb-0">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-5 w-24 rounded-full" />
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-3 w-12 ml-auto" />
+            </div>
+            <Skeleton className="h-3 w-full" />
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+
+export default async function DashboardPage() {
+  const session = await auth();
+  const firstName = session?.user?.name?.split(" ")[0] ?? "Parent";
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight">Welcome back, {firstName}</h2>
+        <p className="text-muted-foreground">Your KidsChat safety overview.</p>
+      </div>
+
+      {/* Section 1: Safety Status */}
+      <Suspense fallback={<StatusSkeleton />}>
+        <SafetyStatusSection />
+      </Suspense>
+
+      {/* Section 2: 24h Activity Digest */}
+      <Suspense fallback={<DigestSkeleton />}>
+        <DigestSection />
+      </Suspense>
+
+      {/* Section 3: Recent Safety Alerts */}
+      <Suspense fallback={<AlertsSkeleton />}>
+        <AlertsSection />
+      </Suspense>
+
+      {/* Section 4: Quick Links (static) */}
+      <div>
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+          Quick Links
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {QUICK_LINKS.map((link) => {
+            const Icon = link.icon;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="group relative flex items-start gap-3 rounded-lg border p-4 transition-transform hover:scale-[1.02] active:scale-95 bg-card hover:bg-accent/50"
+              >
+                <Icon className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0 group-hover:text-foreground transition-colors" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-sm">{link.label}</p>
+                    {link.comingSoon && (
+                      <Badge variant="secondary" className="text-xs py-0">
+                        Coming soon
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">{link.description}</p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
