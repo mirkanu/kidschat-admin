@@ -1,16 +1,21 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Shield, MessageSquare, Users, BarChart3, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: Shield, active: true },
-  { href: "/conversations", label: "Conversations", icon: MessageSquare, active: false, soon: true },
+  { href: "/conversations", label: "Conversations", icon: MessageSquare, active: true },
   { href: "/users", label: "Users", icon: Users, active: false, soon: true },
   { href: "/analytics", label: "Analytics", icon: BarChart3, active: false, soon: true },
   { href: "/alerts", label: "Safety Alerts", icon: AlertTriangle, active: false, soon: true },
 ];
 
 export function NavSidebar() {
+  const pathname = usePathname();
+
   return (
     <aside className="w-64 border-r bg-card flex flex-col">
       <div className="p-6 border-b">
@@ -31,7 +36,8 @@ export function NavSidebar() {
                 className={cn(
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   "hover:bg-accent hover:text-accent-foreground",
-                  "active:scale-95"
+                  "active:scale-95",
+                  pathname === item.href && "bg-accent text-accent-foreground"
                 )}
               >
                 <item.icon className="h-4 w-4" />
