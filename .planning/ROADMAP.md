@@ -24,7 +24,7 @@ LibreChat deployed on Railway with MongoDB + Meilisearch, two admin and two chil
 
 - [x] **Phase 4: Foundation** - Next.js app deployed on Railway, MongoDB connected, admin-only auth gate (completed 2026-04-04)
 - [x] **Phase 5: Conversations & User Management** - Parents can read all children's chats and manage accounts (completed 2026-04-04)
-- [ ] **Phase 6: Analytics & Safety Alerts** - Usage statistics charts and detected safety event log
+- [x] **Phase 6: Analytics & Safety Alerts** - Usage statistics charts and detected safety event log (completed 2026-04-04)
 
 ## Phase Details
 
@@ -88,4 +88,4 @@ Plans:
 | 3. Safety & Accounts | v1.0 | — | Complete | 2026-04-04 |
 | 4. Foundation | 3/3 | Complete   | 2026-04-04 | - |
 | 5. Conversations & User Management | 3/3 | Complete   | 2026-04-04 | - |
-| 6. Analytics & Safety Alerts | 1/2 | In Progress|  | - |
+| 6. Analytics & Safety Alerts | 2/2 | Complete   | 2026-04-04 | - |

@@ -38,9 +38,9 @@ Requirements for admin dashboard. Each maps to roadmap phases.
 
 ### Safety Alerts
 
-- [ ] **ALRT-01**: Dashboard detects and logs when the safety prompt redirects a conversation
-- [ ] **ALRT-02**: Dashboard detects and logs jailbreak attempts
-- [ ] **ALRT-03**: Admin can view alert history log with timestamps and conversation links
+- [x] **ALRT-01**: Dashboard detects and logs when the safety prompt redirects a conversation
+- [x] **ALRT-02**: Dashboard detects and logs jailbreak attempts
+- [x] **ALRT-03**: Admin can view alert history log with timestamps and conversation links
 
 ## Future Requirements
 
@@ -85,9 +85,9 @@ Requirements for admin dashboard. Each maps to roadmap phases.
 | STAT-02 | Phase 6 | Complete |
 | STAT-03 | Phase 6 | Complete |
 | STAT-04 | Phase 6 | Complete |
-| ALRT-01 | Phase 6 | Pending |
-| ALRT-02 | Phase 6 | Pending |
-| ALRT-03 | Phase 6 | Pending |
+| ALRT-01 | Phase 6 | Complete |
+| ALRT-02 | Phase 6 | Complete |
+| ALRT-03 | Phase 6 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 20 total

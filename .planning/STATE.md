@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Admin Dashboard
 status: planning
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-04-04T17:34:22.826Z"
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-04-04T17:38:07.527Z"
 last_activity: "2026-04-04 — Completed quick task 2: Fix admin conversation page server error"
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
   percent: 0
 ---
 
@@ -72,6 +72,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 06-analytics-and-safety-alerts]: Recharts chosen for chart rendering — lightweight, composable, Tailwind-compatible
 - [Phase 06-analytics-and-safety-alerts]: Analytics API aggregates from messages collection via lookup chain: messages -> conversations -> users using $toString on ObjectId
 - [Phase 06-analytics-and-safety-alerts]: Dashboard home messages-30d count added via getStats() — no separate API call needed
+- [Phase 06-analytics-and-safety-alerts]: Alerts page uses direct MongoDB query in server component rather than fetching /api/alerts — avoids HTTP auth complexity in server-to-server calls
+- [Phase 06-analytics-and-safety-alerts]: DAN jailbreak pattern uses case-sensitive word boundary regex (\bDAN\b) to avoid false positives from words containing 'dan'
 
 ### Quick Tasks Completed
 
@@ -80,6 +82,7 @@ Progress: [░░░░░░░░░░] 0%
 | 1 | UI broken on mobile, menu stuck and consuming 80% width | 2026-04-04 | 2f4db60 | [1-ui-broken-on-mobile](./quick/1-ui-broken-on-mobile-menu-stuck-and-consu/) |
 | 2 | Admin conversation pages crash with SyntaxError (HTML parsed as JSON) | 2026-04-04 | 7ebf0a0 | [2-fix-admin-conversation-page-server-error](./quick/2-fix-admin-conversation-page-server-error/) |
 | Phase 06-analytics-and-safety-alerts P01 | 9 | 2 tasks | 7 files |
+| Phase 06 P02 | 12m | 2 tasks | 6 files |
 
 ### Pending Todos
 
@@ -91,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T17:34:22.821Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-04-04T17:37:38.711Z
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None
