@@ -4,36 +4,6 @@ import { AlertsTable } from "@/components/dashboard/alerts-table";
 import { Badge } from "@/components/ui/badge";
 import type { SafetyEvent } from "@/lib/safety-patterns";
 
-async function getAlerts(): Promise<SafetyEvent[]> {
-  const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
-  const session = await auth();
-
-  // Fetch from the alerts API route — pass the auth cookie via headers
-  // Since this is a server component, we call the API internally
-  try {
-    const res = await fetch(`${baseUrl}/api/alerts`, {
-      headers: {
-        // Pass a server-side auth token by using the internal route directly
-        "x-internal-request": "1",
-        cookie: "", // will be set by middleware for server-side calls
-      },
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      console.error("Alerts API error:", res.status, await res.text());
-      return [];
-    }
-
-    const data = (await res.json()) as { alerts: SafetyEvent[]; totalCount: number };
-    return data.alerts ?? [];
-  } catch (err) {
-    console.error("Failed to fetch alerts:", err);
-    return [];
-  }
-}
-
-// Direct MongoDB query as fallback — used when fetch-based approach hits auth issues
 async function getAlertsDirectly(): Promise<SafetyEvent[]> {
   const getMongoClient = (await import("@/lib/mongodb")).default;
   const { detectSafetyEvent } = await import("@/lib/safety-patterns");
