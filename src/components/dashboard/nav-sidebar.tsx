@@ -5,12 +5,15 @@ import { usePathname } from "next/navigation";
 import { Shield, MessageSquare, Users, BarChart3, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { href: "/", label: "Dashboard", icon: Shield, active: true },
-  { href: "/conversations", label: "Conversations", icon: MessageSquare, active: true },
-  { href: "/users", label: "Users", icon: Users, active: true },
-  { href: "/analytics", label: "Analytics", icon: BarChart3, active: false, soon: true },
-  { href: "/alerts", label: "Safety Alerts", icon: AlertTriangle, active: false, soon: true },
+const activeNavItems = [
+  { href: "/", label: "Dashboard", icon: Shield },
+  { href: "/conversations", label: "Conversations", icon: MessageSquare },
+  { href: "/users", label: "Users", icon: Users },
+];
+
+const comingSoonItems = [
+  { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/alerts", label: "Safety Alerts", icon: AlertTriangle },
 ];
 
 export function NavSidebar() {
@@ -28,32 +31,32 @@ export function NavSidebar() {
         </div>
       </div>
       <nav className="flex-1 p-4 space-y-1">
-        {navItems.map((item) => (
-          <div key={item.href} className="relative">
-            {item.active ? (
-              <Link
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  "hover:bg-accent hover:text-accent-foreground",
-                  "active:scale-95",
-                  pathname === item.href && "bg-accent text-accent-foreground"
-                )}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            ) : (
-              <div className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground cursor-not-allowed opacity-50">
-                <item.icon className="h-4 w-4" />
-                {item.label}
-                <span className="ml-auto text-xs bg-muted px-1.5 py-0.5 rounded">Soon</span>
-              </div>
+        {activeNavItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              "hover:bg-accent hover:text-accent-foreground",
+              "active:scale-95",
+              pathname === item.href && "bg-accent text-accent-foreground"
             )}
+          >
+            <item.icon className="h-4 w-4" />
+            {item.label}
+          </Link>
+        ))}
+        {comingSoonItems.map((item) => (
+          <div
+            key={item.href}
+            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground cursor-not-allowed opacity-50"
+          >
+            <item.icon className="h-4 w-4" />
+            {item.label}
+            <span className="ml-auto text-xs bg-muted px-1.5 py-0.5 rounded">Soon</span>
           </div>
         ))}
       </nav>
     </aside>
   );
 }
-// cache-bust: 1775307357
