@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Parent Trust
 status: executing
-stopped_at: Completed 08-safety-transparency plan 01
-last_updated: "2026-04-04T23:16:09.140Z"
+stopped_at: Completed 09-parent-test-mode plan 01
+last_updated: "2026-04-04T23:39:59.973Z"
 last_activity: 2026-04-04 — Completed 07-01 (users bug fix + trust data layer)
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 6
+  completed_plans: 5
   percent: 8
 ---
 
@@ -65,6 +65,9 @@ Progress: [█░░░░░░░░░] 8%
 - [Phase 08-safety-transparency]: Safety Rules nav item placed last in sidebar using BookOpen icon; comingSoon flag controls QUICK_LINKS badge visibility
 - [Phase 08-safety-transparency]: Safety Rules page uses hardcoded content (no DB fetch) — all SAFE-01 to SAFE-04 requirements on one static transparency page
 - [Phase 08-safety-transparency]: Accordion used for system prompt disclosure to avoid overwhelming the page on first load
+- [Phase 09-parent-test-mode]: SYSTEM_PROMPT defined in exactly one place (src/lib/system-prompt.ts), imported by both safety-rules page and test-chat route
+- [Phase 09-parent-test-mode]: Non-streaming Anthropic API call chosen for test-chat — parent sandbox doesn't need streaming complexity
+- [Phase 09-parent-test-mode]: claude-haiku-4-5-20250414 with max_tokens 1024 for fast, economical test responses
 
 ### Quick Tasks Completed
 
@@ -75,6 +78,7 @@ Progress: [█░░░░░░░░░] 8%
 | Phase 07-trust-home P02 | 12 | 1 tasks | 3 files |
 | Phase 08-safety-transparency P02 | 5 | 1 tasks | 2 files |
 | Phase 08-safety-transparency P01 | 4 | 2 tasks | 3 files |
+| Phase 09-parent-test-mode P01 | 6 | 2 tasks | 5 files |
 
 ### Pending Todos
 
@@ -86,6 +90,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T23:11:06.249Z
-Stopped at: Completed 08-safety-transparency plan 01
+Last session: 2026-04-04T23:39:59.969Z
+Stopped at: Completed 09-parent-test-mode plan 01
 Resume file: None

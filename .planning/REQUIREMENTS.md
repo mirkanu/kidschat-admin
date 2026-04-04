@@ -23,7 +23,7 @@ Requirements for parent trust milestone. Each maps to roadmap phases.
 
 ### Parent Test Mode
 
-- [ ] **TEST-01**: Admin can open an embedded chat sandbox and send test messages to see safety rules in action
+- [x] **TEST-01**: Admin can open an embedded chat sandbox and send test messages to see safety rules in action
 - [ ] **TEST-02**: Chat sandbox shows predefined scenario buttons (jailbreak attempt, inappropriate topic, boundary test)
 - [ ] **TEST-03**: Chat sandbox visually indicates which safety rule triggered when a test message is blocked/redirected
 
@@ -64,7 +64,7 @@ Requirements for parent trust milestone. Each maps to roadmap phases.
 | SAFE-02 | Phase 8 | Complete |
 | SAFE-03 | Phase 8 | Complete |
 | SAFE-04 | Phase 8 | Complete |
-| TEST-01 | Phase 9 | Pending |
+| TEST-01 | Phase 9 | Complete |
 | TEST-02 | Phase 9 | Pending |
 | TEST-03 | Phase 9 | Pending |
 | FIX-01 | Phase 7 | Complete |
