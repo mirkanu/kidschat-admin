@@ -26,16 +26,28 @@ Children can safely explore and learn through AI conversation, with content guar
 
 ### Active
 
-(None — v1.0 shipped, planning next milestone)
+- [ ] Admin web dashboard for conversation oversight and user management
+- [ ] View all children's conversation logs with timestamps and search
+- [ ] Create, edit, delete user accounts from the dashboard
+- [ ] Usage statistics — messages per day, active hours, most-used presets
+- [ ] Real-time alerts when safety prompt is triggered or jailbreak attempted
 
 ### Out of Scope
 
 - Custom domain — Railway-provided URL is sufficient
 - Per-child different system prompts — same safety rules for both
-- UI customization — LibreChat defaults are fine
 - RAG, embeddings — not needed for children's chat
-- Custom frontend — LibreChat provides this
 - Mobile app — browser access is sufficient
+
+## Current Milestone: v2.0 Admin Dashboard
+
+**Goal:** Build a standalone Next.js admin dashboard on Railway that connects to the same MongoDB, giving parents a browser-based interface for conversation oversight, user management, usage stats, and safety alerts.
+
+**Target features:**
+- Conversation log viewer (all kids' chats, searchable, with timestamps)
+- User management (create/edit/delete accounts, change passwords, assign roles)
+- Usage statistics (messages per day, active hours, preset usage)
+- Real-time safety alerts (jailbreak attempts, safety prompt triggers)
 
 ## Context
 
@@ -69,4 +81,4 @@ Shipped v1.0 on 2026-04-03. Configuration-only project — zero custom code.
 | Safety prompt as identity | Frame rules as AI's values, not external constraints — better jailbreak resistance | ✓ Good |
 
 ---
-*Last updated: 2026-04-04 after v1.0 milestone*
+*Last updated: 2026-04-04 after v2.0 milestone start*

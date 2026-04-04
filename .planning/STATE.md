@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
+milestone: v2.0
+milestone_name: Admin Dashboard
 status: planning
-stopped_at: Completed 03-accounts-and-acceptance-03-PLAN.md
-last_updated: "2026-04-04T00:14:03.938Z"
-last_activity: 2026-04-03 — Roadmap created, ready for Phase 1 planning
+stopped_at: null
+last_updated: "2026-04-04"
+last_activity: 2026-04-04 — Milestone v2.0 started
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
   percent: 0
 ---
 
@@ -18,67 +18,36 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-03)
+See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Children can safely explore and learn through AI conversation, with content guardrails that a parent controls and trusts.
-**Current focus:** Phase 1 — Deployment
+**Current focus:** v2.0 Admin Dashboard — defining requirements
 
 ## Current Position
 
-Phase: 1 of 3 (Deployment)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-04-03 — Roadmap created, ready for Phase 1 planning
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-04 — Milestone v2.0 started
 
 Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
-**Velocity:**
-- Total plans completed: 0
-- Average duration: —
-- Total execution time: —
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| - | - | - | - |
-
-**Recent Trend:**
-- Last 5 plans: —
-- Trend: —
-
-*Updated after each plan completion*
-| Phase 02-safety-configuration P01 | 8 | 1 tasks | 1 files |
-| Phase 02-safety-configuration P02 | 6 | 2 tasks | 0 files |
-| Phase 02-safety-configuration P03 | 15min | 2 tasks | 1 files |
-| Phase 03-accounts-and-acceptance P01 | 6min | 2 tasks | 3 files |
-| Phase 03-accounts-and-acceptance P02 | 5min | 1 tasks | 1 files |
-| Phase 03-accounts-and-acceptance P03 | 3min | 2 tasks | 1 files |
+**Velocity (from v1.0):**
+- Total plans completed: 10
+- Timeline: 1 day
+- Average: ~10 plans/day
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- [Roadmap]: 3-phase structure derived from sequential dependency: deploy → configure → verify
-- [Roadmap]: CONF requirements placed in Phase 1 because the Gist must exist before Phase 2 YAML authoring
-- [Roadmap]: USER and ADMN requirements placed in Phase 3 — accounts created only after full safety config is live
-- [Phase 02-safety-configuration]: Safety prompt embedded verbatim in every preset to ensure independent enforcement in all presets
-- [Phase 02-safety-configuration]: Jailbreak resistance explicitly names DAN, fictional framing, encoding tricks, gradual escalation, and identity claims as attack vectors
-- [Phase 02-safety-configuration]: maxContextTokens: 50000 on every preset to prevent safety preamble truncation
-- [Phase 02-safety-configuration]: Used gh gist edit --filename to replace Gist content in-place; /api/config is auth-gated so modelSpecs verified via Gist YAML parse directly
-- [Phase 02-safety-configuration]: endpoints.anthropic.models must be a flat YAML array not an object with default/fetch keys — LibreChat v0.8.4 ZodError otherwise
-- [Phase 02-safety-configuration]: Gist CDN cache bypass: update CONFIG_PATH to commit-pinned URL (/{hash}/raw/) after Gist updates to guarantee Railway fetches latest content
-- [Phase 03-accounts-and-acceptance]: Used bcryptjs direct MongoDB insert for child accounts — no registration re-enable needed, no service disruption
-- [Phase 03-accounts-and-acceptance]: Child account emails use kidschat.local domain — clearly internal, no real email delivery needed
-- [Phase 03-accounts-and-acceptance]: MongoDB direct query is the definitive parental oversight method for child conversations — LibreChat /api/convos?userId= filter is silently ignored
-- [Phase 03-accounts-and-acceptance]: isCreatedByUser field in messages collection distinguishes child input from AI responses for targeted oversight
-- [Phase 03-accounts-and-acceptance]: YOLO mode auto-approved human-verify checkpoint — all 7 API checks passed from child auth perspective before checkpoint
-- [Phase 03-accounts-and-acceptance]: Registration lockdown confirmed via POST /api/auth/register returning 403; GET /register 200 is normal SPA behavior
+- MongoDB database name is "test" (Railway template default)
+- MongoDB TCP proxy at switchyard.proxy.rlwy.net:57501 for external access
+- LibreChat API doesn't expose cross-user conversations — MongoDB queries required
+- Railway CLI authenticated, GitHub CLI authenticated as mirkanu
+- LibreChat URL: https://librechat-production-bff2.up.railway.app
 
 ### Pending Todos
 
@@ -86,12 +55,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Phase 2]: System prompt content requires parent input on specific Reformed Christian values language before authoring begins — not a technical gap
-- [Phase 2]: Validate exact model ID format (`claude-haiku-4-5` vs `claude-haiku-4-5-20251001`) during YAML authoring
-- [Phase 3]: Confirm Railway SSH access method works for parent's account tier before needing to create accounts
+None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T21:50:04.452Z
-Stopped at: Completed 03-accounts-and-acceptance-03-PLAN.md
+Last session: 2026-04-04
+Stopped at: null
 Resume file: None
