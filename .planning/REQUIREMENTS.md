@@ -12,7 +12,7 @@ Requirements for admin dashboard. Each maps to roadmap phases.
 - [x] **INFRA-01**: Next.js app deployed as a separate Railway service in the KidsChat project
 - [x] **INFRA-02**: Dashboard connects to the same MongoDB instance as LibreChat
 - [ ] **INFRA-03**: Dashboard accessible at its own Railway-provided URL
-- [ ] **INFRA-04**: Dashboard requires login — only ADMIN-role users can access
+- [x] **INFRA-04**: Dashboard requires login — only ADMIN-role users can access
 
 ### Conversation Logs
 
@@ -71,7 +71,7 @@ Requirements for admin dashboard. Each maps to roadmap phases.
 | INFRA-01 | Phase 4 | Complete |
 | INFRA-02 | Phase 4 | Complete |
 | INFRA-03 | Phase 4 | Pending |
-| INFRA-04 | Phase 4 | Pending |
+| INFRA-04 | Phase 4 | Complete |
 | CONV-01 | Phase 5 | Pending |
 | CONV-02 | Phase 5 | Pending |
 | CONV-03 | Phase 5 | Pending |

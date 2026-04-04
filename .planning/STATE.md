@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Admin Dashboard
 status: planning
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-04-04T07:01:50.599Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-04-04T07:15:10.932Z"
 last_activity: 2026-04-04 — Roadmap created for v2.0
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -57,6 +57,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 04-foundation]: Used Tailwind CSS v3 (not v4) for shadcn/ui compatibility — v4 PostCSS API incompatible with tailwind.config.ts pattern
 - [Phase 04-foundation]: Used TypeScript 5 (not v6 beta) — TS6 stricter CSS import rules break standard Next.js layout.tsx
 - [Phase 04-foundation]: next-auth installed as beta (^5.0.0-beta.30) — v5 stable does not exist
+- [Phase 04-foundation]: throw new Error('ACCESS_DENIED') in NextAuth authorize() to distinguish non-admin login from wrong password
+- [Phase 04-foundation]: NextAuth v5 auth() export used directly as middleware — no manual redirect logic needed
 
 ### Pending Todos
 
@@ -68,6 +70,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T07:01:50.596Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-04-04T07:15:10.929Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None

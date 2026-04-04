@@ -77,6 +77,6 @@ Plans:
 | 1. Infrastructure | v1.0 | — | Complete | 2026-04-04 |
 | 2. Configuration | v1.0 | — | Complete | 2026-04-04 |
 | 3. Safety & Accounts | v1.0 | — | Complete | 2026-04-04 |
-| 4. Foundation | 1/3 | In Progress|  | - |
+| 4. Foundation | 2/3 | In Progress|  | - |
 | 5. Conversations & User Management | v2.0 | 0/TBD | Not started | - |
 | 6. Analytics & Safety Alerts | v2.0 | 0/TBD | Not started | - |
