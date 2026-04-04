@@ -233,7 +233,6 @@ export const QUICK_LINKS: QuickLink[] = [
     label: "Test Mode",
     description: "Try safety scenarios yourself",
     icon: Activity,
-    comingSoon: true,
   },
   {
     href: "/conversations",
