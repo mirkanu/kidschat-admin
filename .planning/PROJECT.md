@@ -31,7 +31,12 @@ Children can safely explore and learn through AI conversation, with content guar
 
 ### Active
 
-(None — planning next milestone)
+- [ ] Trust-focused dashboard home with safety status, recent alerts, and activity digest
+- [ ] Safety rules page with parent-friendly summary and expandable full system prompt
+- [ ] Parent test mode: embedded chat sandbox + predefined safety scenario buttons
+- [ ] Safety system status indicator with last-checked timestamp
+- [ ] Activity digest: 24h summary of messages, safety events, and system health
+- [ ] Fix users page bug (shows 0 users when 4 exist)
 
 ### Out of Scope
 
@@ -41,6 +46,17 @@ Children can safely explore and learn through AI conversation, with content guar
 - Mobile app — browser access is sufficient
 - Real-time push notifications — alert log sufficient for now
 - Modifying LibreChat config from dashboard — config lives in GitHub Gist
+
+## Current Milestone: v2.1 Parent Trust
+
+**Goal:** Make the admin dashboard a trust center where Emily-Kate can see at a glance that all safety systems are working, understand what rules protect the children, and test the safety boundaries herself.
+
+**Target features:**
+- Dashboard home redesigned as trust summary (safety status, alerts, activity digest)
+- Safety rules page with friendly explanation + full system prompt
+- Parent test mode with chat sandbox and predefined safety scenario buttons
+- Safety system status indicator
+- Fix users page bug
 
 ## Context
 
@@ -81,4 +97,4 @@ Shipped v2.0 on 2026-04-04. Two milestones complete.
 | Text pattern matching for safety | No ML dependency, detects common patterns, fast | ⚠️ Revisit — may need ML for better accuracy |
 
 ---
-*Last updated: 2026-04-04 after v2.0 milestone completion*
+*Last updated: 2026-04-04 after v2.1 milestone start*

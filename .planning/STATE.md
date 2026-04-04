@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: Admin Dashboard
-status: complete
-stopped_at: Milestone v2.0 complete
-last_updated: "2026-04-04T19:00:00.000Z"
-last_activity: "2026-04-04 — Milestone v2.0 Admin Dashboard shipped"
+milestone: v2.1
+milestone_name: Parent Trust
+status: defining_requirements
+stopped_at: null
+last_updated: "2026-04-04T19:30:00.000Z"
+last_activity: "2026-04-04 — Milestone v2.1 started"
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 8
-  completed_plans: 8
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,15 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Children can safely explore and learn through AI conversation, with content guardrails that a parent controls and trusts.
-**Current focus:** Planning next milestone
+**Current focus:** v2.1 Parent Trust — defining requirements
 
 ## Current Position
 
-Milestone: v2.0 Admin Dashboard — SHIPPED
-Status: Complete — all 3 phases, 8 plans delivered
-Last activity: 2026-04-04 — Milestone v2.0 shipped
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-04 — Milestone v2.1 started
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -42,6 +43,10 @@ Progress: [██████████] 100%
 - Plans completed: 8
 - Phases complete: 3/3
 - Timeline: 2 days
+
+**v2.1 (current):**
+- Plans completed: 0
+- Phases complete: 0
 
 ## Accumulated Context
 
@@ -66,10 +71,10 @@ None yet.
 
 ### Blockers/Concerns
 
-None — all v2.0 blockers resolved.
+None.
 
 ## Session Continuity
 
 Last session: 2026-04-04
-Stopped at: Milestone v2.0 complete
+Stopped at: Defining v2.1 requirements
 Resume file: None
