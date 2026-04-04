@@ -17,9 +17,9 @@ Requirements for parent trust milestone. Each maps to roadmap phases.
 ### Safety Transparency
 
 - [x] **SAFE-01**: Admin can view a Safety Rules page with parent-friendly summary of all content boundaries
-- [ ] **SAFE-02**: Safety Rules page has expandable section showing the full system prompt text
-- [ ] **SAFE-03**: Safety Rules page explains what happens when each rule triggers (redirect behavior, jailbreak response)
-- [ ] **SAFE-04**: Safety Rules page lists all four tone presets with descriptions of what each one does
+- [x] **SAFE-02**: Safety Rules page has expandable section showing the full system prompt text
+- [x] **SAFE-03**: Safety Rules page explains what happens when each rule triggers (redirect behavior, jailbreak response)
+- [x] **SAFE-04**: Safety Rules page lists all four tone presets with descriptions of what each one does
 
 ### Parent Test Mode
 
@@ -61,9 +61,9 @@ Requirements for parent trust milestone. Each maps to roadmap phases.
 | TRUST-03 | Phase 7 | Complete |
 | TRUST-04 | Phase 7 | Complete |
 | SAFE-01 | Phase 8 | Complete |
-| SAFE-02 | Phase 8 | Pending |
-| SAFE-03 | Phase 8 | Pending |
-| SAFE-04 | Phase 8 | Pending |
+| SAFE-02 | Phase 8 | Complete |
+| SAFE-03 | Phase 8 | Complete |
+| SAFE-04 | Phase 8 | Complete |
 | TEST-01 | Phase 9 | Pending |
 | TEST-02 | Phase 9 | Pending |
 | TEST-03 | Phase 9 | Pending |
