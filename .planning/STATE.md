@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Admin Dashboard
-status: ready_to_plan
-stopped_at: null
-last_updated: "2026-04-04"
-last_activity: 2026-04-04 — Roadmap created, 3 phases defined (4-6), 20 requirements mapped
+status: planning
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-04-04T07:01:50.599Z"
+last_activity: 2026-04-04 — Roadmap created for v2.0
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 3
+  completed_plans: 1
   percent: 0
 ---
 
@@ -54,6 +54,9 @@ Progress: [░░░░░░░░░░] 0%
 - LibreChat URL: https://librechat-production-bff2.up.railway.app
 - Dashboard is a separate Next.js Railway service connecting to the same MongoDB
 - Admin auth gates the entire dashboard — non-admin and unauthenticated users are refused
+- [Phase 04-foundation]: Used Tailwind CSS v3 (not v4) for shadcn/ui compatibility — v4 PostCSS API incompatible with tailwind.config.ts pattern
+- [Phase 04-foundation]: Used TypeScript 5 (not v6 beta) — TS6 stricter CSS import rules break standard Next.js layout.tsx
+- [Phase 04-foundation]: next-auth installed as beta (^5.0.0-beta.30) — v5 stable does not exist
 
 ### Pending Todos
 
@@ -65,6 +68,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04
-Stopped at: Roadmap written, ready to plan Phase 4
+Last session: 2026-04-04T07:01:50.596Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None
