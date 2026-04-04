@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { MessageThread } from "@/components/dashboard/message-thread";
+import getMongoClient from "@/lib/mongodb";
 
 interface MessageItem {
   messageId: string;
@@ -31,16 +32,15 @@ export default async function ConversationDetailPage({
 
   const { conversationId } = await params;
 
-  const baseUrl =
-    process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const client = await getMongoClient();
+  const db = client.db("test");
 
-  const res = await fetch(
-    `${baseUrl}/api/conversations/${conversationId}`,
-    { cache: "no-store" }
-  );
+  // Fetch conversation metadata
+  const conversation = await db
+    .collection("conversations")
+    .findOne({ conversationId });
 
-  if (!res.ok) {
-    // 404 or other error
+  if (!conversation) {
     return (
       <div className="p-6 flex flex-col items-center justify-center gap-4 text-center">
         <p className="text-muted-foreground text-lg">
@@ -56,7 +56,31 @@ export default async function ConversationDetailPage({
     );
   }
 
-  const data: ConversationDetailData = await res.json();
+  // Fetch messages sorted chronologically
+  const rawMessages = await db
+    .collection("messages")
+    .find({ conversationId })
+    .sort({ createdAt: 1 })
+    .toArray();
+
+  const messages: MessageItem[] = rawMessages.map((msg) => ({
+    messageId: msg.messageId ?? msg._id.toString(),
+    text: msg.text ?? "",
+    isCreatedByUser: Boolean(msg.isCreatedByUser),
+    sender: msg.sender ?? "Unknown",
+    createdAt:
+      msg.createdAt instanceof Date
+        ? msg.createdAt.toISOString()
+        : String(msg.createdAt ?? ""),
+  }));
+
+  const data: ConversationDetailData = {
+    conversation: {
+      conversationId: conversation.conversationId ?? conversationId,
+      title: conversation.title ?? "Untitled Conversation",
+    },
+    messages,
+  };
 
   return (
     <div className="p-6">

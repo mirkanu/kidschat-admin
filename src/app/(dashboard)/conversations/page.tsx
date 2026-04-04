@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { ConversationsList } from "@/components/dashboard/conversations-list";
+import getMongoClient from "@/lib/mongodb";
 
 interface ConversationSummary {
   conversationId: string;
@@ -11,18 +12,56 @@ interface ConversationSummary {
 }
 
 async function getConversations(): Promise<ConversationSummary[]> {
-  const baseUrl =
-    process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+  const client = await getMongoClient();
+  const db = client.db("test");
 
-  const res = await fetch(`${baseUrl}/api/conversations`, {
-    // Revalidate frequently — conversations change often
-    next: { revalidate: 30 },
-  });
+  const pipeline: object[] = [
+    // Join users by matching conversations.user (string) against users._id (ObjectId)
+    {
+      $lookup: {
+        from: "users",
+        let: { userId: "$user" },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: [{ $toString: "$_id" }, "$$userId"] },
+            },
+          },
+        ],
+        as: "userInfo",
+      },
+    },
+    {
+      $unwind: {
+        path: "$userInfo",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    { $sort: { updatedAt: -1 } },
+    { $limit: 100 },
+    {
+      $project: {
+        _id: 0,
+        conversationId: 1,
+        title: 1,
+        updatedAt: 1,
+        createdAt: 1,
+        userName: "$userInfo.name",
+        userEmail: "$userInfo.email",
+      },
+    },
+  ];
 
-  if (!res.ok) return [];
+  const conversations = await db
+    .collection("conversations")
+    .aggregate<ConversationSummary>(pipeline)
+    .toArray();
 
-  const data = (await res.json()) as { conversations: ConversationSummary[] };
-  return data.conversations ?? [];
+  // Serialize dates to ISO strings
+  return conversations.map((c) => ({
+    ...c,
+    updatedAt: c.updatedAt ? new Date(c.updatedAt).toISOString() : null,
+  }));
 }
 
 export default async function ConversationsPage() {
