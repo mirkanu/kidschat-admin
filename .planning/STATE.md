@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Parent Trust
 status: executing
-stopped_at: Completed 07-trust-home plan 02
-last_updated: "2026-04-04T21:22:01.003Z"
+stopped_at: Completed 08-safety-transparency plan 02
+last_updated: "2026-04-04T23:09:11.100Z"
 last_activity: 2026-04-04 — Completed 07-01 (users bug fix + trust data layer)
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
   percent: 8
 ---
 
@@ -62,6 +62,7 @@ Progress: [█░░░░░░░░░] 8%
 - getRecentAlerts uses 7-day window with 1000 message scan limit (lighter-weight preview for dashboard home)
 - [Phase 07-trust-home]: Quick Links metadata exported as QUICK_LINKS array from page-client.tsx for extensibility
 - [Phase 07-trust-home]: Trust center sections: async server sub-component fetches data, passes typed props to use-client display card
+- [Phase 08-safety-transparency]: Safety Rules nav item placed last in sidebar using BookOpen icon; comingSoon flag controls QUICK_LINKS badge visibility
 
 ### Quick Tasks Completed
 
@@ -70,6 +71,7 @@ Progress: [█░░░░░░░░░] 8%
 | 1 | UI broken on mobile, menu stuck and consuming 80% width | 2026-04-04 | 2f4db60 | [1-ui-broken-on-mobile](./quick/1-ui-broken-on-mobile-menu-stuck-and-consu/) |
 | 2 | Admin conversation pages crash with SyntaxError (HTML parsed as JSON) | 2026-04-04 | 7ebf0a0 | [2-fix-admin-conversation-page-server-error](./quick/2-fix-admin-conversation-page-server-error/) |
 | Phase 07-trust-home P02 | 12 | 1 tasks | 3 files |
+| Phase 08-safety-transparency P02 | 5 | 1 tasks | 2 files |
 
 ### Pending Todos
 
@@ -81,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T21:15:40.936Z
-Stopped at: Completed 07-trust-home plan 02
+Last session: 2026-04-04T23:09:11.097Z
+Stopped at: Completed 08-safety-transparency plan 02
 Resume file: None
