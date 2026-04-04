@@ -63,7 +63,7 @@ Plans:
 - [ ] 05-03-PLAN.md — User management: CRUD API, accounts table, create/edit/delete dialogs
 
 ### Phase 6: Analytics & Safety Alerts
-**Goal**: Parents can see how the children are using the app over time and review a log of any detected safety events
+**Goal**: Parents can see usage statistics charts showing how children use the AI chat and review a log of detected safety events
 **Depends on**: Phase 5
 **Requirements**: STAT-01, STAT-02, STAT-03, STAT-04, ALRT-01, ALRT-02, ALRT-03
 **Success Criteria** (what must be TRUE):
@@ -71,7 +71,11 @@ Plans:
   2. The dashboard shows which hours of day each child is most active
   3. The dashboard shows which tone presets are used most, broken down by child
   4. The dashboard shows a log of detected safety events (safety prompt redirections and jailbreak attempts) with timestamps and a link to the source conversation
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Usage analytics: Recharts charts for messages/day, active hours, preset usage with per-child breakdown
+- [ ] 06-02-PLAN.md — Safety alerts: pattern detection for redirections and jailbreak attempts, alerts log page
 
 ## Progress
 
@@ -84,4 +88,4 @@ Plans:
 | 3. Safety & Accounts | v1.0 | — | Complete | 2026-04-04 |
 | 4. Foundation | 3/3 | Complete   | 2026-04-04 | - |
 | 5. Conversations & User Management | 3/3 | Complete   | 2026-04-04 | - |
-| 6. Analytics & Safety Alerts | v2.0 | 0/TBD | Not started | - |
+| 6. Analytics & Safety Alerts | v2.0 | 0/2 | Not started | - |
