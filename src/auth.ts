@@ -3,8 +3,10 @@ import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import getMongoClient from "@/lib/mongodb";
 import type { LibreChatUser } from "@/types/user";
+import { authConfig } from "@/auth.config";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       credentials: {
@@ -43,30 +45,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      // Persist role in JWT on initial sign-in
-      if (user) {
-        token.role = (user as { role: string }).role;
-        token.id = user.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      // Expose role and id in the session object
-      if (session.user) {
-        session.user.role = token.role as string;
-        session.user.id = token.id as string;
-      }
-      return session;
-    },
-  },
-  pages: {
-    signIn: "/login",
-    error: "/login", // redirect errors back to login page with ?error= query param
-  },
-  session: {
-    strategy: "jwt",
-    maxAge: 24 * 60 * 60, // 24 hours
-  },
 });
