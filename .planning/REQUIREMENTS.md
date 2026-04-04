@@ -9,9 +9,9 @@ Requirements for parent trust milestone. Each maps to roadmap phases.
 
 ### Trust Dashboard
 
-- [ ] **TRUST-01**: Dashboard home shows safety system status with "All systems active" indicator and last-checked timestamp
-- [ ] **TRUST-02**: Dashboard home shows 24-hour activity digest (messages sent, safety events detected, system health)
-- [ ] **TRUST-03**: Dashboard home displays recent safety alerts summary with link to full alerts page
+- [x] **TRUST-01**: Dashboard home shows safety system status with "All systems active" indicator and last-checked timestamp
+- [x] **TRUST-02**: Dashboard home shows 24-hour activity digest (messages sent, safety events detected, system health)
+- [x] **TRUST-03**: Dashboard home displays recent safety alerts summary with link to full alerts page
 - [ ] **TRUST-04**: Dashboard home provides quick links to safety rules, test mode, conversations, and alerts
 
 ### Safety Transparency
@@ -29,7 +29,7 @@ Requirements for parent trust milestone. Each maps to roadmap phases.
 
 ### Bug Fixes
 
-- [ ] **FIX-01**: Users page correctly displays all users (fix: shows 0 when 4 exist)
+- [x] **FIX-01**: Users page correctly displays all users (fix: shows 0 when 4 exist)
 
 ## Future Requirements
 
@@ -56,9 +56,9 @@ Requirements for parent trust milestone. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TRUST-01 | Phase 7 | Pending |
-| TRUST-02 | Phase 7 | Pending |
-| TRUST-03 | Phase 7 | Pending |
+| TRUST-01 | Phase 7 | Complete |
+| TRUST-02 | Phase 7 | Complete |
+| TRUST-03 | Phase 7 | Complete |
 | TRUST-04 | Phase 7 | Pending |
 | SAFE-01 | Phase 8 | Pending |
 | SAFE-02 | Phase 8 | Pending |
@@ -67,7 +67,7 @@ Requirements for parent trust milestone. Each maps to roadmap phases.
 | TEST-01 | Phase 9 | Pending |
 | TEST-02 | Phase 9 | Pending |
 | TEST-03 | Phase 9 | Pending |
-| FIX-01 | Phase 7 | Pending |
+| FIX-01 | Phase 7 | Complete |
 
 **Coverage:**
 - v2.1 requirements: 12 total

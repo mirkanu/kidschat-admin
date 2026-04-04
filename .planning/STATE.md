@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Parent Trust
-status: ready_to_plan
-stopped_at: null
-last_updated: "2026-04-04T19:45:00.000Z"
-last_activity: "2026-04-04 — Roadmap created for v2.1 (3 phases, 12 requirements)"
+status: in_progress
+stopped_at: "Completed 07-trust-home plan 01"
+last_updated: "2026-04-04T20:08:00.000Z"
+last_activity: "2026-04-04 — Completed 07-01: users page bug fix + trust dashboard data layer"
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 0
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 8
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 ## Current Position
 
 Phase: 7 of 9 (Trust Home)
-Plan: —
-Status: Ready to plan
-Last activity: 2026-04-04 — Roadmap created, v2.1 phases 7-9 defined
+Plan: 01 complete, next: 02
+Status: In progress
+Last activity: 2026-04-04 — Completed 07-01 (users bug fix + trust data layer)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 8%
 
 ## Performance Metrics
 
@@ -45,7 +45,7 @@ Progress: [░░░░░░░░░░] 0%
 - Timeline: 2 days
 
 **v2.1 (current):**
-- Plans completed: 0
+- Plans completed: 1
 - Phases complete: 0/3
 
 ## Accumulated Context
@@ -57,6 +57,9 @@ Progress: [░░░░░░░░░░] 0%
 - Admin Dashboard URL: https://kidschat-admin-production.up.railway.app
 - Dashboard is a separate Next.js Railway service connecting to the same MongoDB
 - Server components query MongoDB directly (not self-referencing fetch) to avoid auth issues
+- Trust data layer in src/lib/trust-dashboard.ts: getSystemStatus, get24hDigest, getRecentAlerts — ready for Plan 02 Suspense boundaries
+- systemHealth logic: critical if >5 jailbreak attempts, warning if any safety event, else healthy
+- getRecentAlerts uses 7-day window with 1000 message scan limit (lighter-weight preview for dashboard home)
 
 ### Quick Tasks Completed
 
@@ -76,5 +79,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-04
-Stopped at: Roadmap created for v2.1, ready to plan Phase 7
+Stopped at: Completed 07-trust-home plan 01 (users bug fix + trust data layer)
 Resume file: None
