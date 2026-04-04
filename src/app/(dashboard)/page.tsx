@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import clientPromise from "@/lib/mongodb";
+import getMongoClient from "@/lib/mongodb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, MessageSquare, Database, CheckCircle2 } from "lucide-react";
@@ -8,7 +8,7 @@ import { DashboardStats } from "./page-client";
 import { Skeleton } from "@/components/ui/skeleton";
 
 async function getStats() {
-  const client = await clientPromise;
+  const client = await getMongoClient();
   const db = client.db("test");
   const [userCount, conversationCount] = await Promise.all([
     db.collection("users").countDocuments(),
