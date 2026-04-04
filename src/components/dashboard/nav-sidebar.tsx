@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Shield, MessageSquare, Users, BarChart3, AlertTriangle } from "lucide-react";
+import { Shield, MessageSquare, Users, BarChart3, AlertTriangle, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Sheet,
@@ -17,6 +17,7 @@ const activeNavItems = [
   { href: "/users", label: "Users", icon: Users },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/alerts", label: "Safety Alerts", icon: AlertTriangle },
+  { href: "/safety-rules", label: "Safety Rules", icon: BookOpen },
 ];
 
 interface NavSidebarProps {

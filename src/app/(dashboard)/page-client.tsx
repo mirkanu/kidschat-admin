@@ -227,7 +227,6 @@ export const QUICK_LINKS: QuickLink[] = [
     label: "Safety Rules",
     description: "View content boundaries and system prompt",
     icon: Shield,
-    comingSoon: true,
   },
   {
     href: "/test-mode",
