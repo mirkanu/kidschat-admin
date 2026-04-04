@@ -70,6 +70,12 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 05-02]: MessageThread receives all data as props from server component — no client-side fetching needed
 - [Phase 05-02]: createdAt serialization in API handles both Date and string MongoDB values for robustness
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | UI broken on mobile, menu stuck and consuming 80% width | 2026-04-04 | 2f4db60 | [1-ui-broken-on-mobile](./quick/1-ui-broken-on-mobile-menu-stuck-and-consu/) |
+
 ### Pending Todos
 
 None yet.
@@ -80,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T09:05:52.628Z
-Stopped at: Completed 05-02-PLAN.md
+Last session: 2026-04-04
+Stopped at: Completed quick task 1: mobile sidebar fix
 Resume file: None
