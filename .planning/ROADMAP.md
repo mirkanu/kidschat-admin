@@ -76,7 +76,10 @@ Plans:
   1. Admin can open an embedded chat sandbox within the dashboard and send a free-form test message
   2. Sandbox displays predefined scenario buttons (jailbreak attempt, inappropriate topic, boundary test) that pre-fill a test message
   3. When a test message is blocked or redirected, the sandbox visually identifies which safety rule triggered
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 09-01-PLAN.md — Extract shared system prompt + create /api/test-chat endpoint
+- [ ] 09-02-PLAN.md — Chat sandbox UI with scenario buttons, safety indicators, and navigation
 
 ## Progress
 
@@ -90,4 +93,4 @@ Plans:
 | 6. Analytics & Safety Alerts | v2.0 | 2/2 | Complete | 2026-04-04 |
 | 7. Trust Home | 2/2 | Complete   | 2026-04-04 | - |
 | 8. Safety Transparency | 2/2 | Complete   | 2026-04-04 | - |
-| 9. Parent Test Mode | v2.1 | 0/? | Not started | - |
+| 9. Parent Test Mode | v2.1 | 0/2 | Not started | - |
