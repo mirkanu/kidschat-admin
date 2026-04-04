@@ -4,6 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Shield, MessageSquare, Users, BarChart3, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 const activeNavItems = [
   { href: "/", label: "Dashboard", icon: Shield },
@@ -16,11 +22,16 @@ const comingSoonItems = [
   { href: "/alerts", label: "Safety Alerts", icon: AlertTriangle },
 ];
 
-export function NavSidebar() {
+interface NavSidebarProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 border-r bg-card flex flex-col">
+    <>
       <div className="p-6 border-b">
         <div className="flex items-center gap-2">
           <Shield className="h-6 w-6 text-primary" />
@@ -35,6 +46,7 @@ export function NavSidebar() {
           <Link
             key={item.href}
             href={item.href}
+            onClick={onLinkClick}
             className={cn(
               "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
               "hover:bg-accent hover:text-accent-foreground",
@@ -57,6 +69,27 @@ export function NavSidebar() {
           </div>
         ))}
       </nav>
-    </aside>
+    </>
+  );
+}
+
+export function NavSidebar({ open, onClose }: NavSidebarProps) {
+  return (
+    <>
+      {/* Mobile: Sheet drawer */}
+      <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
+        <SheetContent side="left" className="w-64 p-0 flex flex-col lg:hidden">
+          <SheetHeader className="sr-only">
+            <SheetTitle>Navigation</SheetTitle>
+          </SheetHeader>
+          <SidebarContent onLinkClick={onClose} />
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop: fixed sidebar */}
+      <aside className="hidden lg:flex w-64 border-r bg-card flex-col shrink-0">
+        <SidebarContent />
+      </aside>
+    </>
   );
 }

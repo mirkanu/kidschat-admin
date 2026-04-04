@@ -2,7 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { signOut } from "next-auth/react";
-import { Moon, Sun, LogOut, ChevronDown } from "lucide-react";
+import { Moon, Sun, LogOut, ChevronDown, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,15 +14,24 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface HeaderProps {
-  user: { name?: string | null; email?: string | null };
+  user?: { name?: string | null; email?: string | null };
+  onMenuClick: () => void;
 }
 
-export function Header({ user }: HeaderProps) {
+export function Header({ user, onMenuClick }: HeaderProps) {
   const { theme, setTheme } = useTheme();
 
   return (
     <header className="border-b bg-card px-6 py-3 flex items-center justify-between">
-      <div />
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onMenuClick}
+        className="lg:hidden active:scale-95 transition-transform"
+        aria-label="Open menu"
+      >
+        <Menu className="h-5 w-5" />
+      </Button>
       <div className="flex items-center gap-2">
         <Button
           variant="ghost"
@@ -40,15 +49,15 @@ export function Header({ user }: HeaderProps) {
             <Button variant="ghost" className="flex items-center gap-2 active:scale-95 transition-transform">
               <Avatar className="h-7 w-7">
                 <AvatarFallback className="text-xs">
-                  {user.name?.[0]?.toUpperCase() ?? "A"}
+                  {user?.name?.[0]?.toUpperCase() ?? "A"}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm font-medium hidden sm:block">{user.name}</span>
+              <span className="text-sm font-medium hidden sm:block">{user?.name ?? "Admin"}</span>
               <ChevronDown className="h-3 w-3 text-muted-foreground" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <div className="px-2 py-1.5 text-xs text-muted-foreground">{user.email}</div>
+            <div className="px-2 py-1.5 text-xs text-muted-foreground">{user?.email}</div>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => signOut({ callbackUrl: "/login" })}
