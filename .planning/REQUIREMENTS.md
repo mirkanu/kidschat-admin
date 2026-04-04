@@ -12,7 +12,7 @@ Requirements for parent trust milestone. Each maps to roadmap phases.
 - [x] **TRUST-01**: Dashboard home shows safety system status with "All systems active" indicator and last-checked timestamp
 - [x] **TRUST-02**: Dashboard home shows 24-hour activity digest (messages sent, safety events detected, system health)
 - [x] **TRUST-03**: Dashboard home displays recent safety alerts summary with link to full alerts page
-- [ ] **TRUST-04**: Dashboard home provides quick links to safety rules, test mode, conversations, and alerts
+- [x] **TRUST-04**: Dashboard home provides quick links to safety rules, test mode, conversations, and alerts
 
 ### Safety Transparency
 
@@ -59,7 +59,7 @@ Requirements for parent trust milestone. Each maps to roadmap phases.
 | TRUST-01 | Phase 7 | Complete |
 | TRUST-02 | Phase 7 | Complete |
 | TRUST-03 | Phase 7 | Complete |
-| TRUST-04 | Phase 7 | Pending |
+| TRUST-04 | Phase 7 | Complete |
 | SAFE-01 | Phase 8 | Pending |
 | SAFE-02 | Phase 8 | Pending |
 | SAFE-03 | Phase 8 | Pending |
