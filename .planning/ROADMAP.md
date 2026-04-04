@@ -55,7 +55,12 @@ Plans:
   3. Admin can search conversations by keyword and see matching results
   4. Admin can click into any conversation and read the full message thread with timestamps, child messages and AI responses visually distinct
   5. Admin can view all accounts in a table showing name, email, role, and last active date, and can create, edit, or delete any account
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Conversations list: API, list page, search + child filter, skeleton loading
+- [ ] 05-02-PLAN.md — Conversation detail: messages API, thread view with visual distinction, skeleton
+- [ ] 05-03-PLAN.md — User management: CRUD API, accounts table, create/edit/delete dialogs
 
 ### Phase 6: Analytics & Safety Alerts
 **Goal**: Parents can see how the children are using the app over time and review a log of any detected safety events
@@ -78,5 +83,5 @@ Plans:
 | 2. Configuration | v1.0 | — | Complete | 2026-04-04 |
 | 3. Safety & Accounts | v1.0 | — | Complete | 2026-04-04 |
 | 4. Foundation | 3/3 | Complete   | 2026-04-04 | - |
-| 5. Conversations & User Management | v2.0 | 0/TBD | Not started | - |
+| 5. Conversations & User Management | v2.0 | 0/3 | Not started | - |
 | 6. Analytics & Safety Alerts | v2.0 | 0/TBD | Not started | - |
