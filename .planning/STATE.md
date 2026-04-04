@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Admin Dashboard
 status: planning
-stopped_at: Completed 04-03-PLAN.md
-last_updated: "2026-04-04T08:07:58.689Z"
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-04-04T08:41:54.372Z"
 last_activity: 2026-04-04 — Roadmap created for v2.0
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 6
+  completed_plans: 4
   percent: 0
 ---
 
@@ -62,6 +62,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 04-foundation]: Split NextAuth config: auth.config.ts (edge-safe) + auth.ts (Node.js/MongoDB) to prevent MongoDB in Edge Runtime
 - [Phase 04-foundation]: getMongoClient() lazy function replaces module-level clientPromise — avoids Docker build-time env var throw
 - [Phase 04-foundation]: KidsChat Admin deployed to Railway: https://kidschat-admin-production.up.railway.app
+- [Phase 05-conversations-and-user-management]: MongoDB $lookup uses $toString on users._id to match conversations.user stored as plain string
+- [Phase 05-conversations-and-user-management]: NavSidebar converted to client component with usePathname for active-link highlighting
+- [Phase 05-conversations-and-user-management]: ConversationsList filters client-side from initialConversations (no re-fetch) for instant UX
 
 ### Pending Todos
 
@@ -73,6 +76,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T08:05:44.341Z
-Stopped at: Completed 04-03-PLAN.md
+Last session: 2026-04-04T08:41:39.710Z
+Stopped at: Completed 05-01-PLAN.md
 Resume file: None

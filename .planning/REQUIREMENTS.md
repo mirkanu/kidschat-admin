@@ -16,10 +16,10 @@ Requirements for admin dashboard. Each maps to roadmap phases.
 
 ### Conversation Logs
 
-- [ ] **CONV-01**: Admin can view a list of all children's conversations (newest first)
-- [ ] **CONV-02**: Admin can search conversations by keyword
+- [x] **CONV-01**: Admin can view a list of all children's conversations (newest first)
+- [x] **CONV-02**: Admin can search conversations by keyword
 - [ ] **CONV-03**: Admin can view full message history for any conversation with timestamps
-- [ ] **CONV-04**: Admin can filter conversations by child (Sebastian / Penelope)
+- [x] **CONV-04**: Admin can filter conversations by child (Sebastian / Penelope)
 - [ ] **CONV-05**: Child messages and AI responses are visually distinguished
 
 ### User Management
@@ -72,10 +72,10 @@ Requirements for admin dashboard. Each maps to roadmap phases.
 | INFRA-02 | Phase 4 | Complete |
 | INFRA-03 | Phase 4 | Complete |
 | INFRA-04 | Phase 4 | Complete |
-| CONV-01 | Phase 5 | Pending |
-| CONV-02 | Phase 5 | Pending |
+| CONV-01 | Phase 5 | Complete |
+| CONV-02 | Phase 5 | Complete |
 | CONV-03 | Phase 5 | Pending |
-| CONV-04 | Phase 5 | Pending |
+| CONV-04 | Phase 5 | Complete |
 | CONV-05 | Phase 5 | Pending |
 | USER-01 | Phase 5 | Pending |
 | USER-02 | Phase 5 | Pending |
