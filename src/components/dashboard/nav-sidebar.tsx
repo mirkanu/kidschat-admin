@@ -19,8 +19,6 @@ const activeNavItems = [
   { href: "/alerts", label: "Safety Alerts", icon: AlertTriangle },
 ];
 
-const comingSoonItems: Array<{ href: string; label: string; icon: React.ElementType }> = [];
-
 interface NavSidebarProps {
   open: boolean;
   onClose: () => void;
@@ -56,16 +54,6 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
             <item.icon className="h-4 w-4" />
             {item.label}
           </Link>
-        ))}
-        {comingSoonItems.map((item) => (
-          <div
-            key={item.href}
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground cursor-not-allowed opacity-50"
-          >
-            <item.icon className="h-4 w-4" />
-            {item.label}
-            <span className="ml-auto text-xs bg-muted px-1.5 py-0.5 rounded">Soon</span>
-          </div>
         ))}
       </nav>
     </>
