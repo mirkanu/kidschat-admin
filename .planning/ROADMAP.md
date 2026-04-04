@@ -63,7 +63,10 @@ Plans:
   3. Safety Rules page has an expandable section that reveals the full system prompt text
   4. Safety Rules page explains what happens when each rule triggers (redirect behavior, jailbreak response)
   5. Safety Rules page lists all four tone presets with a plain-language description of what each one does
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 08-01-PLAN.md — Create Safety Rules page with all content sections
+- [ ] 08-02-PLAN.md — Wire up sidebar nav and activate dashboard quick link
 
 ### Phase 9: Parent Test Mode
 **Goal**: Parents can personally verify that safety rules work by sending test messages through an embedded sandbox and watching the AI respond
@@ -86,5 +89,5 @@ Plans:
 | 5. Conversations & User Management | v2.0 | 3/3 | Complete | 2026-04-04 |
 | 6. Analytics & Safety Alerts | v2.0 | 2/2 | Complete | 2026-04-04 |
 | 7. Trust Home | 2/2 | Complete   | 2026-04-04 | - |
-| 8. Safety Transparency | v2.1 | 0/? | Not started | - |
+| 8. Safety Transparency | v2.1 | 0/2 | Not started | - |
 | 9. Parent Test Mode | v2.1 | 0/? | Not started | - |
