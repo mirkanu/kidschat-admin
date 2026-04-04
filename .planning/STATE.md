@@ -4,7 +4,7 @@ milestone: v2.0
 milestone_name: Admin Dashboard
 status: planning
 stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-04-04T17:38:07.527Z"
+last_updated: "2026-04-04T17:48:26.870Z"
 last_activity: "2026-04-04 — Completed quick task 2: Fix admin conversation page server error"
 progress:
   total_phases: 3
@@ -81,8 +81,6 @@ Progress: [░░░░░░░░░░] 0%
 |---|-------------|------|--------|-----------|
 | 1 | UI broken on mobile, menu stuck and consuming 80% width | 2026-04-04 | 2f4db60 | [1-ui-broken-on-mobile](./quick/1-ui-broken-on-mobile-menu-stuck-and-consu/) |
 | 2 | Admin conversation pages crash with SyntaxError (HTML parsed as JSON) | 2026-04-04 | 7ebf0a0 | [2-fix-admin-conversation-page-server-error](./quick/2-fix-admin-conversation-page-server-error/) |
-| Phase 06-analytics-and-safety-alerts P01 | 9 | 2 tasks | 7 files |
-| Phase 06 P02 | 12m | 2 tasks | 6 files |
 
 ### Pending Todos
 
