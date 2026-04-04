@@ -88,4 +88,4 @@ Plans:
 | 3. Safety & Accounts | v1.0 | — | Complete | 2026-04-04 |
 | 4. Foundation | 3/3 | Complete   | 2026-04-04 | - |
 | 5. Conversations & User Management | 3/3 | Complete   | 2026-04-04 | - |
-| 6. Analytics & Safety Alerts | v2.0 | 0/2 | Not started | - |
+| 6. Analytics & Safety Alerts | 1/2 | In Progress|  | - |

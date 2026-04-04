@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Admin Dashboard
 status: planning
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-04-04T09:07:53.499Z"
-last_activity: 2026-04-04 — Completed quick task 2: Fix admin conversation page server error
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-04-04T17:34:22.826Z"
+last_activity: "2026-04-04 — Completed quick task 2: Fix admin conversation page server error"
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 8
+  completed_plans: 7
   percent: 0
 ---
 
@@ -69,6 +69,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 05-conversations-and-user-management]: UserSummary interface exported from API route and imported by UI components for single source of truth
 - [Phase 05-02]: MessageThread receives all data as props from server component — no client-side fetching needed
 - [Phase 05-02]: createdAt serialization in API handles both Date and string MongoDB values for robustness
+- [Phase 06-analytics-and-safety-alerts]: Recharts chosen for chart rendering — lightweight, composable, Tailwind-compatible
+- [Phase 06-analytics-and-safety-alerts]: Analytics API aggregates from messages collection via lookup chain: messages -> conversations -> users using $toString on ObjectId
+- [Phase 06-analytics-and-safety-alerts]: Dashboard home messages-30d count added via getStats() — no separate API call needed
 
 ### Quick Tasks Completed
 
@@ -76,6 +79,7 @@ Progress: [░░░░░░░░░░] 0%
 |---|-------------|------|--------|-----------|
 | 1 | UI broken on mobile, menu stuck and consuming 80% width | 2026-04-04 | 2f4db60 | [1-ui-broken-on-mobile](./quick/1-ui-broken-on-mobile-menu-stuck-and-consu/) |
 | 2 | Admin conversation pages crash with SyntaxError (HTML parsed as JSON) | 2026-04-04 | 7ebf0a0 | [2-fix-admin-conversation-page-server-error](./quick/2-fix-admin-conversation-page-server-error/) |
+| Phase 06-analytics-and-safety-alerts P01 | 9 | 2 tasks | 7 files |
 
 ### Pending Todos
 
@@ -87,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04
-Stopped at: Completed quick task 2: fix admin conversation page server error
+Last session: 2026-04-04T17:34:22.821Z
+Stopped at: Completed 06-01-PLAN.md
 Resume file: None

@@ -31,10 +31,10 @@ Requirements for admin dashboard. Each maps to roadmap phases.
 
 ### Usage Statistics
 
-- [ ] **STAT-01**: Dashboard shows messages per day as a chart
-- [ ] **STAT-02**: Dashboard shows active hours (when kids chat most)
-- [ ] **STAT-03**: Dashboard shows most-used tone presets
-- [ ] **STAT-04**: All stats have per-child breakdown
+- [x] **STAT-01**: Dashboard shows messages per day as a chart
+- [x] **STAT-02**: Dashboard shows active hours (when kids chat most)
+- [x] **STAT-03**: Dashboard shows most-used tone presets
+- [x] **STAT-04**: All stats have per-child breakdown
 
 ### Safety Alerts
 
@@ -81,10 +81,10 @@ Requirements for admin dashboard. Each maps to roadmap phases.
 | USER-02 | Phase 5 | Complete |
 | USER-03 | Phase 5 | Complete |
 | USER-04 | Phase 5 | Complete |
-| STAT-01 | Phase 6 | Pending |
-| STAT-02 | Phase 6 | Pending |
-| STAT-03 | Phase 6 | Pending |
-| STAT-04 | Phase 6 | Pending |
+| STAT-01 | Phase 6 | Complete |
+| STAT-02 | Phase 6 | Complete |
+| STAT-03 | Phase 6 | Complete |
+| STAT-04 | Phase 6 | Complete |
 | ALRT-01 | Phase 6 | Pending |
 | ALRT-02 | Phase 6 | Pending |
 | ALRT-03 | Phase 6 | Pending |
