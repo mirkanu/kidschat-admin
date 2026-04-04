@@ -1,15 +1,13 @@
 import { Suspense } from "react";
-import Link from "next/link";
 import { auth } from "@/auth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { getSystemStatus, get24hDigest, getRecentAlerts } from "@/lib/trust-dashboard";
 import {
   SafetyStatusCard,
   ActivityDigestCard,
   RecentAlertsCard,
-  QUICK_LINKS,
+  QuickLinksGrid,
 } from "./page-client";
 
 // ---------------------------------------------------------------------------
@@ -136,31 +134,7 @@ export default async function DashboardPage() {
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
           Quick Links
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {QUICK_LINKS.map((link) => {
-            const Icon = link.icon;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="group relative flex items-start gap-3 rounded-lg border p-4 transition-transform hover:scale-[1.02] active:scale-95 bg-card hover:bg-accent/50"
-              >
-                <Icon className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0 group-hover:text-foreground transition-colors" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-sm">{link.label}</p>
-                    {link.comingSoon && (
-                      <Badge variant="secondary" className="text-xs py-0">
-                        Coming soon
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">{link.description}</p>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        <QuickLinksGrid />
       </div>
     </div>
   );

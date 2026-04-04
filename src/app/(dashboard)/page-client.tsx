@@ -249,3 +249,33 @@ export const QUICK_LINKS: QuickLink[] = [
     icon: AlertTriangle,
   },
 ];
+
+export function QuickLinksGrid() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {QUICK_LINKS.map((link) => {
+        const Icon = link.icon;
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="group relative flex items-start gap-3 rounded-lg border p-4 transition-transform hover:scale-[1.02] active:scale-95 bg-card hover:bg-accent/50"
+          >
+            <Icon className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0 group-hover:text-foreground transition-colors" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-sm">{link.label}</p>
+                {link.comingSoon && (
+                  <Badge variant="secondary" className="text-xs py-0">
+                    Coming soon
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">{link.description}</p>
+            </div>
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
