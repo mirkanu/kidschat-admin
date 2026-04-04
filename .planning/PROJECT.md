@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A private, self-hosted AI chat application for two children (ages 10–14), deployed on Railway using LibreChat. The app provides a safe, parent-controlled interface to Claude Haiku 4.5 with enforced content boundaries rooted in Reformed Christian family values. Each child gets their own account with separate chat history and switchable conversation tone presets.
+A private, self-hosted AI chat application for two children (Sebastian, 14; Penelope, 12), deployed on Railway using LibreChat. The app provides a safe, parent-controlled interface to Claude Haiku 4.5 with enforced content boundaries rooted in Reformed Christian family values. Each child has their own account with separate chat history and four switchable conversation tone presets. Two parent admins (Manuel and Emily-Kate) have full oversight via MongoDB conversation logs.
 
 ## Core Value
 
@@ -12,43 +12,44 @@ Children can safely explore and learn through AI conversation, with content guar
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ LibreChat deployed on Railway via Lite template, accessible at public URL — v1.0
+- ✓ Registration closed — only manually created accounts can log in — v1.0
+- ✓ Social login disabled — v1.0
+- ✓ Claude Haiku 4.5 is the only available model (no model picker visible) — v1.0
+- ✓ Safety system prompt enforced on all conversations — v1.0
+- ✓ Content boundaries: Reformed theology alignment, no profanity, age-appropriate, anti-cheating — v1.0
+- ✓ Tone presets: Friendly Tutor, Casual Buddy, Balanced Helper, Standard Formal — v1.0
+- ✓ Two child accounts created and tested (Sebastian, Penelope) — v1.0
+- ✓ System prompt resilient to basic jailbreak attempts — v1.0
+- ✓ librechat.yaml hosted as GitHub Gist, referenced via CONFIG_PATH — v1.0
+- ✓ Two admin accounts with conversation oversight capability — v1.0
 
 ### Active
 
-- [ ] LibreChat deployed on Railway via one-click template, accessible at public URL
-- [ ] Registration closed — only manually created accounts can log in
-- [ ] Social login disabled
-- [ ] Claude Haiku 4.5 is the only available model (no model picker visible)
-- [ ] Safety system prompt enforced on all conversations
-- [ ] Content boundaries: Reformed theology alignment, no profanity, age-appropriate content, no homework cheating (guide, don't give answers)
-- [ ] Tone presets available: Friendly Tutor, Casual Buddy, Balanced Helper, Standard Formal
-- [ ] One account per child created and tested
-- [ ] System prompt resilient to basic jailbreak attempts
-- [ ] librechat.yaml config hosted as GitHub Gist, referenced via CONFIG_PATH
+(None — v1.0 shipped, planning next milestone)
 
 ### Out of Scope
 
-- Custom domain — Railway-provided URL is sufficient for v1
-- Usage monitoring/logging — trust-based for now
+- Custom domain — Railway-provided URL is sufficient
 - Per-child different system prompts — same safety rules for both
 - UI customization — LibreChat defaults are fine
-- RAG, embeddings, or file upload — not needed
+- RAG, embeddings — not needed for children's chat
 - Custom frontend — LibreChat provides this
 - Mobile app — browser access is sufficient
 
 ## Context
 
-- Parent already has a paid Railway account with existing projects (Reforma, Christian Debates, Josie)
-- This will be a new Railway project, not added to an existing one
-- Parent has existing Anthropic API key with credits
-- LibreChat provides a ChatGPT-style UI with preset support, user management, and configurable model endpoints
-- MongoDB and Meilisearch are provisioned automatically by Railway's LibreChat template
-- Configuration via librechat.yaml allows locking models, setting system prompts, and defining presets
+Shipped v1.0 on 2026-04-03. Configuration-only project — zero custom code.
+- **URL:** https://librechat-production-bff2.up.railway.app
+- **Config:** https://gist.github.com/mirkanu/e23b999f1d3cd77726a97c20e26f0abf
+- **Stack:** LibreChat (ghcr.io/danny-avila/librechat-dev:latest), MongoDB, Meilisearch on Railway
+- **Accounts:** 4 total (2 ADMIN parents, 2 USER children)
+- **Oversight:** MongoDB direct queries for conversation logs (API doesn't expose cross-user conversations)
+- **Known limitation:** LibreChat v0.8.4 has outdated config schema warnings (non-blocking)
 
 ## Constraints
 
-- **Platform**: Railway deployment using official LibreChat one-click template
+- **Platform**: Railway deployment using official LibreChat Lite template
 - **Model**: Claude Haiku 4.5 only — cost-effective for children's usage
 - **Auth**: No registration, no social login — admin-created accounts only
 - **Content**: Must align with Reformed Christian family values
@@ -58,10 +59,14 @@ Children can safely explore and learn through AI conversation, with content guar
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| LibreChat over custom app | Proven UI, user management, preset support — no need to build from scratch | — Pending |
-| Claude Haiku 4.5 | Cost-effective, fast, sufficient quality for children's conversations | — Pending |
-| GitHub Gist for config | Easy to edit without redeploying, version history built-in | — Pending |
-| Tone presets (not per-child prompts) | Kids choose their experience; safety rules are universal | — Pending |
+| LibreChat over custom app | Proven UI, user management, preset support — no need to build from scratch | ✓ Good |
+| Claude Haiku 4.5 | Cost-effective, fast, sufficient quality for children's conversations | ✓ Good |
+| GitHub Gist for config | Easy to edit without redeploying, version history built-in | ✓ Good — requires redeploy to pick up changes |
+| Tone presets (not per-child prompts) | Kids choose their experience; safety rules are universal | ✓ Good |
+| Railway CLI for all ops | Automate everything, no manual dashboard steps | ✓ Good — except SSH stdout is swallowed |
+| MongoDB TCP proxy for admin | Direct DB access for account creation and conversation oversight | ✓ Good — required since LibreChat API lacks cross-user conversation access |
+| Database name is "test" | Railway template default, not configurable without migration | ⚠️ Revisit — works but non-obvious |
+| Safety prompt as identity | Frame rules as AI's values, not external constraints — better jailbreak resistance | ✓ Good |
 
 ---
-*Last updated: 2026-04-03 after initialization*
+*Last updated: 2026-04-04 after v1.0 milestone*
