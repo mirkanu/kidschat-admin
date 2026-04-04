@@ -24,10 +24,10 @@ Requirements for admin dashboard. Each maps to roadmap phases.
 
 ### User Management
 
-- [ ] **USER-01**: Admin can view a list of all accounts with name, email, role, and last active date
-- [ ] **USER-02**: Admin can create new user accounts (with name, email, password, role)
-- [ ] **USER-03**: Admin can edit account details (name, password, role)
-- [ ] **USER-04**: Admin can delete user accounts
+- [x] **USER-01**: Admin can view a list of all accounts with name, email, role, and last active date
+- [x] **USER-02**: Admin can create new user accounts (with name, email, password, role)
+- [x] **USER-03**: Admin can edit account details (name, password, role)
+- [x] **USER-04**: Admin can delete user accounts
 
 ### Usage Statistics
 
@@ -77,10 +77,10 @@ Requirements for admin dashboard. Each maps to roadmap phases.
 | CONV-03 | Phase 5 | Pending |
 | CONV-04 | Phase 5 | Complete |
 | CONV-05 | Phase 5 | Pending |
-| USER-01 | Phase 5 | Pending |
-| USER-02 | Phase 5 | Pending |
-| USER-03 | Phase 5 | Pending |
-| USER-04 | Phase 5 | Pending |
+| USER-01 | Phase 5 | Complete |
+| USER-02 | Phase 5 | Complete |
+| USER-03 | Phase 5 | Complete |
+| USER-04 | Phase 5 | Complete |
 | STAT-01 | Phase 6 | Pending |
 | STAT-02 | Phase 6 | Pending |
 | STAT-03 | Phase 6 | Pending |

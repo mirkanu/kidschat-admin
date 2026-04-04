@@ -83,5 +83,5 @@ Plans:
 | 2. Configuration | v1.0 | — | Complete | 2026-04-04 |
 | 3. Safety & Accounts | v1.0 | — | Complete | 2026-04-04 |
 | 4. Foundation | 3/3 | Complete   | 2026-04-04 | - |
-| 5. Conversations & User Management | 1/3 | In Progress|  | - |
+| 5. Conversations & User Management | 2/3 | In Progress|  | - |
 | 6. Analytics & Safety Alerts | v2.0 | 0/TBD | Not started | - |
