@@ -38,7 +38,12 @@ LibreChat deployed on Railway with MongoDB + Meilisearch, two admin and two chil
   3. An admin parent (Manuel or Emily-Kate) can log in with their existing LibreChat credentials and land on the dashboard home
   4. A non-admin account (child user) is refused access after login
   5. The dashboard reads live data from the same MongoDB instance LibreChat uses
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Next.js 15 scaffold: Tailwind, shadcn base, MongoDB client, User types
+- [ ] 04-02-PLAN.md — NextAuth v5 auth: Credentials provider, admin role guard, login page with skeletons
+- [ ] 04-03-PLAN.md — Dashboard shell: layout, sidebar, header, dark mode + Railway deployment
 
 ### Phase 5: Conversations & User Management
 **Goal**: Parents can browse and search all children's conversation histories and fully manage all user accounts from the dashboard
@@ -72,6 +77,6 @@ LibreChat deployed on Railway with MongoDB + Meilisearch, two admin and two chil
 | 1. Infrastructure | v1.0 | — | Complete | 2026-04-04 |
 | 2. Configuration | v1.0 | — | Complete | 2026-04-04 |
 | 3. Safety & Accounts | v1.0 | — | Complete | 2026-04-04 |
-| 4. Foundation | v2.0 | 0/TBD | Not started | - |
+| 4. Foundation | v2.0 | 0/3 | Not started | - |
 | 5. Conversations & User Management | v2.0 | 0/TBD | Not started | - |
 | 6. Analytics & Safety Alerts | v2.0 | 0/TBD | Not started | - |
