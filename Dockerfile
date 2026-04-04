@@ -11,6 +11,9 @@ RUN npm ci
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
+
+# Cache bust - forces fresh COPY of source
+ARG CACHEBUST=1
 COPY . .
 
 # Next.js collects completely anonymous telemetry data — disable it
