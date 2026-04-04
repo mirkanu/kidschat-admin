@@ -15,12 +15,11 @@ const activeNavItems = [
   { href: "/", label: "Dashboard", icon: Shield },
   { href: "/conversations", label: "Conversations", icon: MessageSquare },
   { href: "/users", label: "Users", icon: Users },
-];
-
-const comingSoonItems = [
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/alerts", label: "Safety Alerts", icon: AlertTriangle },
 ];
+
+const comingSoonItems: Array<{ href: string; label: string; icon: React.ElementType }> = [];
 
 interface NavSidebarProps {
   open: boolean;

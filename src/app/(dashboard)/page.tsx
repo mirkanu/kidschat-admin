@@ -10,11 +10,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 async function getStats() {
   const client = await getMongoClient();
   const db = client.db("test");
-  const [userCount, conversationCount] = await Promise.all([
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const [userCount, conversationCount, messageCount30d] = await Promise.all([
     db.collection("users").countDocuments(),
     db.collection("conversations").countDocuments(),
+    db.collection("messages").countDocuments({ createdAt: { $gte: thirtyDaysAgo } }),
   ]);
-  return { userCount, conversationCount };
+  return { userCount, conversationCount, messageCount30d };
 }
 
 export default async function DashboardPage() {
@@ -45,7 +48,7 @@ export default async function DashboardPage() {
 function StatsSkeleton() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 3 }).map((_, i) => (
+      {Array.from({ length: 4 }).map((_, i) => (
         <Card key={i}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <Skeleton className="h-4 w-24" />
