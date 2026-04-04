@@ -4,6 +4,7 @@
 
 - ✅ **v1.0 MVP** — Phases 1-3 (shipped 2026-04-04)
 - ✅ **v2.0 Admin Dashboard** — Phases 4-6 (shipped 2026-04-04)
+- 🔄 **v2.1 Parent Trust** — Phases 7-9 (in progress)
 
 ## Phases
 
@@ -29,6 +30,48 @@ Standalone Next.js admin dashboard on Railway with auth gate, conversation monit
 
 </details>
 
+### v2.1 Parent Trust (Phases 7-9)
+
+- [ ] **Phase 7: Trust Home** — Fix users page bug and redesign dashboard home as a parent trust center
+- [ ] **Phase 8: Safety Transparency** — New Safety Rules page explaining content boundaries, system prompt, and tone presets
+- [ ] **Phase 9: Parent Test Mode** — Embedded chat sandbox with predefined safety scenario buttons
+
+## Phase Details
+
+### Phase 7: Trust Home
+**Goal**: Parents see a reliable dashboard home that immediately communicates all safety systems are active and gives a digest of recent activity
+**Depends on**: Nothing (continuing existing dashboard)
+**Requirements**: FIX-01, TRUST-01, TRUST-02, TRUST-03, TRUST-04
+**Success Criteria** (what must be TRUE):
+  1. Users page correctly shows all 4 accounts (not 0)
+  2. Dashboard home displays a safety status indicator showing "All systems active" with a last-checked timestamp
+  3. Dashboard home shows a 24-hour digest: number of messages sent, safety events detected, and system health
+  4. Dashboard home shows recent safety alerts with a link to the full alerts page
+  5. Dashboard home has quick-link navigation to Safety Rules, Test Mode, Conversations, and Alerts
+**Plans**: TBD
+
+### Phase 8: Safety Transparency
+**Goal**: Parents can read a clear, plain-language explanation of every content rule protecting the children, including the full system prompt
+**Depends on**: Phase 7
+**Requirements**: SAFE-01, SAFE-02, SAFE-03, SAFE-04
+**Success Criteria** (what must be TRUE):
+  1. Admin can navigate to a Safety Rules page from the dashboard
+  2. Safety Rules page shows a parent-friendly summary of all content boundaries (no jargon)
+  3. Safety Rules page has an expandable section that reveals the full system prompt text
+  4. Safety Rules page explains what happens when each rule triggers (redirect behavior, jailbreak response)
+  5. Safety Rules page lists all four tone presets with a plain-language description of what each one does
+**Plans**: TBD
+
+### Phase 9: Parent Test Mode
+**Goal**: Parents can personally verify that safety rules work by sending test messages through an embedded sandbox and watching the AI respond
+**Depends on**: Phase 8
+**Requirements**: TEST-01, TEST-02, TEST-03
+**Success Criteria** (what must be TRUE):
+  1. Admin can open an embedded chat sandbox within the dashboard and send a free-form test message
+  2. Sandbox displays predefined scenario buttons (jailbreak attempt, inappropriate topic, boundary test) that pre-fill a test message
+  3. When a test message is blocked or redirected, the sandbox visually identifies which safety rule triggered
+**Plans**: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -39,3 +82,6 @@ Standalone Next.js admin dashboard on Railway with auth gate, conversation monit
 | 4. Foundation | v2.0 | 3/3 | Complete | 2026-04-04 |
 | 5. Conversations & User Management | v2.0 | 3/3 | Complete | 2026-04-04 |
 | 6. Analytics & Safety Alerts | v2.0 | 2/2 | Complete | 2026-04-04 |
+| 7. Trust Home | v2.1 | 0/? | Not started | - |
+| 8. Safety Transparency | v2.1 | 0/? | Not started | - |
+| 9. Parent Test Mode | v2.1 | 0/? | Not started | - |

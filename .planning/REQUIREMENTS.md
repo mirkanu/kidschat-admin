@@ -56,24 +56,24 @@ Requirements for parent trust milestone. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TRUST-01 | TBD | Pending |
-| TRUST-02 | TBD | Pending |
-| TRUST-03 | TBD | Pending |
-| TRUST-04 | TBD | Pending |
-| SAFE-01 | TBD | Pending |
-| SAFE-02 | TBD | Pending |
-| SAFE-03 | TBD | Pending |
-| SAFE-04 | TBD | Pending |
-| TEST-01 | TBD | Pending |
-| TEST-02 | TBD | Pending |
-| TEST-03 | TBD | Pending |
-| FIX-01 | TBD | Pending |
+| TRUST-01 | Phase 7 | Pending |
+| TRUST-02 | Phase 7 | Pending |
+| TRUST-03 | Phase 7 | Pending |
+| TRUST-04 | Phase 7 | Pending |
+| SAFE-01 | Phase 8 | Pending |
+| SAFE-02 | Phase 8 | Pending |
+| SAFE-03 | Phase 8 | Pending |
+| SAFE-04 | Phase 8 | Pending |
+| TEST-01 | Phase 9 | Pending |
+| TEST-02 | Phase 9 | Pending |
+| TEST-03 | Phase 9 | Pending |
+| FIX-01 | Phase 7 | Pending |
 
 **Coverage:**
 - v2.1 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12 ⚠️
+- Mapped to phases: 12
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-04*
-*Last updated: 2026-04-04 after initial definition*
+*Last updated: 2026-04-04 after roadmap creation*

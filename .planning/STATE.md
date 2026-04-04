@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Parent Trust
-status: defining_requirements
+status: ready_to_plan
 stopped_at: null
-last_updated: "2026-04-04T19:30:00.000Z"
-last_activity: "2026-04-04 — Milestone v2.1 started"
+last_updated: "2026-04-04T19:45:00.000Z"
+last_activity: "2026-04-04 — Roadmap created for v2.1 (3 phases, 12 requirements)"
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Children can safely explore and learn through AI conversation, with content guardrails that a parent controls and trusts.
-**Current focus:** v2.1 Parent Trust — defining requirements
+**Current focus:** v2.1 Parent Trust — Phase 7: Trust Home (ready to plan)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 7 of 9 (Trust Home)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-04 — Milestone v2.1 started
+Status: Ready to plan
+Last activity: 2026-04-04 — Roadmap created, v2.1 phases 7-9 defined
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -46,7 +46,7 @@ Progress: [░░░░░░░░░░] 0%
 
 **v2.1 (current):**
 - Plans completed: 0
-- Phases complete: 0
+- Phases complete: 0/3
 
 ## Accumulated Context
 
@@ -71,10 +71,10 @@ None yet.
 
 ### Blockers/Concerns
 
-None.
+- Phase 9 (Parent Test Mode) requires calling the Claude API from the admin dashboard — need to determine how to route requests (direct Anthropic API call vs. proxying through LibreChat). Architecture decision deferred to planning.
 
 ## Session Continuity
 
 Last session: 2026-04-04
-Stopped at: Defining v2.1 requirements
+Stopped at: Roadmap created for v2.1, ready to plan Phase 7
 Resume file: None
