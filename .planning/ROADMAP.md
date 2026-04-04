@@ -48,7 +48,10 @@ Standalone Next.js admin dashboard on Railway with auth gate, conversation monit
   3. Dashboard home shows a 24-hour digest: number of messages sent, safety events detected, and system health
   4. Dashboard home shows recent safety alerts with a link to the full alerts page
   5. Dashboard home has quick-link navigation to Safety Rules, Test Mode, Conversations, and Alerts
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 07-01-PLAN.md — Fix users page bug + create trust dashboard data layer
+- [ ] 07-02-PLAN.md — Redesign dashboard home as parent trust center UI
 
 ### Phase 8: Safety Transparency
 **Goal**: Parents can read a clear, plain-language explanation of every content rule protecting the children, including the full system prompt
@@ -82,6 +85,6 @@ Standalone Next.js admin dashboard on Railway with auth gate, conversation monit
 | 4. Foundation | v2.0 | 3/3 | Complete | 2026-04-04 |
 | 5. Conversations & User Management | v2.0 | 3/3 | Complete | 2026-04-04 |
 | 6. Analytics & Safety Alerts | v2.0 | 2/2 | Complete | 2026-04-04 |
-| 7. Trust Home | v2.1 | 0/? | Not started | - |
+| 7. Trust Home | v2.1 | 0/2 | Planning | - |
 | 8. Safety Transparency | v2.1 | 0/? | Not started | - |
 | 9. Parent Test Mode | v2.1 | 0/? | Not started | - |
