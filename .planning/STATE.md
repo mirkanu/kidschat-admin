@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Parent Trust
 status: executing
-stopped_at: Completed 09-parent-test-mode plan 01
-last_updated: "2026-04-04T23:39:59.973Z"
+stopped_at: Completed 09-parent-test-mode plan 02 (checkpoint Task 3 awaiting human verify)
+last_updated: "2026-04-04T23:50:32.164Z"
 last_activity: 2026-04-04 — Completed 07-01 (users bug fix + trust data layer)
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 8
 ---
 
@@ -68,6 +68,8 @@ Progress: [█░░░░░░░░░] 8%
 - [Phase 09-parent-test-mode]: SYSTEM_PROMPT defined in exactly one place (src/lib/system-prompt.ts), imported by both safety-rules page and test-chat route
 - [Phase 09-parent-test-mode]: Non-streaming Anthropic API call chosen for test-chat — parent sandbox doesn't need streaming complexity
 - [Phase 09-parent-test-mode]: claude-haiku-4-5-20250414 with max_tokens 1024 for fast, economical test responses
+- [Phase 09-parent-test-mode]: Test Mode client component split into test-mode-client.tsx for clean server/client boundary
+- [Phase 09-parent-test-mode]: Safety detection runs client-side on both user and AI messages; safetyEvent metadata stripped before API call
 
 ### Quick Tasks Completed
 
@@ -79,6 +81,7 @@ Progress: [█░░░░░░░░░] 8%
 | Phase 08-safety-transparency P02 | 5 | 1 tasks | 2 files |
 | Phase 08-safety-transparency P01 | 4 | 2 tasks | 3 files |
 | Phase 09-parent-test-mode P01 | 6 | 2 tasks | 5 files |
+| Phase 09-parent-test-mode P02 | 10 | 2 tasks | 5 files |
 
 ### Pending Todos
 
@@ -90,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T23:39:59.969Z
-Stopped at: Completed 09-parent-test-mode plan 01
+Last session: 2026-04-04T23:50:32.161Z
+Stopped at: Completed 09-parent-test-mode plan 02 (checkpoint Task 3 awaiting human verify)
 Resume file: None

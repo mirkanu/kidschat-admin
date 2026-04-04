@@ -34,7 +34,7 @@ Standalone Next.js admin dashboard on Railway with auth gate, conversation monit
 
 - [x] **Phase 7: Trust Home** — Fix users page bug and redesign dashboard home as a parent trust center (completed 2026-04-04)
 - [x] **Phase 8: Safety Transparency** — New Safety Rules page explaining content boundaries, system prompt, and tone presets (completed 2026-04-04)
-- [ ] **Phase 9: Parent Test Mode** — Embedded chat sandbox with predefined safety scenario buttons
+- [x] **Phase 9: Parent Test Mode** — Embedded chat sandbox with predefined safety scenario buttons (completed 2026-04-04)
 
 ## Phase Details
 
@@ -76,7 +76,7 @@ Plans:
   1. Admin can open an embedded chat sandbox within the dashboard and send a free-form test message
   2. Sandbox displays predefined scenario buttons (jailbreak attempt, inappropriate topic, boundary test) that pre-fill a test message
   3. When a test message is blocked or redirected, the sandbox visually identifies which safety rule triggered
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 09-01-PLAN.md — Extract shared system prompt + create /api/test-chat endpoint
 - [ ] 09-02-PLAN.md — Chat sandbox UI with scenario buttons, safety indicators, and navigation
@@ -93,4 +93,4 @@ Plans:
 | 6. Analytics & Safety Alerts | v2.0 | 2/2 | Complete | 2026-04-04 |
 | 7. Trust Home | 2/2 | Complete   | 2026-04-04 | - |
 | 8. Safety Transparency | 2/2 | Complete   | 2026-04-04 | - |
-| 9. Parent Test Mode | 1/2 | In Progress|  | - |
+| 9. Parent Test Mode | 2/2 | Complete   | 2026-04-04 | - |
