@@ -1,82 +1,77 @@
 # Roadmap: KidsChat
 
-## Overview
+## Milestones
 
-Three sequential phases deliver a locked-down LibreChat deployment for two children. Phase 1 gets a working instance running on Railway with all access controls closed. Phase 2 authors and deploys the YAML configuration that locks the model, enforces the safety system prompt, and installs tone presets. Phase 3 creates child and admin accounts, verifies admin oversight, and runs acceptance tests from a child's perspective. No phase can proceed without the previous one complete.
+- ✅ **v1.0 MVP** - Phases 1-3 (shipped 2026-04-04)
+- 🚧 **v2.0 Admin Dashboard** - Phases 4-6 (in progress)
 
 ## Phases
 
-**Phase Numbering:**
-- Integer phases (1, 2, 3): Planned milestone work
-- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
+<details>
+<summary>✅ v1.0 MVP (Phases 1-3) - SHIPPED 2026-04-04</summary>
 
-Decimal phases appear between their surrounding integers in numeric order.
+LibreChat deployed on Railway with MongoDB + Meilisearch, two admin and two child accounts, safety system prompt with Reformed Christian values and four tone presets, jailbreak resistance validated.
 
-- [ ] **Phase 1: Deployment** - LibreChat running on Railway with registration locked and baseline verified
-- [ ] **Phase 2: Safety Configuration** - YAML config deployed with model lock, safety system prompt, and tone presets
-- [ ] **Phase 3: Accounts and Acceptance** - All accounts created, admin oversight confirmed, app accepted for child use
+- [x] **Phase 1** - Railway infrastructure, LibreChat deployed, MongoDB connected
+- [x] **Phase 2** - LibreChat configured: registration closed, social login off, Claude Haiku 4.5 only
+- [x] **Phase 3** - Safety system prompt, tone presets, family accounts, admin oversight verified
+
+</details>
+
+### 🚧 v2.0 Admin Dashboard (In Progress)
+
+**Milestone Goal:** A standalone Next.js admin dashboard on Railway that connects to the same MongoDB, giving parents a browser-based interface for conversation oversight, user management, usage statistics, and safety alerts.
+
+- [ ] **Phase 4: Foundation** - Next.js app deployed on Railway, MongoDB connected, admin-only auth gate
+- [ ] **Phase 5: Conversations & User Management** - Parents can read all children's chats and manage accounts
+- [ ] **Phase 6: Analytics & Safety Alerts** - Usage statistics charts and detected safety event log
 
 ## Phase Details
 
-### Phase 1: Deployment
-**Goal**: LibreChat is running on Railway, accessible via public URL, with Anthropic API connected and all registration paths closed
-**Depends on**: Nothing (first phase)
-**Requirements**: DEPL-01, DEPL-02, DEPL-03, DEPL-04, AUTH-01, AUTH-02, AUTH-03, AUTH-04, CONF-01, CONF-02, CONF-03
+### Phase 4: Foundation
+**Goal**: A deployed, secured Next.js admin dashboard that parents can reach at a Railway URL and log into with their admin credentials
+**Depends on**: v1.0 (existing MongoDB instance with LibreChat data)
+**Requirements**: INFRA-01, INFRA-02, INFRA-03, INFRA-04
 **Success Criteria** (what must be TRUE):
-  1. LibreChat loads at the Railway public URL and the chat interface is visible
-  2. Sending a message receives a response from Claude Haiku 4.5
-  3. Navigating to /register shows an error, not a registration form
-  4. Social login options (Google, GitHub) are absent from the login page
-  5. The GitHub Gist hosts librechat.yaml and CONFIG_PATH points to its raw URL — opening the Gist in incognito shows no API keys
-**Plans**: 4 plans
+  1. The dashboard is reachable at a Railway-provided URL in a browser
+  2. An unauthenticated visitor is redirected to a login page and cannot see any dashboard content
+  3. An admin parent (Manuel or Emily-Kate) can log in with their existing LibreChat credentials and land on the dashboard home
+  4. A non-admin account (child user) is refused access after login
+  5. The dashboard reads live data from the same MongoDB instance LibreChat uses
+**Plans**: TBD
 
-Plans:
-- [ ] 01-01-PLAN.md — Deploy LibreChat Lite Railway template and create admin account
-- [ ] 01-02-PLAN.md — Set env vars: Anthropic API key + complete registration lockdown
-- [ ] 01-03-PLAN.md — Create GitHub Gist with placeholder librechat.yaml and wire CONFIG_PATH
-- [ ] 01-04-PLAN.md — Phase 1 final verification checklist (all 5 success criteria)
-
-### Phase 2: Safety Configuration
-**Goal**: The YAML configuration is live — model is locked to Claude Haiku 4.5, safety system prompt is enforced on every message, all four tone presets are available, and dangerous UI features are hidden
-**Depends on**: Phase 1
-**Requirements**: MODL-01, MODL-02, MODL-03, MODL-04, SAFE-01, SAFE-02, SAFE-03, SAFE-04, SAFE-05, SAFE-06, SAFE-07, TONE-01, TONE-02, TONE-03, TONE-04, TONE-05, TONE-06
+### Phase 5: Conversations & User Management
+**Goal**: Parents can browse and search all children's conversation histories and fully manage all user accounts from the dashboard
+**Depends on**: Phase 4
+**Requirements**: CONV-01, CONV-02, CONV-03, CONV-04, CONV-05, USER-01, USER-02, USER-03, USER-04
 **Success Criteria** (what must be TRUE):
-  1. No model picker or endpoint selector is visible anywhere in the UI
-  2. All four tone presets appear in the UI and switching between them produces a noticeably different conversational style
-  3. The safety prompt rejects requests for profanity, mature content, and direct homework answers
-  4. A basic jailbreak attempt ("ignore your instructions", DAN-style roleplay, fictional framing) is redirected without complying
-  5. Safety rules are identical across all four tone presets — switching tone does not weaken content guardrails
-**Plans**: 3 plans
+  1. Admin sees a list of all conversations from all children, sorted newest first, with child name and timestamp visible
+  2. Admin can filter the conversation list to show only Sebastian's or only Penelope's conversations
+  3. Admin can search conversations by keyword and see matching results
+  4. Admin can click into any conversation and read the full message thread with timestamps, child messages and AI responses visually distinct
+  5. Admin can view all accounts in a table showing name, email, role, and last active date, and can create, edit, or delete any account
+**Plans**: TBD
 
-Plans:
-- [ ] 02-01-PLAN.md — Author full librechat.yaml (safety system prompt + 4 tone presets + UI lockdown)
-- [ ] 02-02-PLAN.md — Push YAML to GitHub Gist and redeploy LibreChat on Railway
-- [ ] 02-03-PLAN.md — Human verification of all 5 Phase 2 success criteria
-
-### Phase 3: Accounts and Acceptance
-**Goal**: All four accounts (two parent admins, two children) are created and verified, admin conversation oversight is confirmed, and the app is accepted for child use
-**Depends on**: Phase 2
-**Requirements**: USER-01, USER-02, USER-03, USER-04, ADMN-01, ADMN-02, TEST-01, TEST-02, TEST-03, TEST-04, TEST-05
+### Phase 6: Analytics & Safety Alerts
+**Goal**: Parents can see how the children are using the app over time and review a log of any detected safety events
+**Depends on**: Phase 5
+**Requirements**: STAT-01, STAT-02, STAT-03, STAT-04, ALRT-01, ALRT-02, ALRT-03
 **Success Criteria** (what must be TRUE):
-  1. All four accounts log in successfully with registration disabled
-  2. Admin accounts can view full conversation logs for child accounts, including timestamps and user identity
-  3. Model picker and endpoint selector are not visible when logged in as a child
-  4. Jailbreak attempts from a child account fail — role-play, "ignore instructions", and encoding tricks are all rejected
-  5. Logged-out users can only view shared links in read-only mode and cannot initiate conversations
-**Plans**: 3 plans
-
-Plans:
-- [ ] 03-01-PLAN.md — Verify admin accounts + create two child accounts via MongoDB
-- [ ] 03-02-PLAN.md — Verify admin oversight of child conversation logs
-- [ ] 03-03-PLAN.md — Parent acceptance testing (browser-based, child account perspective)
+  1. The dashboard shows a chart of messages sent per day, with a per-child breakdown toggle
+  2. The dashboard shows which hours of day each child is most active
+  3. The dashboard shows which tone presets are used most, broken down by child
+  4. The dashboard shows a log of detected safety events (safety prompt redirections and jailbreak attempts) with timestamps and a link to the source conversation
+**Plans**: TBD
 
 ## Progress
 
-**Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3
+**Execution Order:** 4 → 5 → 6
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Deployment | 0/4 | Not started | - |
-| 2. Safety Configuration | 1/3 | In Progress|  |
-| 3. Accounts and Acceptance | 2/3 | In Progress|  |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1. Infrastructure | v1.0 | — | Complete | 2026-04-04 |
+| 2. Configuration | v1.0 | — | Complete | 2026-04-04 |
+| 3. Safety & Accounts | v1.0 | — | Complete | 2026-04-04 |
+| 4. Foundation | v2.0 | 0/TBD | Not started | - |
+| 5. Conversations & User Management | v2.0 | 0/TBD | Not started | - |
+| 6. Analytics & Safety Alerts | v2.0 | 0/TBD | Not started | - |

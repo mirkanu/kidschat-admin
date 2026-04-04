@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Admin Dashboard
-status: planning
+status: ready_to_plan
 stopped_at: null
 last_updated: "2026-04-04"
-last_activity: 2026-04-04 — Milestone v2.0 started
+last_activity: 2026-04-04 — Roadmap created, 3 phases defined (4-6), 20 requirements mapped
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Children can safely explore and learn through AI conversation, with content guardrails that a parent controls and trusts.
-**Current focus:** v2.0 Admin Dashboard — defining requirements
+**Current focus:** Phase 4 — Foundation (Next.js app, Railway deploy, admin auth)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-04-04 — Milestone v2.0 started
+Phase: 4 of 6 (Foundation)
+Plan: — (not yet planned)
+Status: Ready to plan
+Last activity: 2026-04-04 — Roadmap created for v2.0
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -39,6 +39,10 @@ Progress: [░░░░░░░░░░] 0%
 - Timeline: 1 day
 - Average: ~10 plans/day
 
+**v2.0 (current):**
+- Plans completed: 0
+- Phases complete: 0/3
+
 ## Accumulated Context
 
 ### Decisions
@@ -48,6 +52,8 @@ Progress: [░░░░░░░░░░] 0%
 - LibreChat API doesn't expose cross-user conversations — MongoDB queries required
 - Railway CLI authenticated, GitHub CLI authenticated as mirkanu
 - LibreChat URL: https://librechat-production-bff2.up.railway.app
+- Dashboard is a separate Next.js Railway service connecting to the same MongoDB
+- Admin auth gates the entire dashboard — non-admin and unauthenticated users are refused
 
 ### Pending Todos
 
@@ -55,10 +61,10 @@ None yet.
 
 ### Blockers/Concerns
 
-None yet.
+- Safety alert detection (ALRT-01, ALRT-02) requires a strategy for identifying safety events in conversation data — no dedicated flag exists in LibreChat's MongoDB schema. Approach TBD during Phase 6 planning.
 
 ## Session Continuity
 
 Last session: 2026-04-04
-Stopped at: null
+Stopped at: Roadmap written, ready to plan Phase 4
 Resume file: None
