@@ -16,10 +16,10 @@ Requirements for admin intelligence milestone. Each maps to roadmap phases.
 ### AI Admin Chatbot
 
 - [ ] **CHAT-01**: Floating chatbot widget appears bottom-right on all admin dashboard pages
-- [ ] **CHAT-02**: Chatbot uses Claude Sonnet 4.6 with app context (safety rules, app structure, current settings)
-- [ ] **CHAT-03**: Admin can ask the chatbot about current safety rules, tone presets, and how the app works
-- [ ] **CHAT-04**: Admin can ask the chatbot to read and summarize recent conversation logs
-- [ ] **CHAT-05**: Chatbot marks child-generated content as UNTRUSTED to prevent indirect prompt injection
+- [x] **CHAT-02**: Chatbot uses Claude Sonnet 4.6 with app context (safety rules, app structure, current settings)
+- [x] **CHAT-03**: Admin can ask the chatbot about current safety rules, tone presets, and how the app works
+- [x] **CHAT-04**: Admin can ask the chatbot to read and summarize recent conversation logs
+- [x] **CHAT-05**: Chatbot marks child-generated content as UNTRUSTED to prevent indirect prompt injection
 
 ### System Prompt Editor
 
@@ -56,10 +56,10 @@ Requirements for admin intelligence milestone. Each maps to roadmap phases.
 | COST-02 | Phase 10 | Complete |
 | COST-03 | Phase 10 | Complete |
 | CHAT-01 | Phase 11 | Pending |
-| CHAT-02 | Phase 11 | Pending |
-| CHAT-03 | Phase 11 | Pending |
-| CHAT-04 | Phase 11 | Pending |
-| CHAT-05 | Phase 11 | Pending |
+| CHAT-02 | Phase 11 | Complete |
+| CHAT-03 | Phase 11 | Complete |
+| CHAT-04 | Phase 11 | Complete |
+| CHAT-05 | Phase 11 | Complete |
 | EDIT-01 | Phase 12 | Pending |
 | EDIT-02 | Phase 12 | Pending |
 | EDIT-03 | Phase 12 | Pending |

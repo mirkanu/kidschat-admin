@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Admin Intelligence
 status: planning
-stopped_at: Completed 10-cost-tracking-02-PLAN.md
-last_updated: "2026-04-05T13:32:01.624Z"
+stopped_at: Completed 11-admin-chatbot-01-PLAN.md
+last_updated: "2026-04-05T14:19:27.213Z"
 last_activity: 2026-04-05 — v2.2 roadmap created, Phase 10 ready
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
   percent: 0
 ---
 
@@ -52,6 +52,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 10-cost-tracking]: Cost API daily trend counts ALL messages; monthly Haiku count filters non-ADMIN users via conversation lookup
 - [Phase 10-cost-tracking]: CostSummaryCard uses inline formatUSD to avoid importing server-only module in client component
 - [Phase 10-cost-tracking]: Analytics page cost section gracefully degrades to null when /api/cost-estimate fetch fails
+- [Phase 11-admin-chatbot]: recentAlertCount is 0 — safety alerts are client-side pattern-matches, not stored in MongoDB
+- [Phase 11-admin-chatbot]: Streaming admin chat returns new Response(stream.toReadableStream()) — plain Response, not NextResponse wrapper
+- [Phase 11-admin-chatbot]: Child conversation logs in admin chatbot context truncated to 500 chars per message to manage context window
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -70,6 +73,7 @@ Progress: [░░░░░░░░░░] 0%
 | 2 | Admin conversation pages crash with SyntaxError (HTML parsed as JSON) | 2026-04-04 | 7ebf0a0 | [2-fix-admin-conversation-page-server-error](./quick/2-fix-admin-conversation-page-server-error/) |
 | Phase 10-cost-tracking P01 | 12 | 2 tasks | 3 files |
 | Phase 10-cost-tracking P02 | 3 | 2 tasks | 2 files |
+| Phase 11-admin-chatbot P01 | 4 | 2 tasks | 3 files |
 
 ### Pending Todos
 
@@ -82,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T13:27:06.179Z
-Stopped at: Completed 10-cost-tracking-02-PLAN.md
+Last session: 2026-04-05T14:19:27.204Z
+Stopped at: Completed 11-admin-chatbot-01-PLAN.md
 Resume file: None
