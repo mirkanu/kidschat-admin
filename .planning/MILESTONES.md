@@ -1,5 +1,23 @@
 # Milestones
 
+## v2.2 Admin Intelligence (Shipped: 2026-04-05)
+
+**Phases completed:** 3 phases, 6 plans + 5 quick tasks
+**Timeline:** 2026-04-05 (single day)
+
+**Key accomplishments:**
+- Cost tracking: token-formula estimates with per-model breakdown (Haiku/Sonnet), 30-day trend chart, Anthropic billing link
+- AI admin chatbot: floating widget on all pages, Claude Sonnet 4.6 with streaming, context-aware (reads safety rules, logs, app structure), UNTRUSTED framing for child content
+- Rules editor: full edit → AI review → test sandbox → deploy to Gist workflow, with rollback and Safety Rules auto-sync
+- LibreChat redeploy trigger from admin dashboard
+- Markdown rendering for AI responses across all views
+- Fixed blank AI response bubbles (LibreChat stores text in content[] blocks)
+- Fixed mobile padding (responsive shell + removed double padding)
+
+**Delivered:** An intelligent admin dashboard where parents can ask an AI about the app, safely edit safety rules with a review-test-deploy workflow, and track API costs.
+
+---
+
 ## v2.1 Parent Trust (Shipped: 2026-04-05)
 
 **Phases completed:** 3 phases, 6 plans

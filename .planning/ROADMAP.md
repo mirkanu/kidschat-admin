@@ -5,7 +5,7 @@
 - ✅ **v1.0 MVP** — Phases 1-3 (shipped 2026-04-04)
 - ✅ **v2.0 Admin Dashboard** — Phases 4-6 (shipped 2026-04-04)
 - ✅ **v2.1 Parent Trust** — Phases 7-9 (shipped 2026-04-05)
-- 🔄 **v2.2 Admin Intelligence** — Phases 10-12 (in progress)
+- ✅ **v2.2 Admin Intelligence** — Phases 10-12 (shipped 2026-04-05)
 
 ## Phases
 
@@ -42,55 +42,16 @@ Trust center for parents: dashboard home with safety status and activity digest,
 
 </details>
 
-### v2.2 Admin Intelligence (Phases 10-12)
+<details>
+<summary>✅ v2.2 Admin Intelligence (Phases 10-12) — SHIPPED 2026-04-05</summary>
 
-- [x] **Phase 10: Cost Tracking** — Estimated API costs in analytics dashboard with per-model breakdown and Anthropic billing link (completed 2026-04-05)
-- [x] **Phase 11: Admin Chatbot** — Floating AI assistant widget on all dashboard pages with streaming responses and safe context injection (completed 2026-04-05)
-- [x] **Phase 12: Prompt Editor** — Full system prompt edit-review-test-deploy workflow with Gist push, rollback, and Safety Rules sync (completed 2026-04-05)
+AI-powered admin tools: cost tracking, floating chatbot assistant, and rules editor with review-test-deploy workflow.
 
-## Phase Details
+- [x] **Phase 10: Cost Tracking** — Token-formula cost estimates with per-model breakdown, 30-day trend, Anthropic billing link (completed 2026-04-05)
+- [x] **Phase 11: Admin Chatbot** — Floating Claude Sonnet widget with streaming, context-aware, UNTRUSTED child content framing (completed 2026-04-05)
+- [x] **Phase 12: Prompt Editor** — Rules editor with AI review, inline test sandbox, Gist deploy, rollback, Safety Rules auto-sync (completed 2026-04-05)
 
-### Phase 10: Cost Tracking
-**Goal**: Parents can see estimated API costs directly in the dashboard without leaving the app
-**Depends on**: Nothing — uses existing MongoDB message data and Recharts
-**Requirements**: COST-01, COST-02, COST-03
-**Success Criteria** (what must be TRUE):
-  1. Analytics page shows an estimated daily and monthly cost card with separate line items for Haiku (children's chat) and Sonnet (admin tools)
-  2. Cost card includes a clearly labeled "estimated only" disclaimer and a direct link to the Anthropic billing console
-  3. A 30-day message count trend chart is visible alongside cost estimates
-**Plans:** 2/2 plans complete
-Plans:
-- [ ] 10-01-PLAN.md — Cost estimation library and API route
-- [ ] 10-02-PLAN.md — Cost display card and analytics page integration
-
-### Phase 11: Admin Chatbot
-**Goal**: Parents can ask an AI assistant questions about the app and get answers grounded in real app data
-**Depends on**: Phase 10 (Sonnet usage must be tracked in cost estimates from the start)
-**Requirements**: CHAT-01, CHAT-02, CHAT-03, CHAT-04, CHAT-05
-**Success Criteria** (what must be TRUE):
-  1. A floating chat button is visible in the bottom-right corner on every admin dashboard page
-  2. The chatbot answers questions about the current safety rules, tone presets, and how the app works using accurate, up-to-date context
-  3. The chatbot can read and summarize recent conversation logs when asked
-  4. All child-generated content read by the chatbot is explicitly marked UNTRUSTED — the chatbot cannot be manipulated by content children type into LibreChat
-**Plans:** 2/2 plans complete
-Plans:
-- [ ] 11-01-PLAN.md — Backend: system prompt builder, context API, streaming chat route
-- [ ] 11-02-PLAN.md — Frontend: floating chat widget with streaming UI, mounted in DashboardShell
-
-### Phase 12: Prompt Editor
-**Goal**: Parents can safely edit, review, test, and deploy the system prompt without touching GitHub directly
-**Depends on**: Phase 11 (AI review step reuses the streaming API route pattern established in Phase 11)
-**Requirements**: EDIT-01, EDIT-02, EDIT-03, EDIT-04, EDIT-05, EDIT-06, EDIT-07
-**Success Criteria** (what must be TRUE):
-  1. Admin can open a prompt editor page, see the current system prompt pre-loaded, and make edits in a live text editor
-  2. Before deploying, the admin receives a non-blocking AI review that checks whether required safety sections (jailbreak resistance, content rules, tone, redirect language) are present — and can deploy anyway if they choose
-  3. Admin can test the draft prompt in the existing sandbox before committing to deploy
-  4. Admin can deploy the edited prompt to GitHub Gist with one click, after confirming via a modal — the previous version is saved for one-click rollback
-  5. After a successful Gist deploy, the Safety Rules page summaries reflect the new prompt content and a "Redeploy LibreChat Required" notice is shown
-**Plans:** 2/2 plans complete
-Plans:
-- [ ] 12-01-PLAN.md — Backend: Gist client, deploy/review/history API routes, test-chat override
-- [ ] 12-02-PLAN.md — Frontend: Editor page with full workflow UI, Safety Rules sync, nav wiring
+</details>
 
 ## Progress
 
@@ -105,6 +66,6 @@ Plans:
 | 7. Trust Home | v2.1 | 2/2 | Complete | 2026-04-04 |
 | 8. Safety Transparency | v2.1 | 2/2 | Complete | 2026-04-04 |
 | 9. Parent Test Mode | v2.1 | 2/2 | Complete | 2026-04-05 |
-| 10. Cost Tracking | 2/2 | Complete    | 2026-04-05 | - |
-| 11. Admin Chatbot | 2/2 | Complete    | 2026-04-05 | - |
-| 12. Prompt Editor | 2/2 | Complete    | 2026-04-05 | - |
+| 10. Cost Tracking | v2.2 | 2/2 | Complete | 2026-04-05 |
+| 11. Admin Chatbot | v2.2 | 2/2 | Complete | 2026-04-05 |
+| 12. Prompt Editor | v2.2 | 2/2 | Complete | 2026-04-05 |

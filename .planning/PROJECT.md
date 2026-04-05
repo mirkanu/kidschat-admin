@@ -34,11 +34,15 @@ Children can safely explore and learn through AI conversation, with content guar
 - ✓ Safety detection badges showing which rule triggered in real-time — v2.1
 - ✓ Users page bug fixed (was showing 0 users) — v2.1
 
+- ✓ AI admin chatbot (Claude Sonnet 4.6) with streaming, context-aware, UNTRUSTED framing — v2.2
+- ✓ Rules editor with AI review, test sandbox, Gist deploy, rollback, Safety Rules auto-sync — v2.2
+- ✓ Cost tracking with per-model estimates, 30-day trend, Anthropic billing link — v2.2
+- ✓ LibreChat redeploy trigger from admin dashboard — v2.2
+- ✓ Markdown rendering for AI responses — v2.2
+
 ### Active
 
-- [ ] AI admin chatbot (Claude Sonnet 4.6) with read access to app settings, logs, and structure
-- [ ] System prompt editor with AI review, test-before-deploy workflow, and Gist push
-- [ ] Cost tracking: message-based estimates in dashboard + link to Anthropic billing
+(None — planning next milestone)
 
 ### Out of Scope
 
@@ -50,23 +54,14 @@ Children can safely explore and learn through AI conversation, with content guar
 - Modifying LibreChat config from dashboard — config lives in GitHub Gist
 - ML-based safety detection — text pattern matching sufficient for now
 
-## Current Milestone: v2.2 Admin Intelligence
-
-**Goal:** Make the admin dashboard smarter — an AI chatbot that understands the app, a safe workflow for editing the safety prompt, and cost visibility.
-
-**Target features:**
-- AI admin chatbot (bottom-right widget, Claude Sonnet 4.6) that can answer questions about rules, read logs, explain app structure
-- System prompt editor: edit → AI review for gaps → test in sandbox → deploy to Gist → auto-update Safety Rules summaries
-- Cost tracking: estimated costs from message counts + link to Anthropic billing dashboard
-
 ## Context
 
-Shipped v2.1 on 2026-04-05. Three milestones complete.
+Shipped v2.2 on 2026-04-05. Four milestones complete.
 - **LibreChat URL:** https://librechat-production-bff2.up.railway.app
 - **Admin Dashboard URL:** https://kidschat-admin-production.up.railway.app
 - **Config:** https://gist.github.com/mirkanu/e23b999f1d3cd77726a97c20e26f0abf
 - **Stack:** LibreChat + Next.js 15 admin dashboard, MongoDB, Meilisearch on Railway
-- **Admin dashboard stack:** Next.js 15, NextAuth v5, Tailwind CSS v3, shadcn/ui, Recharts, Anthropic SDK, MongoDB direct queries
+- **Admin dashboard stack:** Next.js 15, NextAuth v5, Tailwind CSS v3, shadcn/ui, Recharts, Anthropic SDK (Haiku + Sonnet), react-markdown, MongoDB direct queries
 - **Accounts:** 4 total (2 ADMIN parents, 2 USER children)
 - **Codebase:** ~5,879 LOC TypeScript/TSX
 - **Known limitation:** LibreChat v0.8.4 has outdated config schema warnings (non-blocking)
@@ -99,4 +94,4 @@ Shipped v2.1 on 2026-04-05. Three milestones complete.
 | Hardcoded system prompt in dashboard | Rarely changes, avoids Gist fetch complexity — update manually when prompt changes | ✓ Good — single source in system-prompt.ts |
 
 ---
-*Last updated: 2026-04-05 after v2.2 milestone start*
+*Last updated: 2026-04-05 after v2.2 milestone completion*
