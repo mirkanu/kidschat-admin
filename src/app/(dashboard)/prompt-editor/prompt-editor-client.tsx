@@ -79,6 +79,8 @@ export function PromptEditorClient({
     null
   );
   const [isRollingBack, setIsRollingBack] = useState(false);
+  const [isRedeploying, setIsRedeploying] = useState(false);
+  const [redeployTriggered, setRedeployTriggered] = useState(false);
 
   // Load rollback availability on mount
   useEffect(() => {
@@ -208,6 +210,23 @@ export function PromptEditorClient({
     setDraft(initialPrompt);
     setReviewResult(null);
     setTestMessages([]);
+  }
+
+  async function handleRedeploy() {
+    setIsRedeploying(true);
+    try {
+      const res = await fetch("/api/redeploy-librechat", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Redeploy failed");
+      }
+      setRedeployTriggered(true);
+      toast.success("LibreChat redeploy triggered! Changes will be live in a few minutes.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Redeploy failed");
+    } finally {
+      setIsRedeploying(false);
+    }
   }
 
   async function handleDeploy() {
@@ -429,23 +448,59 @@ export function PromptEditorClient({
         <div className="space-y-4">
           {/* Redeploy banner */}
           {deploySuccess && (
-            <Card className="border-amber-400 bg-amber-50 dark:bg-amber-950/30">
-              <CardContent className="pt-4">
+            <Card className={redeployTriggered
+              ? "border-green-400 bg-green-50 dark:bg-green-950/30"
+              : "border-amber-400 bg-amber-50 dark:bg-amber-950/30"
+            }>
+              <CardContent className="pt-4 space-y-3">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                  {redeployTriggered ? (
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                  )}
                   <div className="space-y-1">
-                    <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-                      System prompt deployed to Gist
+                    <p className={`text-sm font-semibold ${
+                      redeployTriggered
+                        ? "text-green-800 dark:text-green-300"
+                        : "text-amber-800 dark:text-amber-300"
+                    }`}>
+                      {redeployTriggered
+                        ? "LibreChat redeploying..."
+                        : "System prompt deployed to Gist"}
                     </p>
-                    <p className="text-xs text-amber-700 dark:text-amber-400">
-                      Redeploy LibreChat to activate changes for children.
+                    <p className={`text-xs ${
+                      redeployTriggered
+                        ? "text-green-700 dark:text-green-400"
+                        : "text-amber-700 dark:text-amber-400"
+                    }`}>
+                      {redeployTriggered
+                        ? "Changes will be live for children in a few minutes."
+                        : "Redeploy LibreChat to activate changes for children."}
                     </p>
-                    <p className="text-xs text-amber-600 dark:text-amber-500">
-                      Deployed at{" "}
+                    <p className="text-xs text-muted-foreground">
+                      Applied at{" "}
                       {new Date(deploySuccess.deployedAt).toLocaleString()}
                     </p>
                   </div>
                 </div>
+                {!redeployTriggered && (
+                  <Button
+                    onClick={handleRedeploy}
+                    disabled={isRedeploying}
+                    size="sm"
+                    className="w-full"
+                  >
+                    {isRedeploying ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Redeploying...
+                      </>
+                    ) : (
+                      "Redeploy LibreChat Now"
+                    )}
+                  </Button>
+                )}
               </CardContent>
             </Card>
           )}
