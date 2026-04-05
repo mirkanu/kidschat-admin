@@ -6,6 +6,7 @@
 - ✅ **v2.0 Admin Dashboard** — Phases 4-6 (shipped 2026-04-04)
 - ✅ **v2.1 Parent Trust** — Phases 7-9 (shipped 2026-04-05)
 - ✅ **v2.2 Admin Intelligence** — Phases 10-12 (shipped 2026-04-05)
+- **v2.3 Parent Notifications** — Phase 13
 
 ## Phases
 
@@ -53,6 +54,25 @@ AI-powered admin tools: cost tracking, floating chatbot assistant, and rules edi
 
 </details>
 
+### v2.3 Parent Notifications
+
+Real-time safety alert emails and weekly activity summary emails to parents, powered by Resend with Railway cron scheduling.
+
+- [ ] **Phase 13: Parent Email Notifications** — Real-time safety alert emails when concerning content detected, weekly activity summary emails with per-child usage stats and topics
+  - **Goal:** Parents receive immediate email alerts for safety events and a weekly digest of each child's chat activity, so they stay informed without needing to check the dashboard
+
+### Phase 13: Parent Email Notifications
+
+**Goal:** Parents receive immediate email alerts for safety events and a weekly digest of each child's chat activity, so they stay informed without needing to check the dashboard.
+
+**Scope:**
+- Resend email service integration with React Email templates
+- Real-time safety alert emails triggered when concerning content is detected in conversations
+- Weekly activity summary emails per child (message counts, topics, usage patterns)
+- Railway cron service to trigger weekly digest generation
+- Email preferences/settings for parents (opt-in/out, frequency)
+- Admin UI for viewing sent notification history
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -69,3 +89,4 @@ AI-powered admin tools: cost tracking, floating chatbot assistant, and rules edi
 | 10. Cost Tracking | v2.2 | 2/2 | Complete | 2026-04-05 |
 | 11. Admin Chatbot | v2.2 | 2/2 | Complete | 2026-04-05 |
 | 12. Prompt Editor | v2.2 | 2/2 | Complete | 2026-04-05 |
+| 13. Parent Email Notifications | v2.3 | 0/0 | Not started | — |
