@@ -63,9 +63,6 @@ export async function POST(request: Request) {
   try {
     const client = new Anthropic();
 
-    // Streaming SSE response via Anthropic SDK.
-    // Model: claude-sonnet-4-6-20250514 per v2.2 architecture decision.
-    // If this returns a 400, check the Anthropic error message for the correct model string.
     const stream = client.messages.stream({
       model: "claude-sonnet-4-6",
       max_tokens: ADMIN_CHAT_MAX_TOKENS,
@@ -73,8 +70,38 @@ export async function POST(request: Request) {
       messages,
     });
 
-    // Return the raw SSE stream. The frontend reads this with ReadableStreamDefaultReader.
-    return new Response(stream.toReadableStream());
+    // Create a proper SSE stream that the frontend can parse
+    const encoder = new TextEncoder();
+    const readable = new ReadableStream({
+      async start(controller) {
+        stream.on("text", (text) => {
+          const event = JSON.stringify({
+            type: "content_block_delta",
+            delta: { type: "text_delta", text },
+          });
+          controller.enqueue(encoder.encode(`data: ${event}\n\n`));
+        });
+        stream.on("end", () => {
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        });
+        stream.on("error", (err) => {
+          const msg = err instanceof Error ? err.message : "Stream error";
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ type: "error", error: msg })}\n\n`)
+          );
+          controller.close();
+        });
+      },
+    });
+
+    return new Response(readable, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json(
