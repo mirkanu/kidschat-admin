@@ -107,4 +107,4 @@ Plans:
 | 9. Parent Test Mode | v2.1 | 2/2 | Complete | 2026-04-05 |
 | 10. Cost Tracking | 2/2 | Complete    | 2026-04-05 | - |
 | 11. Admin Chatbot | 2/2 | Complete    | 2026-04-05 | - |
-| 12. Prompt Editor | 2/2 | Complete   | 2026-04-05 | - |
+| 12. Prompt Editor | 2/2 | Complete    | 2026-04-05 | - |
