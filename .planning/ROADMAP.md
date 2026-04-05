@@ -103,5 +103,5 @@ Plans:
 | 8. Safety Transparency | v2.1 | 2/2 | Complete | 2026-04-04 |
 | 9. Parent Test Mode | v2.1 | 2/2 | Complete | 2026-04-05 |
 | 10. Cost Tracking | 2/2 | Complete    | 2026-04-05 | - |
-| 11. Admin Chatbot | 2/2 | Complete   | 2026-04-05 | - |
+| 11. Admin Chatbot | 2/2 | Complete    | 2026-04-05 | - |
 | 12. Prompt Editor | v2.2 | 0/? | Not started | - |
