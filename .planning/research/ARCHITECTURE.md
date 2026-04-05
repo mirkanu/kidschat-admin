@@ -1,8 +1,8 @@
 # Architecture Research
 
-**Domain:** Self-hosted AI chat — LibreChat on Railway
-**Researched:** 2026-04-03
-**Confidence:** HIGH (verified against official LibreChat docs and Railway docs)
+**Domain:** Next.js 15 admin dashboard — AI chatbot widget, prompt editor with Gist deploy, cost tracking (v2.2 integration)
+**Researched:** 2026-04-04
+**Confidence:** HIGH (based on direct codebase inspection + established Next.js App Router patterns)
 
 ---
 
@@ -11,364 +11,396 @@
 ### System Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         INTERNET                                 │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │  Browser (children's devices)                           │    │
-│  │  React 18 SPA — served from LibreChat service           │    │
-│  └──────────────────────┬──────────────────────────────────┘    │
-└─────────────────────────┼────────────────────────────────────────┘
-                          │ HTTPS (Railway public URL)
-┌─────────────────────────┼────────────────────────────────────────┐
-│  RAILWAY PROJECT         │                                        │
-│  ┌──────────────────────▼──────────────────────────────────┐    │
-│  │  LibreChat Service (Express + React, port 3080)          │    │
-│  │                                                          │    │
-│  │  - Serves React SPA (frontend)                           │    │
-│  │  - REST API (auth, conversations, messages)              │    │
-│  │  - AI client layer (Anthropic, OpenAI, etc.)             │    │
-│  │  - Passport.js (JWT auth)                                │    │
-│  │  - mongoMeili plugin (sync to search)                    │    │
-│  └────────┬─────────────┬──────────────────────────────────┘    │
-│           │ private net  │ private net                           │
-│  ┌────────▼──────┐  ┌───▼────────────┐                          │
-│  │  MongoDB       │  │  Meilisearch   │                          │
-│  │  (port 27017)  │  │  (port 7700)   │                          │
-│  │                │  │                │                          │
-│  │  - Users       │  │  - Full-text   │                          │
-│  │  - Chats       │  │    conversation│                          │
-│  │  - Messages    │  │    search      │                          │
-│  │  - Presets     │  └────────────────┘                          │
-│  └───────────────┘                                               │
-│                                          ↑ All on private        │
-│                                            Railway network       │
-└─────────────────────────────────────────────────────────────────┘
-                          │ HTTPS (outbound)
-          ┌───────────────┴────────────────┐
-          │  Anthropic API                  │
-          │  api.anthropic.com              │
-          │  claude-haiku-4-5               │
-          └────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Browser (Admin User)                              │
+├────────────────────────────┬────────────────────────────────────────┤
+│   Dashboard Pages (RSC)    │   Client Components (interactive)      │
+│  /prompt-editor            │   AdminChatWidget (floating, global)   │
+│  /analytics (cost section) │   PromptEditorClient                   │
+│  /safety-rules (updated)   │   CostSummaryCard                      │
+├────────────────────────────┴────────────────────────────────────────┤
+│                     API Routes (Next.js)                            │
+│  POST /api/admin-chat          <- AI chatbot (streaming)            │
+│  GET  /api/admin-chat/context  <- assembles context snapshot        │
+│  POST /api/prompt-editor/review <- AI reviews draft prompt          │
+│  POST /api/prompt-editor/deploy <- pushes updated prompt to Gist    │
+│  GET  /api/cost-estimate        <- message counts -> cost estimate  │
+├─────────────────────────────────────────────────────────────────────┤
+│                     Existing Infrastructure                         │
+│  MongoDB (messages, conversations, users)  <- read-only for chatbot │
+│  Anthropic SDK (already installed)         <- new models + streaming│
+│  SYSTEM_PROMPT in src/lib/system-prompt.ts <- source of truth       │
+│  GitHub Gist API                           <- prompt deploy target  │
+│  NextAuth v5 session                       <- all routes auth-gated │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Component Responsibilities
 
-| Component | Responsibility | Notes |
-|-----------|---------------|-------|
-| LibreChat service | Frontend SPA + backend API + AI routing | Single Railway service, public URL |
-| MongoDB | Users, conversations, messages, presets, config | Private — no public port |
-| Meilisearch | Full-text search across conversation history | Private — no public port |
-| Anthropic API | LLM inference (Claude Haiku 4.5) | External, outbound HTTPS |
-| GitHub Gist | Hosts librechat.yaml (non-sensitive config only) | Public URL, read via CONFIG_PATH |
-
-**Note on RAG/PGVector:** The Railway RAG template also provisions PGVector and a RAG API service. This project explicitly excludes RAG (see PROJECT.md). Use the standard LibreChat template (`HxvQtm` or `b5k2mn`), not the RAG template (`cnhjS_`).
-
----
-
-## Config Flow
-
-LibreChat has a layered configuration system. Understanding the precedence and separation is critical.
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  LAYER 1: Environment Variables (Railway service variables)  │
-│                                                              │
-│  ANTHROPIC_API_KEY=sk-ant-...                               │
-│  MONGO_URI=mongodb://...  (auto-set by Railway template)    │
-│  MEILI_MASTER_KEY=...     (auto-set by Railway template)    │
-│  ALLOW_REGISTRATION=false                                    │
-│  ALLOW_SOCIAL_LOGIN=false                                    │
-│  JWT_SECRET=...                                              │
-│  CONFIG_PATH=https://gist.githubusercontent.com/.../raw/... │
-│                                                              │
-│  RULE: API keys and secrets live HERE only — never in YAML  │
-└────────────────────────┬────────────────────────────────────┘
-                         │ CONFIG_PATH URL read at startup
-┌────────────────────────▼────────────────────────────────────┐
-│  LAYER 2: librechat.yaml (hosted on GitHub Gist)             │
-│                                                              │
-│  endpoints:                                                  │
-│    anthropic:                                                │
-│      models:                                                 │
-│        default: [claude-haiku-4-5]  ← locks model list      │
-│                                                              │
-│  modelSpecs:                         ← controls UI          │
-│    enforce: true                     ← overrides everything  │
-│    prioritize: true                  ← auto-selects spec     │
-│    list:                                                     │
-│      - name: "kids-assistant"                                │
-│        default: true                                         │
-│        preset:                                               │
-│          endpoint: "anthropic"                               │
-│          model: "claude-haiku-4-5"                           │
-│          promptPrefix: "You are a safe assistant..."         │
-│                                                              │
-│  interface:                                                  │
-│    modelSelect: false   ← hides model picker                 │
-│    presets: false       ← users can't edit presets           │
-│    endpointsMenu: false ← hides endpoint switcher            │
-│                                                              │
-│  RULE: No secrets in this file — it's a public URL           │
-└────────────────────────┬────────────────────────────────────┘
-                         │ modelSpecs.list[].preset
-┌────────────────────────▼────────────────────────────────────┐
-│  LAYER 3: Tone Presets (within modelSpecs list)              │
-│                                                              │
-│  Each tone is a separate modelSpecs list entry:              │
-│    - "Friendly Tutor" — warmth + teaching focus              │
-│    - "Casual Buddy"   — relaxed, playful tone                │
-│    - "Balanced Helper"— neutral, practical                   │
-│    - "Standard Formal"— polished, academic                   │
-│                                                              │
-│  All entries share the same safety promptPrefix (base),      │
-│  each adds tone-specific instructions on top.                │
-│                                                              │
-│  enforce: false on individual specs (only top-level true)    │
-│  Users can switch between tones, not between models.         │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Key Config Variables
-
-| Variable | Where | Purpose |
-|----------|-------|---------|
-| `ANTHROPIC_API_KEY` | Railway env vars | Anthropic authentication — secret |
-| `MONGO_URI` | Railway env vars (auto) | MongoDB connection string — secret |
-| `MEILI_MASTER_KEY` | Railway env vars (auto) | Meilisearch auth — secret |
-| `JWT_SECRET` | Railway env vars (auto) | Session token signing — secret |
-| `CREDS_KEY` / `CREDS_IV` | Railway env vars (auto) | Credential encryption — secret |
-| `CONFIG_PATH` | Railway env vars | URL to public GitHub Gist librechat.yaml |
-| `ALLOW_REGISTRATION` | Railway env vars | Set `false` to lock registration |
-| `ALLOW_SOCIAL_LOGIN` | Railway env vars | Set `false` to disable OAuth |
-| `ALLOW_SOCIAL_REGISTRATION` | Railway env vars | Set `false` to disable OAuth signup |
-| `ANTHROPIC_MODELS` | Railway env vars | Comma-separated list of allowed models |
+| Component | Responsibility | Type |
+|-----------|----------------|------|
+| `AdminChatWidget` | Floating bottom-right chatbot UI, manages conversation state | Client component |
+| `GET /api/admin-chat/context` | Assembles read-only snapshot: system prompt, recent alerts, user count, usage summary | API route |
+| `POST /api/admin-chat` | Receives messages + context, streams Claude Sonnet response | API route (streaming) |
+| `PromptEditorClient` | Textarea editor, AI review trigger, test sandbox link, deploy button | Client component |
+| `POST /api/prompt-editor/review` | Sends draft to Claude Sonnet for gap analysis, returns critique | API route |
+| `POST /api/prompt-editor/deploy` | Validates session, PATCHes GitHub Gist with new prompt content | API route |
+| `CostSummaryCard` | Renders estimated cost from message counts, links to Anthropic billing | Server or client component |
+| `GET /api/cost-estimate` | Aggregates message counts by window, applies token pricing estimates | API route |
 
 ---
 
-## User Management (Registration Disabled)
+## Recommended Project Structure
 
-When `ALLOW_REGISTRATION=false`, the signup page disappears. Accounts must be created by the parent manually.
-
-### User Creation Flow
+New files added to the existing src/ tree:
 
 ```
-Parent → Railway Dashboard
-         → LibreChat service
-         → right-click → "Copy SSH Command"
-         → opens terminal session in container
-         → cd /app && npm run create-user \
-               email@example.com \
-               "Child Name" \
-               "password123" \
-               -- --email-verified=True
-         → user now exists in MongoDB
-         → child logs in at Railway URL
+src/
+├── app/
+│   ├── (dashboard)/
+│   │   ├── prompt-editor/
+│   │   │   ├── page.tsx                   # NEW: server component, loads current prompt
+│   │   │   ├── loading.tsx                # NEW: skeleton (required by convention)
+│   │   │   └── prompt-editor-client.tsx   # NEW: editor + review + deploy UI
+│   │   └── analytics/
+│   │       └── page.tsx                   # MODIFIED: add cost section/tab
+│   └── api/
+│       ├── admin-chat/
+│       │   ├── route.ts                   # NEW: streaming chat endpoint
+│       │   └── context/
+│       │       └── route.ts               # NEW: assembles context snapshot
+│       ├── prompt-editor/
+│       │   ├── review/
+│       │   │   └── route.ts               # NEW: AI prompt review
+│       │   └── deploy/
+│       │       └── route.ts               # NEW: push to GitHub Gist
+│       └── cost-estimate/
+│           └── route.ts                   # NEW: message count to cost estimate
+├── components/
+│   ├── dashboard/
+│   │   ├── admin-chat-widget.tsx          # NEW: floating chatbot widget (client)
+│   │   ├── cost-summary-card.tsx          # NEW: cost display card
+│   │   └── dashboard-shell.tsx            # MODIFIED: add AdminChatWidget here
+│   └── ui/
+│       └── textarea.tsx                   # NEW if missing: shadcn textarea
+└── lib/
+    ├── system-prompt.ts                   # EXISTING: source of truth (read by new routes)
+    ├── cost-estimates.ts                  # NEW: token pricing constants + calculator
+    └── gist-client.ts                     # NEW: GitHub Gist API wrapper
 ```
 
-**Command syntax (non-interactive, v0.8.0+):**
-```bash
-npm run create-user child@family.com "Child One" "password123" -- --email-verified=True
-```
+### Structure Rationale
 
-The `--email-verified=True` flag is required when passing credentials as arguments; without it the script falls back to interactive prompts. Railway does not have a mail server configured by default, so email verification would block login if not bypassed.
-
-**Railway SSH access:** Right-click on the LibreChat service in the Railway dashboard and select "Copy SSH Command." This opens a shell inside the running container via Railway's websocket-based SSH protocol.
-
----
-
-## Data Flow
-
-### Message Request Flow
-
-```
-Child types message in browser
-    │
-    ▼
-React SPA (Vite/React 18)
-    │ React Query mutation → POST /api/ask/anthropic
-    ▼
-Express API (LibreChat backend)
-    │ Passport.js JWT validation
-    │ Load conversation from MongoDB
-    │ Prepend system prompt (from modelSpecs.promptPrefix)
-    │ Apply model parameters (from modelSpecs.preset)
-    ▼
-Anthropic AI Client (LibreChat's BaseClient → AnthropicClient)
-    │ POST https://api.anthropic.com/v1/messages
-    │ Model: claude-haiku-4-5
-    │ Headers: Authorization: Bearer ${ANTHROPIC_API_KEY}
-    ▼
-Anthropic API streams response tokens
-    │
-    ▼
-Express streams tokens back to browser via SSE
-    │ Simultaneously:
-    │   → Saves complete message to MongoDB
-    │   → mongoMeili plugin syncs to Meilisearch index
-    ▼
-React renders streamed tokens in real-time
-```
-
-### Authentication Flow
-
-```
-Child opens app → LibreChat React SPA loads
-    │
-    ▼
-Login form → POST /api/auth/login
-    │ Passport.js validates email/password against MongoDB
-    │ Generates JWT access token + HttpOnly refresh token cookie
-    ▼
-Authenticated session established
-    │ Access token expires → refresh token auto-renews it
-    │ No social provider, no magic links
-    ▼
-All subsequent API calls include Authorization: Bearer <jwt>
-```
-
----
-
-## Deployment Order
-
-Deploy in this sequence — later services depend on earlier ones:
-
-1. **Deploy Railway template** — provisions LibreChat, MongoDB, and Meilisearch in one click. Railway auto-wires `MONGO_URI` and `MEILI_MASTER_KEY` between services.
-
-2. **Set Railway environment variables** — add `ANTHROPIC_API_KEY`, `ALLOW_REGISTRATION=false`, `ALLOW_SOCIAL_LOGIN=false`, `ALLOW_SOCIAL_REGISTRATION=false`. Leave `CONFIG_PATH` unset initially (use LibreChat defaults first).
-
-3. **Verify baseline deployment** — confirm LibreChat loads at the Railway URL, login works, and Anthropic API key is accepted. Test with default model access.
-
-4. **Author librechat.yaml** — write the config file with model lock, `modelSpecs`, system prompt, and tone presets. Host it as a GitHub Gist (no API keys in this file).
-
-5. **Set CONFIG_PATH** — add `CONFIG_PATH=https://gist.githubusercontent.com/.../raw/librechat.yaml` to Railway env vars and redeploy. Validate config loads (LibreChat exits with code 1 on YAML errors — check Railway logs).
-
-6. **Create child accounts** — SSH into the LibreChat service via Railway dashboard, run `npm run create-user` for each child account.
-
-7. **Test with child accounts** — verify model picker is hidden, tone presets appear, system prompt is enforced, and registration page is gone.
+- **`prompt-editor/` route:** Follows existing dashboard pattern (page.tsx + loading.tsx + -client.tsx). The server component imports `SYSTEM_PROMPT` directly — no async fetch needed for the initial value.
+- **`api/admin-chat/context/` as separate route:** Context assembly involves MongoDB reads. Decoupled from the streaming chat route so the widget can fetch it once on open, then reuse the snapshot across the conversation without re-querying on every message.
+- **`lib/gist-client.ts`:** Isolates GitHub API calls. Accepts `GIST_ID` and `GITHUB_PAT` from env. Keeps the deploy route thin and testable.
+- **`lib/cost-estimates.ts`:** Centralizes pricing constants. Easy to update when Anthropic changes rates. Pure calculation on message counts — no external API calls.
+- **`dashboard-shell.tsx` (modified):** Widget added here so it appears on all dashboard pages without each page knowing about it. `DashboardShell` is already a client component (`"use client"` for sidebar state), so no new client boundary is created.
 
 ---
 
 ## Architectural Patterns
 
-### Pattern 1: Config-as-URL (CONFIG_PATH)
+### Pattern 1: Floating Widget Mounted in Shell
 
-**What:** `librechat.yaml` lives at a public URL (GitHub Gist) instead of being baked into the container. LibreChat fetches it at startup.
+**What:** `AdminChatWidget` renders as a fixed-position element inside `DashboardShell`, alongside `<Toaster />`. It never participates in the page layout flow.
 
-**When to use:** Always in Railway deployments — there is no filesystem to write files to without custom Docker images.
+**When to use:** Any persistent UI that must appear on all authenticated pages without each individual page including it.
 
-**Trade-offs:**
-- Pro: Edit config without redeploying. Version history via Gist revisions.
-- Pro: Config changes propagate on next redeploy (LibreChat re-reads at startup).
-- Con: URL is public — API keys must never appear in the YAML.
-- Con: Must redeploy LibreChat service for config changes to take effect (no hot-reload).
+**Trade-offs:** Shell is already a client component, so the widget adds no new bundle boundary. Widget manages its own open/collapsed state with local `useState`. No global state needed.
 
-### Pattern 2: modelSpecs for Model Lock
+```typescript
+// dashboard-shell.tsx (modified section only)
+export function DashboardShell({ user, children }: DashboardShellProps) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  return (
+    <div className="flex h-screen bg-background">
+      <NavSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+        <Header user={user} onMenuClick={() => setSidebarOpen(true)} />
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+      </div>
+      <Toaster />
+      <AdminChatWidget />  {/* Added: fixed-position, no layout impact */}
+    </div>
+  );
+}
+```
 
-**What:** `modelSpecs.enforce: true` + `modelSpecs.prioritize: true` + single default spec overrides all user-facing model/endpoint controls.
+### Pattern 2: Context-Prefetch Then Stream
 
-**When to use:** When the goal is a curated experience — children should not choose models, and the system prompt must always be active.
+**What:** When the widget opens, fetch `/api/admin-chat/context` once to receive a JSON snapshot (system prompt text, recent alert summary, user list, 24h usage). Pass this snapshot as part of the system message for every subsequent chat turn to `/api/admin-chat`.
 
-**Trade-offs:**
-- Pro: Guarantees Claude Haiku 4.5 is always used — no accidental GPT-4 charges.
-- Pro: `promptPrefix` in the preset ensures system prompt cannot be bypassed by clearing the conversation system prompt field (it's not in the UI).
-- Con: `enforce: true` conflicts with interface options if not set carefully — test that `modelSelect: false` and `interface.presets: false` are also set to avoid inconsistencies.
+**When to use:** When the AI needs live data but repeatedly querying MongoDB per message turn would add unnecessary latency and load.
 
-### Pattern 3: Tone Switching via modelSpecs List
+**Trade-offs:** Context is a point-in-time snapshot (taken at widget open). This is acceptable — the admin is viewing live dashboard data alongside the chatbot. Refreshes on each widget open.
 
-**What:** Multiple entries in `modelSpecs.list` all point to the same model and endpoint, but each has a different `promptPrefix` tone layer added on top of the shared safety instructions.
+```typescript
+// api/admin-chat/route.ts
+export async function POST(request: Request) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-**When to use:** When you want user-selectable behavior within a locked model.
+  const { messages, context } = await request.json();
+  const systemMessage = buildAdminSystemPrompt(context); // pure function, uses snapshot
 
-**Trade-offs:**
-- Pro: Children feel agency (pick their tone) without any model or safety trade-offs.
-- Pro: Safety instructions are in every spec — no spec lacks guardrails.
-- Con: Duplication — safety system prompt must be copy-pasted into each spec's `promptPrefix`. An update means editing all four.
+  const client = new Anthropic();
+  const stream = await client.messages.stream({
+    model: "claude-sonnet-4-6-20251001",
+    max_tokens: 2048,
+    system: systemMessage,
+    messages,
+  });
+
+  return new Response(stream.toReadableStream()); // Server-Sent Events
+}
+```
+
+### Pattern 3: Server Component Passes Prompt to Client Editor
+
+**What:** The `/prompt-editor` page is a server component that imports `SYSTEM_PROMPT` from `system-prompt.ts` and passes it as a prop to `PromptEditorClient`. No async fetch needed.
+
+**When to use:** Any editor page where the initial data is available at server render time as an imported constant.
+
+**Trade-offs:** The "current" prompt displayed in the editor is the TypeScript constant, not the Gist content. This is consistent with the established architecture decision ("Hardcoded system prompt in dashboard — Rarely changes"). After a deploy to Gist, the admin should also update `system-prompt.ts` manually (or the deploy route can handle this as a code change).
+
+```typescript
+// app/(dashboard)/prompt-editor/page.tsx
+import { SYSTEM_PROMPT } from "@/lib/system-prompt";
+import PromptEditorClient from "./prompt-editor-client";
+
+export default function PromptEditorPage() {
+  return <PromptEditorClient initialPrompt={SYSTEM_PROMPT} />;
+}
+```
+
+### Pattern 4: Cost Estimation Without External API Calls
+
+**What:** `GET /api/cost-estimate` queries MongoDB for message counts (same aggregate pattern already used in `/api/analytics`), applies Claude Haiku pricing constants from `lib/cost-estimates.ts`, and returns dollar estimates. No Anthropic billing API call.
+
+**When to use:** Cost visibility for oversight purposes where approximate figures are sufficient and availability must be guaranteed.
+
+**Trade-offs:** Estimates only — actual costs depend on per-message token lengths which are not stored. Display clearly as "estimated" in the UI with a direct link to the Anthropic console for exact numbers. Pricing constants need manual update when Anthropic changes rates.
 
 ---
 
-## Anti-Patterns
+## Data Flow
 
-### Anti-Pattern 1: API Keys in librechat.yaml
+### Admin Chatbot Flow
 
-**What people do:** Put `ANTHROPIC_API_KEY: sk-ant-...` directly into the YAML config file hosted on GitHub Gist.
+```
+Admin clicks floating widget button
+    |
+AdminChatWidget opens
+    | GET /api/admin-chat/context
+    | (returns JSON: systemPrompt, recentAlerts, userCount, usageSummary)
+    |
+Admin types question
+    | POST /api/admin-chat { messages: [...], context: {...} }
+    |
+API route: auth check
+    | build system prompt from context snapshot
+    | Anthropic.messages.stream({ model: "claude-sonnet-4-6-...", ... })
+    |
+Server-Sent Events stream back to browser
+    |
+AdminChatWidget: reads chunks -> appends tokens -> renders incrementally
+```
 
-**Why it's wrong:** The Gist URL is public. The key is immediately exposed and will be scraped by credential harvesters within minutes.
+### Prompt Editor Flow
 
-**Do this instead:** API key in Railway environment variables only. Reference as `${ANTHROPIC_API_KEY}` in YAML if needed (the variable resolves from env at runtime).
+```
+Admin navigates to /prompt-editor
+    |
+Server component renders with SYSTEM_PROMPT as initialPrompt prop
+    |
+PromptEditorClient mounts with current prompt in textarea
+    |
+Admin edits draft text
+    |
+Admin clicks "AI Review"
+    | POST /api/prompt-editor/review { draft }
+    | API: auth check -> Claude Sonnet analyzes draft -> returns critique
+    |
+PromptEditorClient shows critique panel beside editor
+    |
+Admin satisfied -> clicks "Test in Sandbox"
+    | opens /test-mode with draft injected via URL param or sessionStorage
+    OR
+Admin satisfied -> clicks "Deploy to Gist"
+    | POST /api/prompt-editor/deploy { draft }
+    | API: auth check -> gistClient.patch(GIST_ID, draft) -> return success
+    |
+PromptEditorClient: success toast + reminder to update system-prompt.ts
+```
 
-### Anti-Pattern 2: Skipping --email-verified=True on create-user
+### Cost Tracking Flow
 
-**What people do:** Run `npm run create-user` with just email/password arguments and no flag.
-
-**Why it's wrong:** Without `--email-verified=True`, LibreChat's create-user script (v0.8+) falls into interactive prompts in the Railway SSH session, which can hang or behave unexpectedly. Also, without email verification, Railway's lack of an SMTP server means the child cannot verify their email and login may be blocked.
-
-**Do this instead:** Always pass `-- --email-verified=True` as the final argument.
-
-### Anti-Pattern 3: Using the RAG Railway Template
-
-**What people do:** Deploy `railway.com/deploy/cnhjS_` (RAG template) instead of the standard template.
-
-**Why it's wrong:** The RAG template provisions PGVector and a RAG API service, adding cost and complexity for a feature this project explicitly excludes.
-
-**Do this instead:** Use the standard LibreChat template (`railway.com/deploy/HxvQtm` or `railway.com/deploy/b5k2mn`).
-
-### Anti-Pattern 4: ALLOW_REGISTRATION Without Verifying Login Works First
-
-**What people do:** Deploy, immediately set `ALLOW_REGISTRATION=false`, and redeploy before testing the create-user flow.
-
-**Why it's wrong:** If the create-user script fails for any reason (SSH issues, container permissions), you are locked out with no way to create accounts from the UI.
-
-**Do this instead:** Confirm SSH access and create-user works for one test account before disabling registration. Then disable registration and delete the test account.
+```
+Admin navigates to /analytics (cost section visible)
+    |
+CostSummaryCard client component mounts
+    | GET /api/cost-estimate?window=30d
+    |
+API: auth check
+    | MongoDB aggregate: count messages by day (same pattern as analytics route)
+    | costEstimates.calculate(messageCount) -> estimatedUSD
+    | return { estimatedCostUSD, messageCount, window, pricingAsOf }
+    |
+CostSummaryCard renders:
+    - Estimated total in USD
+    - Message count breakdown
+    - "View exact billing" link to console.anthropic.com/usage
+```
 
 ---
 
 ## Integration Points
 
+### New vs Existing — Explicit Breakdown
+
+| Item | Status | Integration Method |
+|------|--------|--------------------|
+| `DashboardShell` | MODIFIED | Add `<AdminChatWidget />` as fixed-position sibling of `<Toaster />` |
+| `NavSidebar` nav items | MODIFIED | Add "Prompt Editor" link with suitable icon (e.g. `PenLine`) |
+| `SYSTEM_PROMPT` in `system-prompt.ts` | EXISTING — read by new code | Imported in `/prompt-editor` page (server) and `/api/admin-chat/context` |
+| Anthropic SDK | EXISTING — extend usage | Add `claude-sonnet-4-6-20251001` model; add streaming via `messages.stream()` |
+| `/api/test-chat` pattern | REFERENCE — not modified | New chat routes follow the same auth + SDK structure |
+| MongoDB `messages` collection | EXISTING — read-only new access | Cost estimate route uses same aggregate pattern as `/api/analytics` |
+| `test-mode-client.tsx` UI pattern | REFERENCE — not modified | Admin chat widget reuses message bubble + loading dots UI approach |
+| `/analytics` page | MODIFIED | Add `CostSummaryCard` as a new section below existing analytics |
+| `/safety-rules` page | OPTIONALLY MODIFIED | Add link to `/prompt-editor` for admins who want to update the displayed rules |
+
 ### External Services
 
 | Service | Integration Pattern | Notes |
 |---------|---------------------|-------|
-| Anthropic API | HTTPS REST + SSE streaming | Key in `ANTHROPIC_API_KEY` env var; outbound from LibreChat container |
-| GitHub Gist | HTTPS GET at startup | Raw URL via `CONFIG_PATH`; no auth required; no secrets in file |
+| GitHub Gist API | `PATCH https://api.github.com/gists/{id}` with `Authorization: token {PAT}` | Needs `GIST_ID` and `GITHUB_PAT` env vars; PAT requires `gist` scope only |
+| Anthropic API (chat) | Existing SDK, add streaming + sonnet model | `ANTHROPIC_API_KEY` already in environment |
+| Anthropic Console (billing) | Link only (`console.anthropic.com/usage`) | No API integration — link out only |
 
-### Internal Service Communication (Railway Private Network)
+### Environment Variables (new additions)
 
-| Boundary | Communication | Notes |
-|----------|---------------|-------|
-| LibreChat → MongoDB | `MONGO_URI` (mongodb:// private hostname) | Railway auto-injects this variable |
-| LibreChat → Meilisearch | `MEILI_HOST` + `MEILI_MASTER_KEY` (http:// private hostname) | Railway auto-injects; mongoMeili plugin handles sync |
-| Browser → LibreChat | HTTPS on Railway public domain | JWT in Authorization header; refresh token in HttpOnly cookie |
+| Variable | Purpose | Required For |
+|----------|---------|-------------|
+| `GITHUB_PAT` | GitHub Personal Access Token with `gist` scope | Prompt deploy |
+| `GIST_ID` | The Gist ID hosting `librechat.yaml` (already exists as documented URL) | Prompt deploy |
+
+---
+
+## Build Order
+
+Build in this sequence. Each step produces shippable, testable functionality and later steps depend on patterns established earlier.
+
+### Step 1: Cost Tracking
+
+Entirely self-contained. New API route + new card component. Uses the existing MongoDB aggregate pattern from `/api/analytics`. No new external services. Ship and verify independently before building anything else.
+
+Deliverables:
+- `lib/cost-estimates.ts` — pricing constants and calculation function
+- `GET /api/cost-estimate` — aggregate query returning estimate
+- `CostSummaryCard` component — renders estimate + billing link
+- Wire into `/analytics` page as a new section
+
+### Step 2: Admin Chat Widget
+
+Anthropic SDK is already installed. New API routes (context fetch + streaming chat) follow patterns from `/api/test-chat`. New client component follows patterns from `test-mode-client.tsx`.
+
+Deliverables:
+- `GET /api/admin-chat/context` — builds system context snapshot
+- `POST /api/admin-chat` — streaming chat route (sonnet model)
+- `AdminChatWidget` client component — floating button + expandable panel
+- Modify `DashboardShell` to mount the widget
+- Verify widget appears on all dashboard pages
+
+### Step 3: Prompt Editor
+
+Most complex piece: editor UI, AI review (same streaming patterns from Step 2), Gist deploy (new external service call via `gist-client.ts`). Build last when patterns are established and Gist credentials can be tested.
+
+Deliverables:
+- `lib/gist-client.ts` — GitHub Gist PATCH wrapper
+- `POST /api/prompt-editor/review` — AI review call
+- `POST /api/prompt-editor/deploy` — Gist push
+- `PromptEditorClient` — editor + critique panel + deploy button
+- `/prompt-editor` page route (server component wrapper + loading.tsx)
+- Add nav link in `NavSidebar`
+- Optionally add "Edit Safety Rules" link on `/safety-rules` page
+
+---
+
+## Anti-Patterns
+
+### Anti-Pattern 1: Widget as Page-Level Component
+
+**What people do:** Import and render `AdminChatWidget` in each individual page file.
+
+**Why it's wrong:** Must appear on all 7+ existing pages. Each new page added in the future also needs it. Forgetting one page creates an inconsistent experience.
+
+**Do this instead:** Mount once in `DashboardShell`. It renders on every authenticated dashboard page automatically.
+
+### Anti-Pattern 2: Fetching System Prompt from Gist on Each Chat Turn
+
+**What people do:** Have the admin chat route call the GitHub Gist API on each request to get the "live" prompt.
+
+**Why it's wrong:** Adds 100-300ms per chat message, creates a Gist API dependency in the hot path, and the prompt changes rarely. Rate limits on GitHub API become a concern.
+
+**Do this instead:** Import `SYSTEM_PROMPT` from `system-prompt.ts` in the context route. TypeScript module caching makes this effectively free. Prompt changes require a code deploy — consistent with how this project already works.
+
+### Anti-Pattern 3: Storing Prompt Drafts in MongoDB
+
+**What people do:** Create a `prompt_drafts` collection to persist in-progress edits between browser sessions.
+
+**Why it's wrong:** Overkill for a two-admin app. Introduces schema migration risk. Drafts are invalidated by any code deploy anyway.
+
+**Do this instead:** Draft lives in React state in `PromptEditorClient`. If the admin refreshes, they start from the current deployed prompt as the baseline. This is how the test mode sandbox already works.
+
+### Anti-Pattern 4: Blocking Cost Display Behind Anthropic's Billing API
+
+**What people do:** Attempt to call `api.anthropic.com/v1/usage` or similar for real cost data.
+
+**Why it's wrong:** Anthropic does not expose a programmatic billing API for account usage. The console link is the intended path.
+
+**Do this instead:** Calculate estimates from message counts in MongoDB using known per-token pricing from `lib/cost-estimates.ts`. Label clearly as "estimated" in the UI, link out to the console for exact figures.
+
+### Anti-Pattern 5: Non-Streaming Admin Chat
+
+**What people do:** Use the same blocking request/response pattern from `/api/test-chat` (collects full response, then returns it).
+
+**Why it's wrong:** Admin questions like "summarize this week's conversation trends" trigger long Claude Sonnet responses. Waiting 3-5 seconds for the first token is poor UX and violates the perceived performance conventions in CLAUDE.md.
+
+**Do this instead:** Use `client.messages.stream()` and return a `ReadableStream`. The widget reads chunks with a `ReadableStreamDefaultReader` and appends tokens as they arrive.
+
+### Anti-Pattern 6: Deploying to Gist Without Validating the Draft
+
+**What people do:** Allow the deploy button to be active and actionable even when the draft has not been reviewed.
+
+**Why it's wrong:** A malformed or incomplete system prompt deployed to the Gist could weaken children's safety guardrails until the next fix. Deployment should require intentional acknowledgment.
+
+**Do this instead:** Require the AI review to complete before the deploy button becomes active. Show a diff between the current prompt and the draft before the final confirmation.
 
 ---
 
 ## Scaling Considerations
 
-This is a 2-user private family app. Scaling is not a concern. The relevant operational concern is cost:
+This app serves 2 parents as admins. Scaling is not a concern for v2.2. The patterns chosen are appropriate for this scale indefinitely.
 
-| Concern | Approach |
-|---------|----------|
-| API cost | Claude Haiku 4.5 is the cheapest Anthropic model. modelSpecs locks to it — no accidental expensive model calls. |
-| Railway cost | 3 services (LibreChat + MongoDB + Meilisearch) on hobby plan. Stays within Railway's free/hobby tier for low traffic. |
-| Meilisearch | Included for conversation search. For 2 users with moderate usage, storage remains negligible. |
-| MongoDB | Conversation history accumulates over time. Not a concern at this scale — Railway's managed MongoDB handles it. |
+| Scale | Consideration |
+|-------|---------------|
+| Current (2 admins) | All patterns above are correct — no optimization needed |
+| If prompt editing becomes frequent | Consider persisting the deployed prompt text in MongoDB so `system-prompt.ts` is not the only source of truth and the editor always reflects the Gist content |
+| If cost tracking needs precision | Anthropic may expose a programmatic usage API in the future — `gist-client.ts` pattern can be replicated for an `anthropic-usage-client.ts` |
 
 ---
 
 ## Sources
 
-- [LibreChat Custom Config (librechat.yaml)](https://www.librechat.ai/docs/configuration/librechat_yaml) — HIGH confidence
-- [LibreChat Environment Variables](https://www.librechat.ai/docs/configuration/dotenv) — HIGH confidence
-- [LibreChat Model Specs Object Structure](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/model_specs) — HIGH confidence
-- [LibreChat Interface Object Structure](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/interface) — HIGH confidence
-- [LibreChat Anthropic Configuration](https://www.librechat.ai/docs/configuration/pre_configured_ai/anthropic) — HIGH confidence
-- [LibreChat Authentication](https://www.librechat.ai/docs/configuration/authentication) — HIGH confidence
-- [LibreChat Railway Deployment](https://www.librechat.ai/docs/remote/railway) — MEDIUM confidence (doc was thin)
-- [LibreChat Architecture (community gist)](https://gist.github.com/ChakshuGautam/fca45e48a362b6057b5e67145b82a994) — MEDIUM confidence
-- [CONFIG_PATH Security Discussion](https://github.com/danny-avila/LibreChat/discussions/3868) — HIGH confidence
-- [create-user non-interactive syntax](https://github.com/danny-avila/LibreChat/discussions/10212) — HIGH confidence
-- [Railway CLI / SSH Docs](https://docs.railway.com/guides/cli) — HIGH confidence
-- [Railway LibreChat Template](https://railway.com/deploy/librechat) — HIGH confidence
+- Direct codebase inspection: `/data/home/KidAI/src/` — HIGH confidence
+- Existing `/api/test-chat/route.ts` — reference for new streaming chat routes
+- Existing `DashboardShell` component — confirms widget placement approach
+- Existing `/api/analytics/route.ts` — confirms MongoDB aggregate pattern for cost route
+- GitHub Gist REST API `PATCH /gists/{gist_id}` — standard, stable endpoint; MEDIUM confidence (pattern unchanged for years, verified against GitHub docs conventions)
+- Anthropic SDK `messages.stream()` — available in `@anthropic-ai/sdk` as installed; HIGH confidence
 
 ---
-*Architecture research for: LibreChat on Railway (KidsChat)*
-*Researched: 2026-04-03*
+*Architecture research for: KidAI admin dashboard v2.2 — AI chatbot, prompt editor, cost tracking*
+*Researched: 2026-04-04*

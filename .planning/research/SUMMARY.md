@@ -1,222 +1,207 @@
 # Project Research Summary
 
-**Project:** KidAI — KidsChat (LibreChat family deployment)
-**Domain:** Self-hosted AI chat — parent-controlled, locked-down deployment for children ages 10-14
-**Researched:** 2026-04-03
+**Project:** KidAI v2.2 Admin Intelligence
+**Domain:** Admin dashboard intelligence layer — AI chatbot widget, system prompt editor with Gist deploy, Anthropic cost tracking
+**Researched:** 2026-04-04
 **Confidence:** HIGH
 
 ## Executive Summary
 
-KidsChat is a parent-controlled AI chat application built on LibreChat deployed to Railway, exposing a single AI model (Claude Haiku 4.5) to two children under a curated, locked-down interface. The recommended approach is configuration-only: no custom frontend code, no custom backend, no Docker images. Everything is achieved through Railway environment variables plus a `librechat.yaml` hosted as a GitHub Gist. The LibreChat Lite Railway template provisions all three required services (LibreChat, MongoDB, Meilisearch) in one click with private networking already wired. The entire project scope collapses to: deploy template, set env vars, write config file, create child accounts, test safety.
+KidAI v2.2 adds an intelligence layer to an existing, deployed Next.js 15 admin dashboard for a children's AI chat application. The three features — a floating AI admin chatbot, a system prompt editor with GitHub Gist deployment, and token-based cost tracking — are all additive to a working codebase that already has the Anthropic SDK, MongoDB, NextAuth, and shadcn/ui in place. No new npm packages are required: streaming uses the existing `@anthropic-ai/sdk`, Gist deployment uses native `fetch`, and cost tracking uses the existing MongoDB connection. The only new environment variable is `GITHUB_TOKEN` for the Gist PATCH API. Two shadcn components need `npx shadcn@latest add` installation (`scroll-area`, `textarea`), and a new `usage_events` MongoDB collection is created.
 
-The architecture is deliberately minimal. LibreChat's `modelSpecs` system with `enforce: true` locks the model, injects the safety system prompt, and drives user-selectable tone presets — all from a single YAML stanza. The `CONFIG_PATH` pattern allows the parent to iterate on prompts and presets by editing the GitHub Gist and redeploying Railway, with no code changes. This also means the deployment has no moving parts to break: the two failure modes are misconfigured YAML (caught at startup) and MongoDB resource exhaustion (caught by checking Railway plan tier before deploying).
+The recommended build order is Cost Tracking first (zero external dependencies, self-contained), then Admin Chatbot (extends existing SDK patterns with streaming), then Prompt Editor (most complex, builds on patterns from prior phases). This order emerges directly from the dependency graph: cost tracking touches only existing MongoDB data; the chatbot introduces the streaming API route pattern that the prompt editor's AI review step reuses; the prompt editor's Gist deploy is the only truly new external service integration.
 
-The dominant risks are not technical — they are safety configuration gaps. Three layers must be active simultaneously for the system to be safe: (1) environment variables that close all registration and alternative-provider paths, (2) `modelSpecs.enforce: true` in the YAML that locks model selection server-side, and (3) a well-written system prompt that explicitly addresses jailbreak patterns by name. Any one of these layers alone is insufficient. The research is highly specific and well-sourced; this is a straightforward deployment that can be completed in a single focused session.
+The dominant risk in this milestone is security, not technical complexity. Three pitfalls require upfront design decisions — they cannot be retrofitted after the feature ships. First, the admin chatbot is vulnerable to indirect prompt injection if it reads child conversation logs without explicit trust framing in the system prompt. Second, the GitHub Gist token must never reach the client bundle and must use a fine-grained PAT scoped to Gist operations only. Third, the prompt deploy pipeline must include YAML validation client-side and a one-click rollback mechanism — a broken system prompt deployed to the Gist weakens children's safety guardrails until manually reverted. All three of these must be addressed in the initial implementation of their respective phases.
 
 ## Key Findings
 
 ### Recommended Stack
 
-LibreChat v0.8.4 on Railway is the only viable approach given the constraints: the parent already has a Railway account, no frontend needs to be built, and LibreChat's `modelSpecs` system handles all the safety-locking requirements natively. Building a custom chat application from scratch would add months of work for features (auth, conversation history, streaming, multi-user) that LibreChat already provides. The LibreChat Lite template (not the full RAG template) is the correct Railway template — it provisions exactly the three services needed without the RAG API overhead.
+All three v2.2 features are built on the existing stack with no new npm dependencies. The Anthropic SDK's streaming API (`client.messages.stream()`) returns a `ReadableStream` directly compatible with Next.js 15 route handlers. GitHub's Gist PATCH endpoint is a single native `fetch()` call authenticated with a fine-grained PAT. Cost estimation runs as a MongoDB aggregation on the existing `messages` collection — the same pattern already in use in `/api/analytics`.
 
 **Core technologies:**
-- LibreChat v0.8.4: Full chat platform (UI + backend + auth) — eliminates all custom development
-- MongoDB (Railway-provisioned): User accounts, conversation history — private-networked, auto-wired
-- Meilisearch v1.11.3 (Railway-provisioned): Full-text conversation search — auto-wired by template
-- Railway (Hobby plan, $5/month): Deployment platform — parent already has account; 5 GB volumes required
-- Claude Haiku 4.5 (`claude-haiku-4-5`): Only model exposed to users — $1/$5 per million tokens, sufficient quality for children's use
-- GitHub Gist (public, no secrets): Hosts `librechat.yaml` — enables config iteration without redeployment
+- `@anthropic-ai/sdk ^0.82.0` (already installed): streaming chat + token capture — use `stream: true` with async iterable; `response.usage` captures per-call token counts
+- Native `fetch` (Node.js 18+, built in): GitHub Gist PATCH — a single call; no Octokit overhead
+- `mongodb ^7.1.1` (already installed): cost aggregation on `messages` + new `usage_events` collection for per-call tracking
+- `recharts ^3.8.1` (already installed): cost visualization — already in use in analytics, reuse without change
+- `shadcn scroll-area` + `shadcn textarea`: two new UI components via `npx shadcn@latest add`, not npm installs
 
-**Critical version notes:**
-- Use `claude-haiku-4-5` (alias) or `claude-haiku-4-5-20251001` (exact) — `claude-3-haiku-20240307` is deprecated April 2026
-- LibreChat Lite template uses `ghcr.io/danny-avila/librechat-dev:latest` — pin to `v0.8.4` after initial deploy for stability
-- `librechat.yaml` schema version: `1.3.5`
+**Models used:**
+- `claude-haiku-4-5-20251001` — children's chat (existing, $1/$5 per M tokens)
+- `claude-sonnet-4-6-20260217` — admin chatbot + prompt review (new, $3/$15 per M tokens); Sonnet is correct for admin use — higher reasoning quality justifies the cost for a tool used by 2 parents infrequently
+
+**What not to add:**
+- Vercel AI SDK (`ai` package): adds ~200KB bundle, multi-provider abstraction that adds zero value for a single-provider app
+- Octokit: ~80KB for what is a single PATCH call
+- Anthropic Admin API: requires org-level account; individual accounts cannot access it; response-level `usage` field is equivalent
 
 ### Expected Features
 
-All launch-blocking features are achievable through configuration alone with LOW-MEDIUM complexity. There is no feature requiring custom code.
+The three v2.2 features each have a clear MVP definition with deferred enhancements.
 
-**Must have (table stakes — safety-critical, block launch):**
-- Registration disabled (`ALLOW_REGISTRATION=false`) — no strangers can create accounts
-- Social login fully disabled (all three env vars) — no OAuth bypass of registration lock
-- Safety system prompt enforced via `modelSpecs` with `enforce: true` — content boundaries active on every message
-- Single model locked (`ANTHROPIC_MODELS=claude-haiku-4-5`) — no model-hopping, predictable cost
-- All dangerous UI features hidden: model picker, endpoints menu, agents, web search, code execution
-- File uploads disabled — no document or photo sharing with AI
-- Admin-created child accounts — two accounts, each tested before children use the app
-- `CONFIG_PATH` pointing to GitHub Gist — parent can iterate prompts without redeployment
+**Must have (table stakes for v2.2 launch):**
+- AI chatbot widget — floating button (fixed bottom-right), streaming responses, session message history, system prompt + user list injected as context snapshot at widget open
+- Admin-only role check on all new API routes — `requireAdminSession()` utility checking both session existence and `role === 'ADMIN'`
+- Indirect prompt injection hardening — all retrieved conversation log data framed as "UNTRUSTED USER-GENERATED CONTENT" in the chatbot system prompt
+- System prompt editor — loads current prompt, AI review (non-blocking, advisory), deploy to Gist with confirmation modal
+- YAML validation before any Gist push — syntax errors block deploy with a specific error message
+- One-click rollback — current Gist content saved to MongoDB before every deploy; "Revert to Previous" button present at launch
+- Required-section checklist in AI reviewer — AI review must check for presence of specific required sections (jailbreak resistance, content rules, tone), not just holistic evaluation
+- Cost tracking — estimated cost this month from message counts, per-model breakdown (Haiku vs Sonnet tracked separately), direct link to Anthropic billing console
+- Cost estimate uses token-estimate formula (not flat per-message rate): `(system_prompt_tokens + input_chars/4) * $0.000001 + (output_chars/4) * $0.000005`
 
-**Should have (differentiators, add at launch or shortly after):**
-- Tone presets (Friendly Tutor, Casual Buddy) — children feel agency without any safety trade-off; requires at minimum two entries in `modelSpecs.list`
-- Greeting message per preset (`greeting` field) — welcoming intro on new conversations
-- Two additional tone presets (Balanced Helper, Standard Formal) — add after kids validate the first two
+**Should have (add after initial validation):**
+- Suggested prompt chips in chatbot widget (3-4 example questions shown on open)
+- Diff view in prompt editor (current vs. proposed before deploy) — recommended to include given the safety sensitivity of the deploy action
+- Per-child cost breakdown (group message counts by userId)
 
-**Defer (v2+):**
-- Usage monitoring / chat log review UI — accessing MongoDB directly is viable now; a dedicated review interface is deferred
-- Per-child system prompt variation — same rules apply to both children for now
-- Custom domain — Railway-provided URL is sufficient until the app proves value
+**Defer to v2.3+:**
+- Admin chatbot live MongoDB queries on demand — static context snapshot is sufficient; live queries add significant complexity
+- Deploy history with full rollback UI — manual Gist revert works for now
+- Anthropic Usage API integration — requires org-level Admin API key, unavailable for individual accounts
+- Chatbot conversation persistence across sessions — session-only history is sufficient for one admin
+
+**Anti-features (explicitly excluded):**
+- Admin chatbot with write capabilities — read-only only; this bounds the blast radius of any indirect prompt injection
+- AI reviewer as a blocking gate on deploy — parent is the authority; review is advisory; parent must be able to deploy with explicit "Deploy Anyway" override if issues found
 
 ### Architecture Approach
 
-The system runs as three Railway services on a private network: LibreChat (public URL), MongoDB (private), and Meilisearch (private). Configuration flows through two layers: Railway environment variables hold all secrets and registration controls, while `librechat.yaml` (fetched from a public GitHub Gist at startup via `CONFIG_PATH`) holds all structural config, model specs, and system prompts. The `promptPrefix` in each `modelSpecs` entry is prepended to every Anthropic API call server-side. Anthropic API calls are outbound HTTPS from the LibreChat container. No other external services are involved.
+The architecture is purely additive to the existing codebase. Two existing components are modified (`DashboardShell` to mount the global chatbot widget, `NavSidebar` to add Prompt Editor link), one existing page is extended (`/analytics` gets a cost section), and all new API routes follow the pattern established by the existing `/api/test-chat` route. The admin chatbot widget is mounted once in `DashboardShell` (already a client component) so it appears on all authenticated dashboard pages automatically — no per-page import needed. Context for the chatbot is fetched once on widget open via a dedicated `/api/admin-chat/context` route, then reused across the conversation — avoiding MongoDB queries on every message turn.
 
 **Major components:**
-1. LibreChat service (Express + React, port 3080) — serves frontend SPA, handles auth, routes AI requests, applies system prompt
-2. MongoDB (private, port 27017) — users, conversations, messages; provisioned and wired automatically by Railway template
-3. Meilisearch (private, port 7700) — conversation search; provisioned and wired automatically by Railway template
-4. GitHub Gist (public HTTPS) — hosts `librechat.yaml`; fetched once at startup; no secrets
-5. Anthropic API (external HTTPS) — LLM inference; accessed with `ANTHROPIC_API_KEY` from Railway env vars
-
-**Key patterns:**
-- Config-as-URL: YAML lives at a public Gist URL; edit Gist + redeploy to change prompts/presets — no container changes
-- modelSpecs for model lock: `enforce: true` + `prioritize: true` + single default spec = no user can escape the safety prompt
-- Tone switching via modelSpecs list: multiple entries, same model, same base safety prompt, tone-specific additions on top
-- Deployment order matters: template first, baseline verification second, YAML config third, accounts fourth, testing last
+1. `AdminChatWidget` (client component, mounted in DashboardShell) — fixed-position floating button, open/close, message history, streaming reader
+2. `GET /api/admin-chat/context` — assembles read-only context snapshot (system prompt text, user list, 7-day alert count, 24h message count); fetched once on widget open
+3. `POST /api/admin-chat` — auth-guarded streaming route; builds system prompt from context snapshot, streams Claude Sonnet response
+4. `PromptEditorClient` + `/prompt-editor` page — server component passes current `SYSTEM_PROMPT` constant as prop to client editor; client handles edit, review, and deploy
+5. `POST /api/prompt-editor/review` + `POST /api/prompt-editor/deploy` — AI critique with required-section checklist; Gist PATCH via `lib/gist-client.ts`
+6. `lib/gist-client.ts` — isolated GitHub API wrapper; reads `GITHUB_GIST_TOKEN` from env server-side only
+7. `CostSummaryCard` + `GET /api/cost-estimate` — MongoDB aggregation → token estimate → cost display in `/analytics`
+8. `lib/cost-estimates.ts` — pricing constants and calculator; easy to update when Anthropic changes rates
 
 ### Critical Pitfalls
 
-1. **System prompt bypass via HTTP interception** — `promptPrefix` sent as a client-controlled field can be intercepted and modified. Mitigation: use `modelSpecs.enforce: true` (server-side lock) AND write a self-reinforcing system prompt that instructs the model to resist override attempts. Neither layer alone is sufficient.
+1. **Indirect prompt injection via conversation logs** (OWASP LLM01:2025) — Children can embed hidden instructions in LibreChat messages that manipulate the admin chatbot when it reads those logs. Prevention: frame all retrieved log data as "UNTRUSTED USER-GENERATED CONTENT" in the system prompt; keep the chatbot read-only with no write API access; never quote raw message content verbatim in responses. Must be in the initial Phase 2 implementation — cannot be retrofitted.
 
-2. **Registration not fully closed (social login bypass)** — `ALLOW_REGISTRATION=false` does not block OAuth registration. Must also set `ALLOW_SOCIAL_LOGIN=false` AND `ALLOW_SOCIAL_REGISTRATION=false`. All three env vars required. Verify by navigating to `/register` post-deploy — it must not show a form.
+2. **Broken prompt deployed with no rollback** — A subtly wrong system prompt (bad YAML, missing required section, AI reviewer false-positive approval) weakens children's safety guardrails until manually reverted via GitHub UI + Railway redeploy. Prevention: save current Gist content to MongoDB before every deploy (enabling one-click revert); require YAML validation client-side before any Gist push; AI reviewer must check a required-section checklist (not just holistic review — LLMs show >95% acceptance rates in review tasks). Both the rollback mechanism and the required-section checklist must be present at Phase 3 launch.
 
-3. **Jailbreak via roleplay and fictional framing** — ages 10-14 will experiment. System prompt must explicitly address: DAN-style prompts, "pretend you have no rules", fictional framing, gradual escalation. Must pre-test adversarially before children use the app.
+3. **GitHub Gist token exposed in client bundle** — Using a `NEXT_PUBLIC_GITHUB_TOKEN` env var prefix or placing Gist update logic in a client component exposes the PAT in the browser bundle. Prevention: use a fine-grained PAT with Gist-only scope (not classic PAT with repo scope), store as `GITHUB_GIST_TOKEN` (no `NEXT_PUBLIC_` prefix), execute all Gist operations in a Next.js API route only. Also: do NOT use `gh gist edit` CLI — fine-grained PATs have a documented incompatibility with the GitHub CLI (Issue #7803); use the REST API directly.
 
-4. **API key exposed in public GitHub Gist** — `ANTHROPIC_API_KEY` must NEVER appear in `librechat.yaml`. Railway env vars only. Confirmed by LibreChat maintainers. Open the Gist in incognito after setup to verify.
+4. **Admin chatbot missing role check** — An auth check that only validates session existence (not `role === 'ADMIN'`) allows any authenticated session to query the chatbot with full access to conversation logs and config. Prevention: create a shared `requireAdminSession()` utility that checks both session and role; use it in every new API route from the start.
 
-5. **MongoDB crash loop on Railway trial plan** — 500 MB volume limit causes MongoDB to exhaust storage and crash-loop. Railway Hobby plan ($5/month, 5 GB volumes) is required. Verify service health in Railway dashboard before use.
-
-**Additional notable pitfalls:**
-- GitHub Gist config requires redeploy to take effect (no hot-reload) — use filename-specific raw URL
-- Model picker visible unless BOTH `ENDPOINTS=anthropic` env var AND `interface.modelSelect: false` in YAML are set
-- Skipping `--email-verified=True` on `create-user` causes interactive prompts to hang in Railway SSH session
-- `promptPrefix` may be truncated in very long conversations — keep system prompt under 500 tokens
+5. **Cost estimate using flat per-message rate** — Message count x average cost diverges significantly from actual billing because: system prompt tokens (~400) are charged as input on every message; output tokens cost 5x input; admin chatbot (Sonnet) is 3-15x more expensive than children's chat (Haiku). Prevention: use the token-estimate formula from STACK.md; track Sonnet and Haiku usage in separate cost buckets; always label estimates clearly with a link to Anthropic billing for exact figures.
 
 ## Implications for Roadmap
 
-Based on research, this project has a clear and shallow dependency graph. All work is configuration, not code. The entire deployment should complete in 2-3 phases, not the typical 5-6 phases of a custom application.
+Based on the dependency graph and pitfall-to-phase mapping from research, the natural build order is three sequential phases matching the three v2.2 features, from lowest to highest complexity.
 
-### Phase 1: Infrastructure and Baseline Deployment
+### Phase 1: Cost Tracking
 
-**Rationale:** Everything else depends on having a working LibreChat instance on Railway. This phase verifies the platform works before any safety configuration is applied. Doing safety config before baseline verification means debugging two things at once.
+**Rationale:** Entirely self-contained. Uses only existing infrastructure — MongoDB aggregation pattern from `/api/analytics` and Recharts already in use on the analytics page. No new external services, no new secrets, no new API patterns. Ships quickly and proves out the MongoDB + display pattern before adding complexity.
 
-**Delivers:** Running LibreChat instance on Railway URL, MongoDB and Meilisearch healthy, Anthropic API key accepted, admin account created, baseline login working.
+**Delivers:** Estimated monthly cost card in `/analytics`, separate line items for Haiku (children's chat) and Sonnet (admin tools), direct link to Anthropic billing console, prominent "estimated" disclaimer.
 
-**Addresses:** MongoDB crash loop pitfall (verify Hobby plan before proceeding), registration lockdown (set env vars during this phase), social login closure.
+**Addresses:** All P1 cost tracking features from FEATURES.md — estimated cost from message counts, model pricing display, rolling 30-day window, Anthropic billing link, per-model cost breakdown.
 
-**Avoids:** Pitfall 2 (registration bypass), Pitfall 6 (MongoDB crash loop). Both must be resolved before Phase 2.
+**Avoids:** Cost estimate pitfall — build the token-estimate formula correctly from the start (`system_prompt_tokens + chars/4`), not a flat per-message rate. Separate Haiku and Sonnet cost buckets from day one so Phase 2's admin chatbot usage is tracked correctly from the moment it ships.
 
-**Steps in scope:**
-- Deploy LibreChat Lite Railway template
-- Upgrade to Hobby plan ($5/month) — verify 5 GB MongoDB volume
-- Set core env vars: `ANTHROPIC_API_KEY`, `ENDPOINTS=anthropic`, `ALLOW_REGISTRATION=false`, `ALLOW_SOCIAL_LOGIN=false`, `ALLOW_SOCIAL_REGISTRATION=false`, `ALLOW_UNVERIFIED_EMAIL_LOGIN=true`, `TRUST_PROXY=1`, `NO_INDEX=true`
-- Temporarily enable registration, create admin account via UI, disable registration, redeploy
-- Verify baseline: LibreChat loads, Anthropic key accepted, MongoDB and Meilisearch show healthy
+**New files:** `lib/cost-estimates.ts`, `GET /api/cost-estimate`, `CostSummaryCard` component, modify `/analytics` page.
 
-### Phase 2: Safety Configuration and System Prompt
+**Research flag:** Standard patterns — skip `/gsd:research-phase`. All patterns are MongoDB aggregation + Recharts, both already active in the codebase.
 
-**Rationale:** The system prompt is the highest-stakes deliverable in this project. It must be authored carefully, tested adversarially, and locked in before children ever use the app. YAML configuration is the mechanism; the system prompt content is the safety guarantee.
+### Phase 2: Admin Chatbot Widget
 
-**Delivers:** `librechat.yaml` on GitHub Gist with model lock, UI restrictions, enforced safety system prompt, and at least two tone presets. `CONFIG_PATH` set and validated. All dangerous features disabled.
+**Rationale:** Introduces the streaming API route pattern that Phase 3 (prompt editor AI review) will reuse. The existing `/api/test-chat` route is non-streaming; this phase establishes the streaming pattern once so Phase 3 extends it rather than introducing it again. The chatbot is also the feature parents will use most frequently, delivering immediate ongoing value.
 
-**Addresses:** Features — model locking, UI simplification, tone presets, file uploads disabled, agents/web search/code execution disabled. Pitfalls — system prompt bypass (Pitfall 1), jailbreak via roleplay (Pitfall 4), API key in Gist (Pitfall 7), model picker visible (Pitfall 3), Gist caching behavior (Pitfall 5).
+**Delivers:** Floating chatbot widget visible on all dashboard pages (mounted in DashboardShell), streaming Claude Sonnet responses, context-aware system prompt injecting a read-only app-state snapshot (current safety prompt text, user list, recent alert count, 7-day message count), session message history.
 
-**Avoids:** Pitfall 1 (HTTP interception bypass) — must use `modelSpecs.enforce: true`, not just `promptPrefix`. Pitfall 4 (jailbreak) — must adversarially test before Phase 3.
+**Addresses:** All P1 chatbot features — floating button placement, open/close toggle, streaming, session history, context injection, loading indicator, inline error handling. Also introduces `requireAdminSession()` utility used by all Phase 2 and Phase 3 routes.
 
-**Steps in scope:**
-- Author `librechat.yaml`: `modelSpecs` with `enforce: true`, `interface` section disabling all unsafe UI, `fileConfig` disabling uploads
-- Write safety system prompt: Reformed Christian values, age-appropriate content, homework guidance stance, explicit jailbreak resistance language
-- Create 2-4 tone presets (Friendly Tutor and Casual Buddy required for launch; Balanced Helper and Standard Formal can be added in Phase 3)
-- Host as GitHub Gist (public raw URL, no secrets); set `CONFIG_PATH` in Railway
-- Redeploy and verify: check Railway logs for YAML parse success, verify model picker absent, verify presets appear
-- Open Gist in incognito — confirm no API keys visible
-- Adversarial test: DAN prompt, "ignore previous instructions", fictional framing, gradual escalation
+**Avoids:** Two critical pitfalls: (a) indirect prompt injection — system prompt must include explicit "UNTRUSTED USER-GENERATED CONTENT" framing before any conversation log data; chatbot must remain read-only; (b) missing role check — `requireAdminSession()` utility is created here and used in all new API routes.
 
-### Phase 3: Child Accounts and Acceptance Testing
+**New files:** `AdminChatWidget` component, `GET /api/admin-chat/context`, `POST /api/admin-chat`, `lib/admin-system-prompt.ts`, `lib/auth-utils.ts` (for `requireAdminSession()`), modify `DashboardShell`.
 
-**Rationale:** Child accounts are created last, after the full safety configuration is verified. This ensures children never interact with an incompletely locked system. Acceptance testing from a child's perspective (not admin's) catches UX and safety gaps.
+**shadcn installs:** `npx shadcn@latest add scroll-area`.
 
-**Delivers:** Two child accounts created and tested. All checklist items from PITFALLS.md "Looks Done But Isn't" section verified. App ready for handoff.
+**Research flag:** Standard patterns — skip `/gsd:research-phase`. Streaming pattern fully documented in STACK.md with verified TypeScript code. Widget placement follows established DashboardShell pattern directly.
 
-**Addresses:** Admin-created accounts (FEATURES.md P1), jailbreak testing from child accounts (PITFALLS.md), tone preset verification, system prompt confirmation.
+### Phase 3: Prompt Editor with Gist Deploy
 
-**Steps in scope:**
-- SSH into LibreChat service via Railway dashboard
-- Run `npm run create-user` for each child with `--email-verified=True`
-- Log in as each child; verify: no model picker, presets appear and switch tone, registration page returns error, file upload absent
-- Test each tone preset in a real conversation — confirm meaningfully different feel
-- Run adversarial tests from child accounts (not admin)
-- Verify "what are your instructions?" response is appropriate
-- Document Railway URL and child account credentials for handoff
+**Rationale:** Most complex phase — four distinct sub-steps (load, edit, AI review, deploy), one new external service (GitHub Gist API), one new secret, and the most critical safety requirement of the milestone (rollback before every deploy). Building last means the streaming pattern from Phase 2 is established (AI review reuses it) and the MongoDB patterns from Phase 1 are available for saving pre-deploy backups.
+
+**Delivers:** System prompt editor page at `/prompt-editor` (NavSidebar link added), AI review with structured required-section checklist, client-side YAML validation before any deploy attempt, pre-deploy Gist content backup enabling one-click revert, Gist push with confirmation modal, "Redeploy LibreChat Required" notice after successful deploy. Diff view (current vs. proposed) included given the safety sensitivity of the action.
+
+**Addresses:** All P1 prompt editor features — current prompt pre-loaded, save/discard controls, AI review (non-blocking), test-in-sandbox (reuses existing `/api/test-chat` with draft prompt override), deploy to Gist, confirmation modal, success/failure feedback.
+
+**Avoids:** Three critical pitfalls: (a) broken prompt with no rollback — save current Gist content to MongoDB before every deploy; (b) Gist token insecure storage — fine-grained PAT, server-side only via `lib/gist-client.ts`, `GITHUB_GIST_TOKEN` env var; (c) YAML validation bypassed — parse client-side before any deploy attempt blocks the push.
+
+**New files:** `/prompt-editor/page.tsx`, `/prompt-editor/loading.tsx`, `PromptEditorClient`, `POST /api/prompt-editor/review`, `POST /api/prompt-editor/deploy`, `lib/gist-client.ts`, NavSidebar modification.
+
+**New secret:** `GITHUB_GIST_TOKEN` in Railway environment variables (fine-grained PAT, Gist scope only). Must be provisioned before Phase 3 testing.
+
+**shadcn installs:** `npx shadcn@latest add textarea`.
+
+**Research flag:** Needs attention during planning — the rollback mechanism (where pre-deploy backup is stored: new `prompt_history` collection vs. a field on an existing document) and the required-section checklist (which exact sections must be present for AI review to pass — jailbreak resistance, content rules, tone, redirect language) should be explicitly designed before implementation begins. The Railway redeploy trigger strategy also needs a decision: automate via Railway CLI after Gist push, or show a manual instruction to the parent.
 
 ### Phase Ordering Rationale
 
-- Phase 1 before Phase 2: No YAML config can be tested without a running instance. Also, the MongoDB volume size must be verified before any data is stored.
-- Phase 2 before Phase 3: Children must never use an instance without the full safety configuration active. The system prompt is the last thing to be verified, not the first.
-- All three phases are essentially sequential with no parallelism — each phase's output is the next phase's input.
-- The overall project scope is 1-2 focused sessions, not a multi-week engagement.
+- **Dependency order:** Cost tracking has no external dependencies and no new API patterns; chatbot introduces streaming and the `requireAdminSession()` utility; prompt editor reuses streaming, uses the auth utility, and needs the MongoDB backup pattern established earlier.
+- **Risk sequencing:** The two highest-risk security items (indirect injection hardening in Phase 2, Gist token security in Phase 3) are tackled after codebase patterns are established but before any children's safety infrastructure is touched by the new UI.
+- **Independent testability:** Each phase produces independently shippable functionality. A parent can use cost tracking before the chatbot exists; the chatbot is fully usable before the prompt editor is built.
+- **Railway secret prerequisite:** `GITHUB_GIST_TOKEN` must be added to Railway before Phase 3 testing can begin. This is a hard prerequisite that should be listed as the first task in Phase 3 planning.
 
 ### Research Flags
 
-Phases likely needing deeper research during planning:
+**Needs attention during planning:**
+- **Phase 3 (Prompt Editor):** Three design decisions must be made before implementation: (1) rollback storage — new `prompt_history` MongoDB collection vs. appending to existing collection; (2) required-section checklist content — which exact named sections must be present for AI review to pass; (3) Railway redeploy trigger — automated via Railway CLI after Gist push, or manual instruction displayed to the parent.
 
-- **Phase 2 (system prompt):** The safety system prompt content is partially researched (structure and jailbreak resistance patterns confirmed), but the specific Reformed Christian values language and homework guidance stance are domain-specific and require the parent's input. This is not a technical research gap — it's content authoring that requires family values input.
-
-Phases with standard patterns (skip `/gsd:research-phase`):
-
-- **Phase 1 (deployment):** Fully documented in LibreChat Railway docs. Template deploy is one click. No research needed during planning.
-- **Phase 3 (accounts + testing):** `create-user` command syntax confirmed. Test checklist is fully specified in PITFALLS.md. No research needed.
+**Standard patterns (skip `/gsd:research-phase`):**
+- **Phase 1 (Cost Tracking):** MongoDB aggregation + Recharts — both already active in the codebase; no new patterns.
+- **Phase 2 (Admin Chatbot):** Streaming pattern fully documented in STACK.md with verified TypeScript code; widget placement in DashboardShell is a one-line addition with no new architectural decisions.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | MEDIUM | LibreChat docs and Railway template verified. The `:latest` Docker image tag introduces uncertainty about exact versions post-deploy. `claude-haiku-4-5` model ID confirmed via Anthropic official announcement. |
-| Features | HIGH | All feature toggles verified against official LibreChat docs. Exact env var names and YAML field paths confirmed. One note: exact model ID in `ANTHROPIC_MODELS` may need `claude-haiku-4-5-20251001` (versioned) vs alias. |
-| Architecture | HIGH | LibreChat architecture is well-documented. Config flow and deployment order confirmed via official docs and GitHub discussions. Railway private networking behavior confirmed. |
-| Pitfalls | HIGH | All critical pitfalls backed by specific GitHub issues with issue numbers. Security pitfalls confirmed by LibreChat maintainers in official discussions. |
+| Stack | HIGH | All technologies already installed and deployed. Streaming pattern verified against official Anthropic docs. GitHub Gist PATCH endpoint is stable and versioned (2022-11-28). Node.js 18+ native fetch confirmed available. |
+| Features | HIGH | Feature set is narrow and well-defined for a two-parent deployment. Anthropic Admin API blocker confirmed from official docs. Anti-features list is well-reasoned with documented alternatives. |
+| Architecture | HIGH | Based on direct codebase inspection of `/data/home/KidAI/src/`. Integration points (DashboardShell structure, analytics route aggregate pattern, test-chat route pattern, system-prompt.ts import) all verified against actual source files. |
+| Pitfalls | HIGH | Indirect injection sourced from OWASP LLM Top 10 2025 (LLM01). Token security sourced from GitHub Docs and fine-grained PAT GA announcement. LLM review bias sourced from peer-reviewed research (Nov 2025). YAML deploy risk is operational, not speculative. |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Exact model ID format in `ANTHROPIC_MODELS`:** Research shows both `claude-haiku-4-5` and `claude-haiku-4-5-20251001` used in different contexts. STACK.md uses `claude-haiku-4-5`; PITFALLS.md references `claude-haiku-4-5-20251001`. Validate during Phase 2 by checking which form LibreChat accepts without error in logs.
+- **Exact Sonnet 4.6 model string:** STACK.md uses `claude-sonnet-4-6-20260217`. This should be verified against the Anthropic models API before Phase 2 implementation. The SDK returns a clear 400 error on wrong model strings — trivial to detect and fix in development.
 
-- **Railway SSH access method:** ARCHITECTURE.md describes two methods (right-click SSH command, Railway CLI). During Phase 3, confirm which method works in the parent's Railway account tier before needing to create accounts.
+- **Individual vs. organization Anthropic account:** The Anthropic Admin API (for exact token counts) requires an org-level account. The current deployment is assumed to use an individual account based on context, but this has not been verified. If it turns out to be an org account, the Approach B Admin API integration from STACK.md becomes viable for v2.3+.
 
-- **System prompt content (family values):** Research covers structure and jailbreak resistance patterns but cannot define the specific Reformed Christian values language. This gap requires the parent's input before Phase 2 authoring begins — not a technical gap.
+- **Fine-grained PAT and Gist scope:** Fine-grained PATs are GA (March 2025) and Gist scoping is documented. The `gh` CLI incompatibility with fine-grained PATs is documented in GitHub Issue #7803 — use REST API directly, not `gh gist edit`. Verify the fine-grained PAT works with the Gist PATCH endpoint before beginning Phase 3 implementation.
 
-- **`modelSpecs.enforce: true` UI interaction:** Research confirms enforce locks specs, but notes a potential conflict with interface options if misconfigured. Plan to deploy with `enforce: false` first, verify presets appear correctly, then flip to `enforce: true` to catch conflicts early.
+- **Rollback storage design:** Where to store the pre-deploy Gist content backup needs a decision during Phase 3 planning. Options: new `prompt_history` collection (clean separation, trivial rollback query) vs. a single `config_backups` document in an existing collection (simpler schema). Either works — the decision should be made before writing the deploy route.
+
+- **Per-message token estimate calibration:** The token estimates used in Phase 1 (average input ~400 tokens, output ~150 tokens per children's message) are derived from typical conversational message lengths, not measured from actual KidAI traffic. After Phase 1 ships, compare the estimated cost against one week of actual Anthropic billing to calibrate the constants in `lib/cost-estimates.ts`.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-
-- [LibreChat official docs — Railway deployment](https://www.librechat.ai/docs/remote/railway) — template links, deployment steps
-- [LibreChat official docs — Model Specs object structure](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/model_specs) — enforce, promptPrefix, multiple spec entries
-- [LibreChat official docs — Interface object structure](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/interface) — all UI toggle options
-- [LibreChat official docs — Environment Variables](https://www.librechat.ai/docs/configuration/dotenv) — all env var names confirmed
-- [LibreChat official docs — Authentication](https://www.librechat.ai/docs/configuration/authentication) — create-user syntax
-- [LibreChat official docs — File Config object](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/file_config) — disabled: true per endpoint
-- [Anthropic official — Claude Haiku 4.5 announcement](https://www.anthropic.com/news/claude-haiku-4-5) — model ID, release date
-- [Anthropic official — Mitigate jailbreaks and prompt injections](https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/mitigate-jailbreaks) — system prompt patterns
-- [LibreChat GitHub Discussion #3868](https://github.com/danny-avila/LibreChat/discussions/3868) — CONFIG_PATH security; maintainer confirms keys in env only
-- [LibreChat GitHub Discussion #10212](https://github.com/danny-avila/LibreChat/discussions/10212) — create-user non-interactive syntax
+- Anthropic Streaming Messages Docs — `create({ stream: true })` async iterable pattern, `content_block_delta` event type verified
+- Anthropic Usage & Cost API Docs — Admin API key requirement confirmed; `response.usage` field available on all non-streaming responses
+- GitHub REST API Docs, PATCH /gists/{gist_id} — stable versioned endpoint, auth headers, request/response schema
+- GitHub Fine-grained PATs GA announcement (March 2025) — scope to Gist operations only confirmed
+- Anthropic Pricing 2026 — Sonnet 4.6: $3/$15 per M tokens; Haiku 4.5: $1/$5 per M tokens
+- OWASP LLM Top 10 2025, LLM01 — Indirect prompt injection attack pattern and prevention cheat sheet
+- Next.js Docs — Server-only environment variables, ReadableStream route handler support
+- Direct codebase inspection: `/data/home/KidAI/src/` — DashboardShell, analytics route aggregate pattern, test-chat streaming capability, system-prompt.ts import pattern
 
 ### Secondary (MEDIUM confidence)
-
-- [LibreChat GitHub Issue #9042](https://github.com/danny-avila/LibreChat/issues/9042) — promptPrefix HTTP interception vulnerability (August 2025, open)
-- [LibreChat GitHub Issue #11808](https://github.com/danny-avila/LibreChat/issues/11808) — MongoDB connection crash loop
-- [LibreChat GitHub Issue #5466](https://github.com/danny-avila/LibreChat/issues/5466) — promptPrefix truncation in long conversations
-- [LibreChat GitHub Issue #9027](https://github.com/danny-avila/LibreChat/issues/9027) — social auth registration bypass
-- [LibreChat GitHub Discussion #7634](https://github.com/danny-avila/LibreChat/discussions/7634) — custom endpoints appear in ENDPOINTS env var workaround
-- [LibreChat community architecture gist](https://gist.github.com/ChakshuGautam/fca45e48a362b6057b5e67145b82a994) — internal component overview
-- [LibreChat GitHub Releases](https://github.com/danny-avila/LibreChat/releases) — v0.8.4 confirmed as latest stable March 20, 2025
-- [DeepWiki — Model Specifications](https://deepwiki.com/LibreChat-AI/librechat.ai/2.3-model-specifications) — modelSpecs UI behavior
+- Vercel AI SDK vs. Anthropic SDK comparison (Strapi blog) — confirms AI SDK multi-provider abstraction adds no value for single-provider apps; bundle size estimate ~200KB
+- GitHub CLI Issue #7803 — `gh gist` commands incompatible with fine-grained PATs (workaround: use REST API directly)
+- "Potential Legal Challenges to AI Rubber-Stamping" research (Nov 2025) — LLM review tasks show >95% acceptance rates; structured checklist required
 
 ### Tertiary (LOW confidence)
-
-- [Max Woolf's Blog — Claude Haiku 4.5 jailbreak resistance evaluation](https://minimaxir.com/2025/10/claude-haiku-jailbreak/) — jailbreak resistance characterization; single external source
+- Per-message token estimates (~400 input, ~150 output for children's chat) — derived from typical conversational message lengths, not measured from actual KidAI traffic. Calibrate against real billing after Phase 1 ships.
 
 ---
-*Research completed: 2026-04-03*
+*Research completed: 2026-04-04*
 *Ready for roadmap: yes*
