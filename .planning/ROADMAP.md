@@ -58,7 +58,7 @@ AI-powered admin tools: cost tracking, floating chatbot assistant, and rules edi
 
 Real-time safety alert emails and weekly activity summary emails to parents, powered by Resend with Railway cron scheduling.
 
-- [ ] **Phase 13: Parent Email Notifications** — Real-time safety alert emails when concerning content detected, weekly activity summary emails with per-child usage stats and topics
+- [x] **Phase 13: Parent Email Notifications** — Real-time safety alert emails when concerning content detected, weekly activity summary emails with per-child usage stats and topics (completed 2026-04-05)
   - **Goal:** Parents receive immediate email alerts for safety events and a weekly digest of each child's chat activity, so they stay informed without needing to check the dashboard
   - **Requirements:** [NOTIFY-01, NOTIFY-02, NOTIFY-03, NOTIFY-04, NOTIFY-05]
   - **Plans:** 3 plans
@@ -96,4 +96,4 @@ Plans:
 | 10. Cost Tracking | v2.2 | 2/2 | Complete | 2026-04-05 |
 | 11. Admin Chatbot | v2.2 | 2/2 | Complete | 2026-04-05 |
 | 12. Prompt Editor | v2.2 | 2/2 | Complete | 2026-04-05 |
-| 13. Parent Email Notifications | 2/3 | In Progress|  | — |
+| 13. Parent Email Notifications | 3/3 | Complete   | 2026-04-05 | — |
