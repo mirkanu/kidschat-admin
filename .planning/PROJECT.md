@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A private, self-hosted AI chat application for two children (Sebastian, 14; Penelope, 12), deployed on Railway using LibreChat. The app provides a safe, parent-controlled interface to Claude Haiku 4.5 with enforced content boundaries rooted in Reformed Christian family values. Each child has their own account with separate chat history and four switchable conversation tone presets. Parents have full oversight through a dedicated admin dashboard with conversation logs, usage analytics, and safety alerts.
+A private, self-hosted AI chat application for two children (Sebastian, 14; Penelope, 12), deployed on Railway using LibreChat. The app provides a safe, parent-controlled interface to Claude Haiku 4.5 with enforced content boundaries rooted in Reformed Christian family values. Each child has their own account with separate chat history and four switchable conversation tone presets. Parents have full oversight and trust through a dedicated admin dashboard with conversation logs, usage analytics, safety alerts, transparent safety rules, and an embedded test mode to verify safety boundaries firsthand.
 
 ## Core Value
 
@@ -28,15 +28,15 @@ Children can safely explore and learn through AI conversation, with content guar
 - ✓ User management CRUD (create, edit, delete accounts) from dashboard — v2.0
 - ✓ Usage statistics: messages/day, active hours, tone preset usage with per-child breakdown — v2.0
 - ✓ Safety alert detection: redirection and jailbreak pattern matching with event log — v2.0
+- ✓ Trust-focused dashboard home with safety status, activity digest, recent alerts, quick links — v2.1
+- ✓ Safety Rules page with parent-friendly summary and expandable full system prompt — v2.1
+- ✓ Parent test mode: embedded chat sandbox with predefined safety scenario buttons — v2.1
+- ✓ Safety detection badges showing which rule triggered in real-time — v2.1
+- ✓ Users page bug fixed (was showing 0 users) — v2.1
 
 ### Active
 
-- [ ] Trust-focused dashboard home with safety status, recent alerts, and activity digest
-- [ ] Safety rules page with parent-friendly summary and expandable full system prompt
-- [ ] Parent test mode: embedded chat sandbox + predefined safety scenario buttons
-- [ ] Safety system status indicator with last-checked timestamp
-- [ ] Activity digest: 24h summary of messages, safety events, and system health
-- [ ] Fix users page bug (shows 0 users when 4 exist)
+(None — planning next milestone)
 
 ### Out of Scope
 
@@ -46,30 +46,20 @@ Children can safely explore and learn through AI conversation, with content guar
 - Mobile app — browser access is sufficient
 - Real-time push notifications — alert log sufficient for now
 - Modifying LibreChat config from dashboard — config lives in GitHub Gist
-
-## Current Milestone: v2.1 Parent Trust
-
-**Goal:** Make the admin dashboard a trust center where Emily-Kate can see at a glance that all safety systems are working, understand what rules protect the children, and test the safety boundaries herself.
-
-**Target features:**
-- Dashboard home redesigned as trust summary (safety status, alerts, activity digest)
-- Safety rules page with friendly explanation + full system prompt
-- Parent test mode with chat sandbox and predefined safety scenario buttons
-- Safety system status indicator
-- Fix users page bug
+- ML-based safety detection — text pattern matching sufficient for now
 
 ## Context
 
-Shipped v2.0 on 2026-04-04. Two milestones complete.
+Shipped v2.1 on 2026-04-05. Three milestones complete.
 - **LibreChat URL:** https://librechat-production-bff2.up.railway.app
 - **Admin Dashboard URL:** https://kidschat-admin-production.up.railway.app
 - **Config:** https://gist.github.com/mirkanu/e23b999f1d3cd77726a97c20e26f0abf
 - **Stack:** LibreChat + Next.js 15 admin dashboard, MongoDB, Meilisearch on Railway
-- **Admin dashboard stack:** Next.js 15, NextAuth v5, Tailwind CSS v3, shadcn/ui, Recharts, MongoDB direct queries
+- **Admin dashboard stack:** Next.js 15, NextAuth v5, Tailwind CSS v3, shadcn/ui, Recharts, Anthropic SDK, MongoDB direct queries
 - **Accounts:** 4 total (2 ADMIN parents, 2 USER children)
-- **Codebase:** ~4,400 LOC TypeScript/TSX
+- **Codebase:** ~5,879 LOC TypeScript/TSX
 - **Known limitation:** LibreChat v0.8.4 has outdated config schema warnings (non-blocking)
-- **Known limitation:** Safety detection uses text pattern matching (no ML) — may have false positives/negatives
+- **Known limitation:** Safety detection uses text pattern matching (26 redirect + 15 jailbreak patterns) — may have false positives/negatives
 
 ## Constraints
 
@@ -88,13 +78,14 @@ Shipped v2.0 on 2026-04-04. Two milestones complete.
 | GitHub Gist for config | Easy to edit without redeploying, version history built-in | ✓ Good — requires redeploy to pick up changes |
 | Tone presets (not per-child prompts) | Kids choose their experience; safety rules are universal | ✓ Good |
 | Railway CLI for all ops | Automate everything, no manual dashboard steps | ✓ Good |
-| MongoDB TCP proxy for admin | Direct DB access for account creation and conversation oversight | ✓ Good |
 | Database name is "test" | Railway template default, not configurable without migration | ⚠️ Revisit — works but non-obvious |
 | Safety prompt as identity | Frame rules as AI's values, not external constraints — better jailbreak resistance | ✓ Good |
-| Separate Next.js dashboard | Decoupled from LibreChat — independent deploy, own auth, direct MongoDB | ✓ Good — clean separation of concerns |
-| Server components query MongoDB directly | Avoids self-referencing fetch auth issues in production | ✓ Good — learned from production bug |
+| Separate Next.js dashboard | Decoupled from LibreChat — independent deploy, own auth, direct MongoDB | ✓ Good |
+| Server components query MongoDB directly | Avoids self-referencing fetch auth issues in production | ✓ Good |
 | Recharts for analytics | Lightweight, composable, Tailwind-compatible charting | ✓ Good |
 | Text pattern matching for safety | No ML dependency, detects common patterns, fast | ⚠️ Revisit — may need ML for better accuracy |
+| Direct Anthropic API for test mode | Dashboard calls Claude directly, not through LibreChat — simpler, admin-only | ✓ Good |
+| Hardcoded system prompt in dashboard | Rarely changes, avoids Gist fetch complexity — update manually when prompt changes | ✓ Good — single source in system-prompt.ts |
 
 ---
-*Last updated: 2026-04-04 after v2.1 milestone start*
+*Last updated: 2026-04-05 after v2.1 milestone completion*

@@ -1,5 +1,22 @@
 # Milestones
 
+## v2.1 Parent Trust (Shipped: 2026-04-05)
+
+**Phases completed:** 3 phases, 6 plans
+**Timeline:** 2026-04-04 → 2026-04-05
+**Lines of code:** 5,879 TypeScript/TSX (+1,479 from v2.0)
+
+**Key accomplishments:**
+- Trust-focused dashboard home: safety status indicator, 24h activity digest, recent alerts preview, quick-link navigation
+- Users page bug fixed (self-referencing fetch → direct MongoDB query)
+- Safety Rules transparency page: parent-friendly content boundary summary, expandable full system prompt, tone preset descriptions
+- Parent Test Mode: embedded chat sandbox calling Claude Haiku 4.5 with safety prompt, predefined scenario buttons, real-time safety detection badges
+- Improved safety pattern detection: 26 redirect patterns with descriptive labels (up from 10)
+
+**Delivered:** A trust center for parents — Emily-Kate can see all safety systems are active, read every content rule in plain language, and personally test the safety boundaries through an embedded chat sandbox.
+
+---
+
 ## v2.0 Admin Dashboard (Shipped: 2026-04-04)
 
 **Phases completed:** 3 phases, 8 plans

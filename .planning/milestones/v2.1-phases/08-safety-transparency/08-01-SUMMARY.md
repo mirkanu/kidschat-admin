@@ -101,3 +101,12 @@ None - no external service configuration required.
 ---
 *Phase: 08-safety-transparency*
 *Completed: 2026-04-04*
+
+## Self-Check: PASSED
+
+- FOUND: src/app/(dashboard)/safety-rules/page.tsx
+- FOUND: src/app/(dashboard)/safety-rules/loading.tsx
+- FOUND: src/components/ui/accordion.tsx
+- FOUND: .planning/phases/08-safety-transparency/08-01-SUMMARY.md
+- FOUND commit 4d4150e: chore(08-01): install shadcn Accordion component
+- FOUND commit 327aa90: feat(08-01): create Safety Rules page with all four content sections
