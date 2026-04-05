@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { AlertsTable } from "@/components/dashboard/alerts-table";
 import { Badge } from "@/components/ui/badge";
 import type { SafetyEvent } from "@/lib/safety-patterns";
+import { notifyNewAlerts } from "@/lib/notify-safety-alert";
 
 async function getAlertsDirectly(): Promise<SafetyEvent[]> {
   const getMongoClient = (await import("@/lib/mongodb")).default;
@@ -115,6 +116,16 @@ export default async function AlertsPage() {
 
   // Use direct MongoDB query in server component — avoids HTTP auth complexity
   const alerts = await getAlertsDirectly();
+
+  // Fire-and-forget: notify ADMIN users of any new safety events (last 24h)
+  // Dedup logic in notifyNewAlerts prevents duplicate emails within 1 hour
+  // Wrapped in try/catch so email failures never break page rendering
+  try {
+    await notifyNewAlerts(alerts.slice(0, 10));
+  } catch {
+    // Email delivery is best-effort — log to server console but don't surface to UI
+    console.error("[AlertsPage] notifyNewAlerts failed silently");
+  }
 
   const redirectCount = alerts.filter((a) => a.type === "safety_redirect").length;
   const jailbreakCount = alerts.filter((a) => a.type === "jailbreak_attempt").length;
