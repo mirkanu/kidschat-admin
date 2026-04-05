@@ -72,7 +72,10 @@ Plans:
   2. The chatbot answers questions about the current safety rules, tone presets, and how the app works using accurate, up-to-date context
   3. The chatbot can read and summarize recent conversation logs when asked
   4. All child-generated content read by the chatbot is explicitly marked UNTRUSTED — the chatbot cannot be manipulated by content children type into LibreChat
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 11-01-PLAN.md — Backend: system prompt builder, context API, streaming chat route
+- [ ] 11-02-PLAN.md — Frontend: floating chat widget with streaming UI, mounted in DashboardShell
 
 ### Phase 12: Prompt Editor
 **Goal**: Parents can safely edit, review, test, and deploy the system prompt without touching GitHub directly
@@ -100,5 +103,5 @@ Plans:
 | 8. Safety Transparency | v2.1 | 2/2 | Complete | 2026-04-04 |
 | 9. Parent Test Mode | v2.1 | 2/2 | Complete | 2026-04-05 |
 | 10. Cost Tracking | 2/2 | Complete    | 2026-04-05 | - |
-| 11. Admin Chatbot | v2.2 | 0/? | Not started | - |
+| 11. Admin Chatbot | v2.2 | 0/2 | Planning complete | - |
 | 12. Prompt Editor | v2.2 | 0/? | Not started | - |
