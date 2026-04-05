@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Admin Intelligence
-status: defining_requirements
+status: ready_to_plan
 stopped_at: null
 last_updated: "2026-04-05T02:00:00.000Z"
-last_activity: "2026-04-05 — Milestone v2.2 started"
+last_activity: "2026-04-05 — Roadmap created for v2.2 Admin Intelligence (3 phases, 15 requirements)"
 progress:
   total_phases: 3
-  completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
-  percent: 100
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-05)
 
 **Core value:** Children can safely explore and learn through AI conversation, with content guardrails that a parent controls and trusts.
-**Current focus:** v2.2 Admin Intelligence — defining requirements
+**Current focus:** v2.2 Admin Intelligence — Phase 10: Cost Tracking
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-04-05 — Milestone v2.2 started
+Phase: 10 of 12 (Cost Tracking)
+Plan: — (not yet planned)
+Status: Ready to plan
+Last activity: 2026-04-05 — v2.2 roadmap created, Phase 10 ready
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -49,6 +49,15 @@ Progress: [░░░░░░░░░░] 0%
 - Test mode calls Anthropic API directly (not through LibreChat)
 - System prompt shared via src/lib/system-prompt.ts (single source of truth)
 
+### v2.2 Architecture Decisions (from research)
+
+- Cost estimates use token formula, not flat per-message rate: `(system_prompt_tokens + input_chars/4) * $0.000001 + (output_chars/4) * $0.000005`
+- Chatbot context fetched once on widget open (not per-message) via `/api/admin-chat/context`
+- All child log content framed as UNTRUSTED in chatbot system prompt (OWASP LLM01:2025)
+- Gist token stored as `GITHUB_GIST_TOKEN` (no `NEXT_PUBLIC_` prefix), never in client bundle
+- Use REST API for Gist PATCH — not `gh gist edit` (incompatible with fine-grained PATs, Issue #7803)
+- Pre-deploy rollback: save current Gist content to MongoDB before every deploy
+
 ### Quick Tasks Completed
 
 | # | Description | Date | Commit | Directory |
@@ -62,10 +71,11 @@ None yet.
 
 ### Blockers/Concerns
 
-None.
+- Phase 12 prerequisite: `GITHUB_GIST_TOKEN` must be added to Railway env before Phase 12 testing can begin (fine-grained PAT, Gist scope only)
+- Phase 12 design decision needed during planning: rollback storage — new `prompt_history` collection vs. field on existing document
 
 ## Session Continuity
 
 Last session: 2026-04-05
-Stopped at: Milestone v2.1 complete
+Stopped at: v2.2 roadmap created — ready to plan Phase 10
 Resume file: None

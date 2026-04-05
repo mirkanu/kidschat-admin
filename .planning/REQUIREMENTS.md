@@ -52,27 +52,27 @@ Requirements for admin intelligence milestone. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| COST-01 | TBD | Pending |
-| COST-02 | TBD | Pending |
-| COST-03 | TBD | Pending |
-| CHAT-01 | TBD | Pending |
-| CHAT-02 | TBD | Pending |
-| CHAT-03 | TBD | Pending |
-| CHAT-04 | TBD | Pending |
-| CHAT-05 | TBD | Pending |
-| EDIT-01 | TBD | Pending |
-| EDIT-02 | TBD | Pending |
-| EDIT-03 | TBD | Pending |
-| EDIT-04 | TBD | Pending |
-| EDIT-05 | TBD | Pending |
-| EDIT-06 | TBD | Pending |
-| EDIT-07 | TBD | Pending |
+| COST-01 | Phase 10 | Pending |
+| COST-02 | Phase 10 | Pending |
+| COST-03 | Phase 10 | Pending |
+| CHAT-01 | Phase 11 | Pending |
+| CHAT-02 | Phase 11 | Pending |
+| CHAT-03 | Phase 11 | Pending |
+| CHAT-04 | Phase 11 | Pending |
+| CHAT-05 | Phase 11 | Pending |
+| EDIT-01 | Phase 12 | Pending |
+| EDIT-02 | Phase 12 | Pending |
+| EDIT-03 | Phase 12 | Pending |
+| EDIT-04 | Phase 12 | Pending |
+| EDIT-05 | Phase 12 | Pending |
+| EDIT-06 | Phase 12 | Pending |
+| EDIT-07 | Phase 12 | Pending |
 
 **Coverage:**
 - v2.2 requirements: 15 total
-- Mapped to phases: 0
-- Unmapped: 15 ⚠️
+- Mapped to phases: 15
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-05*
-*Last updated: 2026-04-05 after initial definition*
+*Last updated: 2026-04-05 — traceability complete after roadmap creation*
