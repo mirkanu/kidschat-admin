@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Accordion,
@@ -7,8 +8,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ShieldCheck, FileText, AlertTriangle, Palette } from "lucide-react";
+import { ShieldCheck, FileText, AlertTriangle, Palette, PenLine } from "lucide-react";
 import { SYSTEM_PROMPT } from "@/lib/system-prompt";
+import getMongoClient from "@/lib/mongodb";
 
 const TONE_PRESETS = [
   {
@@ -41,6 +43,21 @@ export default async function SafetyRulesPage() {
   const session = await auth();
   if (!session) {
     redirect("/login");
+  }
+
+  let activePrompt = SYSTEM_PROMPT;
+
+  try {
+    const client = await getMongoClient();
+    const db = client.db("test");
+    const activePromptDoc = await db
+      .collection("app_config")
+      .findOne({ key: "active_prompt" });
+    if (activePromptDoc?.value) {
+      activePrompt = activePromptDoc.value as string;
+    }
+  } catch {
+    // Fall back to hardcoded constant if MongoDB is unavailable
   }
 
   return (
@@ -124,11 +141,20 @@ export default async function SafetyRulesPage() {
               </AccordionTrigger>
               <AccordionContent>
                 <pre className="whitespace-pre-wrap font-mono text-xs bg-muted p-4 rounded-lg overflow-x-auto">
-                  {SYSTEM_PROMPT}
+                  {activePrompt}
                 </pre>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
+          <div className="mt-4">
+            <Link
+              href="/prompt-editor"
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <PenLine className="h-4 w-4" />
+              Edit Prompt
+            </Link>
+          </div>
         </CardContent>
       </Card>
 
