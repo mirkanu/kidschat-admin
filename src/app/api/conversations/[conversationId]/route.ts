@@ -48,16 +48,25 @@ export async function GET(
     .sort({ createdAt: 1 })
     .toArray();
 
-  const messages: MessageItem[] = rawMessages.map((msg) => ({
-    messageId: msg.messageId ?? msg._id.toString(),
-    text: msg.text ?? "",
-    isCreatedByUser: Boolean(msg.isCreatedByUser),
-    sender: msg.sender ?? "Unknown",
-    createdAt:
-      msg.createdAt instanceof Date
-        ? msg.createdAt.toISOString()
-        : String(msg.createdAt ?? ""),
-  }));
+  const messages: MessageItem[] = rawMessages.map((msg) => {
+    let text = msg.text ?? "";
+    if (!text && Array.isArray(msg.content)) {
+      text = msg.content
+        .filter((b: { type: string; text?: string }) => b.type === "text")
+        .map((b: { text: string }) => b.text)
+        .join("\n\n");
+    }
+    return {
+      messageId: msg.messageId ?? msg._id.toString(),
+      text,
+      isCreatedByUser: Boolean(msg.isCreatedByUser),
+      sender: msg.sender ?? "Unknown",
+      createdAt:
+        msg.createdAt instanceof Date
+          ? msg.createdAt.toISOString()
+          : String(msg.createdAt ?? ""),
+    };
+  });
 
   const conversationDetail: ConversationDetail = {
     conversationId: conversation.conversationId ?? conversationId,
