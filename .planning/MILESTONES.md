@@ -1,5 +1,14 @@
 # Milestones
 
+## v2.3 Parent Notifications (Shipped: 2026-04-05)
+
+**Phases completed:** 1 phases, 3 plans, 0 tasks
+
+**Key accomplishments:**
+- (none recorded)
+
+---
+
 ## v2.2 Admin Intelligence (Shipped: 2026-04-05)
 
 **Phases completed:** 3 phases, 6 plans + 5 quick tasks

@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A private, self-hosted AI chat application for two children (Sebastian, 14; Penelope, 12), deployed on Railway using LibreChat. The app provides a safe, parent-controlled interface to Claude Haiku 4.5 with enforced content boundaries rooted in Reformed Christian family values. Each child has their own account with separate chat history and four switchable conversation tone presets. Parents have full oversight and trust through a dedicated admin dashboard with conversation logs, usage analytics, safety alerts, transparent safety rules, and an embedded test mode to verify safety boundaries firsthand.
+A private, self-hosted AI chat application for two children (Sebastian, 14; Penelope, 12), deployed on Railway using LibreChat. The app provides a safe, parent-controlled interface to Claude Haiku 4.5 with enforced content boundaries rooted in Reformed Christian family values. Each child has their own account with separate chat history and four switchable conversation tone presets. Parents have full oversight and trust through a dedicated admin dashboard with conversation logs, usage analytics, safety alerts, transparent safety rules, an embedded test mode to verify safety boundaries firsthand, and email notifications for safety events and weekly activity summaries.
 
 ## Core Value
 
@@ -39,6 +39,9 @@ Children can safely explore and learn through AI conversation, with content guar
 - ✓ Cost tracking with per-model estimates, 30-day trend, Anthropic billing link — v2.2
 - ✓ LibreChat redeploy trigger from admin dashboard — v2.2
 - ✓ Markdown rendering for AI responses — v2.2
+- ✓ Real-time safety alert emails via Resend with 1-hour dedup — v2.3
+- ✓ Weekly activity summary emails per child with Railway cron scheduling — v2.3
+- ✓ Notification history page and email preference toggles — v2.3
 
 ### Active
 
@@ -50,20 +53,20 @@ Children can safely explore and learn through AI conversation, with content guar
 - Per-child different system prompts — same safety rules for both
 - RAG, embeddings — not needed for children's chat
 - Mobile app — browser access is sufficient
-- Real-time push notifications — alert log sufficient for now
+- Real-time push notifications — email alerts cover this need now
 - Modifying LibreChat config from dashboard — config lives in GitHub Gist
 - ML-based safety detection — text pattern matching sufficient for now
 
 ## Context
 
-Shipped v2.2 on 2026-04-05. Four milestones complete.
+Shipped v2.3 on 2026-04-05. Five milestones complete.
 - **LibreChat URL:** https://librechat-production-bff2.up.railway.app
 - **Admin Dashboard URL:** https://kidschat-admin-production.up.railway.app
 - **Config:** https://gist.github.com/mirkanu/e23b999f1d3cd77726a97c20e26f0abf
 - **Stack:** LibreChat + Next.js 15 admin dashboard, MongoDB, Meilisearch on Railway
-- **Admin dashboard stack:** Next.js 15, NextAuth v5, Tailwind CSS v3, shadcn/ui, Recharts, Anthropic SDK (Haiku + Sonnet), react-markdown, MongoDB direct queries
+- **Admin dashboard stack:** Next.js 15, NextAuth v5, Tailwind CSS v3, shadcn/ui, Recharts, Anthropic SDK (Haiku + Sonnet), Resend + React Email, react-markdown, MongoDB direct queries
 - **Accounts:** 4 total (2 ADMIN parents, 2 USER children)
-- **Codebase:** ~5,879 LOC TypeScript/TSX
+- **Codebase:** ~10,217 LOC TypeScript/TSX
 - **Known limitation:** LibreChat v0.8.4 has outdated config schema warnings (non-blocking)
 - **Known limitation:** Safety detection uses text pattern matching (26 redirect + 15 jailbreak patterns) — may have false positives/negatives
 
@@ -92,6 +95,9 @@ Shipped v2.2 on 2026-04-05. Four milestones complete.
 | Text pattern matching for safety | No ML dependency, detects common patterns, fast | ⚠️ Revisit — may need ML for better accuracy |
 | Direct Anthropic API for test mode | Dashboard calls Claude directly, not through LibreChat — simpler, admin-only | ✓ Good |
 | Hardcoded system prompt in dashboard | Rarely changes, avoids Gist fetch complexity — update manually when prompt changes | ✓ Good — single source in system-prompt.ts |
+| Resend for email | Modern API, React Email templates, generous free tier (3k/month) | ✓ Good — using onboarding@resend.dev for now, needs domain verification |
+| Railway cron for weekly digest | Native Railway feature, no external dependencies | ✓ Good — needs cron service setup |
+| Lazy Resend proxy singleton | Avoids build failures when RESEND_API_KEY not set | ✓ Good — build-safe pattern |
 
 ---
-*Last updated: 2026-04-05 after v2.2 milestone completion*
+*Last updated: 2026-04-05 after v2.3 milestone completion*
