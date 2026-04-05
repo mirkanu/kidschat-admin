@@ -36,7 +36,9 @@ Children can safely explore and learn through AI conversation, with content guar
 
 ### Active
 
-(None — planning next milestone)
+- [ ] AI admin chatbot (Claude Sonnet 4.6) with read access to app settings, logs, and structure
+- [ ] System prompt editor with AI review, test-before-deploy workflow, and Gist push
+- [ ] Cost tracking: message-based estimates in dashboard + link to Anthropic billing
 
 ### Out of Scope
 
@@ -47,6 +49,15 @@ Children can safely explore and learn through AI conversation, with content guar
 - Real-time push notifications — alert log sufficient for now
 - Modifying LibreChat config from dashboard — config lives in GitHub Gist
 - ML-based safety detection — text pattern matching sufficient for now
+
+## Current Milestone: v2.2 Admin Intelligence
+
+**Goal:** Make the admin dashboard smarter — an AI chatbot that understands the app, a safe workflow for editing the safety prompt, and cost visibility.
+
+**Target features:**
+- AI admin chatbot (bottom-right widget, Claude Sonnet 4.6) that can answer questions about rules, read logs, explain app structure
+- System prompt editor: edit → AI review for gaps → test in sandbox → deploy to Gist → auto-update Safety Rules summaries
+- Cost tracking: estimated costs from message counts + link to Anthropic billing dashboard
 
 ## Context
 
@@ -88,4 +99,4 @@ Shipped v2.1 on 2026-04-05. Three milestones complete.
 | Hardcoded system prompt in dashboard | Rarely changes, avoids Gist fetch complexity — update manually when prompt changes | ✓ Good — single source in system-prompt.ts |
 
 ---
-*Last updated: 2026-04-05 after v2.1 milestone completion*
+*Last updated: 2026-04-05 after v2.2 milestone start*

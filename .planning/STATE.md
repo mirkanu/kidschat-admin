@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1
-milestone_name: Parent Trust
-status: complete
-stopped_at: Milestone v2.1 complete
-last_updated: "2026-04-05T01:30:00.000Z"
-last_activity: "2026-04-05 — Milestone v2.1 Parent Trust shipped"
+milestone: v2.2
+milestone_name: Admin Intelligence
+status: defining_requirements
+stopped_at: null
+last_updated: "2026-04-05T02:00:00.000Z"
+last_activity: "2026-04-05 — Milestone v2.2 started"
 progress:
   total_phases: 3
   completed_phases: 3
@@ -21,15 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-05)
 
 **Core value:** Children can safely explore and learn through AI conversation, with content guardrails that a parent controls and trusts.
-**Current focus:** Planning next milestone
+**Current focus:** v2.2 Admin Intelligence — defining requirements
 
 ## Current Position
 
-Milestone: v2.1 Parent Trust — SHIPPED
-Status: Complete — all 3 phases, 6 plans delivered
-Last activity: 2026-04-05 — Milestone v2.1 shipped
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-05 — Milestone v2.2 started
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
