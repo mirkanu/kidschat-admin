@@ -78,11 +78,7 @@ Progress: [░░░░░░░░░░] 0%
 |---|-------------|------|--------|-----------|
 | 1 | UI broken on mobile, menu stuck and consuming 80% width | 2026-04-04 | 2f4db60 | [1-ui-broken-on-mobile](./quick/1-ui-broken-on-mobile-menu-stuck-and-consu/) |
 | 2 | Admin conversation pages crash with SyntaxError (HTML parsed as JSON) | 2026-04-04 | 7ebf0a0 | [2-fix-admin-conversation-page-server-error](./quick/2-fix-admin-conversation-page-server-error/) |
-| Phase 10-cost-tracking P01 | 12 | 2 tasks | 3 files |
-| Phase 10-cost-tracking P02 | 3 | 2 tasks | 2 files |
-| Phase 11-admin-chatbot P01 | 4 | 2 tasks | 3 files |
-| Phase 11-admin-chatbot P02 | 7 | 2 tasks | 3 files |
-| Phase 12-prompt-editor P01 | 15 | 2 tasks | 5 files |
+| 3 | Blank AI response bubbles in conversations (text in content[] not text field) | 2026-04-05 | 65ba689 | [3-fix-blank-ai-response-bubbles](./quick/3-fix-blank-ai-response-bubbles-in-convers/) |
 
 ### Pending Todos
 
