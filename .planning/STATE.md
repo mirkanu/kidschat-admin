@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Admin Intelligence
 status: planning
-stopped_at: Completed 11-admin-chatbot-01-PLAN.md
-last_updated: "2026-04-05T14:19:27.213Z"
+stopped_at: "Checkpoint: Task 3 of 11-admin-chatbot-02-PLAN.md awaiting human verification"
+last_updated: "2026-04-05T14:27:22.599Z"
 last_activity: 2026-04-05 — v2.2 roadmap created, Phase 10 ready
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -55,6 +55,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 11-admin-chatbot]: recentAlertCount is 0 — safety alerts are client-side pattern-matches, not stored in MongoDB
 - [Phase 11-admin-chatbot]: Streaming admin chat returns new Response(stream.toReadableStream()) — plain Response, not NextResponse wrapper
 - [Phase 11-admin-chatbot]: Child conversation logs in admin chatbot context truncated to 500 chars per message to manage context window
+- [Phase 11-admin-chatbot]: AdminChatWidget uses z-40, stays below Sheet sidebar (z-50) on mobile
+- [Phase 11-admin-chatbot]: Chat widget context fetched once on first open and cached in state (no re-fetch per message)
+- [Phase 11-admin-chatbot]: Session-only message history in AdminChatWidget — resets on unmount, no persistence
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -74,6 +77,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 10-cost-tracking P01 | 12 | 2 tasks | 3 files |
 | Phase 10-cost-tracking P02 | 3 | 2 tasks | 2 files |
 | Phase 11-admin-chatbot P01 | 4 | 2 tasks | 3 files |
+| Phase 11-admin-chatbot P02 | 7 | 2 tasks | 3 files |
 
 ### Pending Todos
 
@@ -86,6 +90,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T14:19:27.204Z
-Stopped at: Completed 11-admin-chatbot-01-PLAN.md
+Last session: 2026-04-05T14:27:22.595Z
+Stopped at: Checkpoint: Task 3 of 11-admin-chatbot-02-PLAN.md awaiting human verification
 Resume file: None
