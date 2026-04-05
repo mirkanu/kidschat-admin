@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: Parent Notifications
 status: planning
-stopped_at: "Completed 13-03-PLAN.md — checkpoint:human-verify awaiting"
-last_updated: "2026-04-05T19:57:47.175Z"
+stopped_at: Completed 13-03-PLAN.md — Phase 13 fully complete
+last_updated: "2026-04-05T20:58:51.907Z"
 last_activity: 2026-04-05 — v2.2 roadmap created, Phase 10 ready
 progress:
   total_phases: 1
@@ -70,6 +70,7 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 13-parent-email-notifications]: email_notifications collection dedup: compound query on meta.conversationId + meta.matchedPattern + sentAt within 1 hour window
 - [Phase 13-parent-email-notifications]: Notification page uses direct MongoDB query (server component) — consistent with rest of project
 - [Phase 13-parent-email-notifications]: NotificationPrefsToggle uses native checkbox — Switch component not installed in shadcn ui folder
+- [Phase 13-parent-email-notifications]: /api/notify/* excluded from auth middleware — routes use cron-secret header auth, not session cookies
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -92,6 +93,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 13-parent-email-notifications P02 | 22 | 2 tasks | 5 files |
 | Phase 13-parent-email-notifications P01 | 25 | 2 tasks | 9 files |
 | Phase 13-parent-email-notifications P03 | 13 | 2 tasks | 9 files |
+| Phase 13-parent-email-notifications P03 | 45 | 3 tasks | 10 files |
 
 ### Pending Todos
 
@@ -104,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T19:57:47.171Z
-Stopped at: Completed 13-03-PLAN.md — checkpoint:human-verify awaiting
+Last session: 2026-04-05T20:58:51.902Z
+Stopped at: Completed 13-03-PLAN.md — Phase 13 fully complete
 Resume file: None

@@ -64,11 +64,11 @@ completed: 2026-04-05
 
 ## Performance
 
-- **Duration:** 13 min
+- **Duration:** ~45 min (including human-verify checkpoint)
 - **Started:** 2026-04-05T19:42:35Z
-- **Completed:** 2026-04-05T19:55:35Z
-- **Tasks:** 2 of 3 (task 3 is human-verify checkpoint)
-- **Files modified:** 9
+- **Completed:** 2026-04-05
+- **Tasks:** 3 of 3 (all complete including human-verify checkpoint)
+- **Files modified:** 10
 
 ## Accomplishments
 - Built server component at /notifications querying email_notifications collection directly, with table showing type badges, recipients, child/subject, date, and Resend ID
@@ -80,6 +80,8 @@ completed: 2026-04-05
 
 1. **Task 1: Build notification history page and API** - `5315987` (feat)
 2. **Task 2: Add notification preference toggles to users page** - `58168ab` (feat)
+3. **Task 3: Verify complete email notification system** - checkpoint approved by user (no code commit)
+4. **Deviation fix: Exclude /api/notify/* from auth middleware** - `fe0c7b6` (fix)
 
 ## Files Created/Modified
 - `src/app/(dashboard)/notifications/page.tsx` - Server component: notification history table with type badges, summary counts
@@ -91,6 +93,7 @@ completed: 2026-04-05
 - `src/app/api/users/[userId]/route.ts` - PATCH handler extended to accept notification_prefs field
 - `src/app/api/users/route.ts` - Added NotificationPrefs type, notification_prefs to UserSummary interface and GET mapping
 - `src/app/(dashboard)/users/page.tsx` - Updated mapping to include notification_prefs field
+- `src/middleware.ts` - Excluded /api/notify/* from session auth (cron-secret routes)
 
 ## Decisions Made
 - Used native `<input type="checkbox">` for notification toggles — Switch component not installed in this project's shadcn setup
@@ -111,19 +114,30 @@ completed: 2026-04-05
 
 ---
 
-**Total deviations:** 1 auto-fixed (Rule 1 - Bug)
-**Impact on plan:** Essential correctness fix. No scope creep.
+**2. [Rule 2 - Missing Critical] Excluded /api/notify/* from session auth middleware**
+- **Found during:** After Task 2 (discovered by orchestrator post-commit)
+- **Issue:** /api/notify/weekly-digest and /api/notify/history were caught by NextAuth session middleware and would return 401 to Railway's cron scheduler, which authenticates via `x-cron-secret` header (not session cookies)
+- **Fix:** Updated src/middleware.ts matcher to exclude /api/notify/* from session-required routes
+- **Files modified:** src/middleware.ts
+- **Verification:** Build passed; cron routes now bypass session check and use own auth
+- **Committed in:** fe0c7b6
+
+---
+
+**Total deviations:** 2 auto-fixed (1 Rule 1 - Bug, 1 Rule 2 - Missing Critical)
+**Impact on plan:** Both fixes essential for correctness and security. No scope creep.
 
 ## Issues Encountered
-None — build passed cleanly on both tasks.
+None — build passed cleanly on both auto tasks. Middleware gap caught post-implementation.
 
 ## User Setup Required
 None - no additional external service configuration required beyond what Plans 01-02 established.
 
 ## Next Phase Readiness
-- Full Phase 13 email notification system is complete pending human verification (Task 3 checkpoint)
+- Full Phase 13 email notification system is complete and verified by human review
 - Resend dashboard will show sent emails once RESEND_API_KEY is active in Railway
 - To test weekly digest manually: `curl -X POST https://kidschat-admin-production.up.railway.app/api/notify/weekly-digest -H "x-cron-secret: YOUR_SECRET" -H "Content-Type: application/json" -d '{"trigger":"manual"}'`
+- No blockers for the next milestone
 
 ---
 *Phase: 13-parent-email-notifications*
