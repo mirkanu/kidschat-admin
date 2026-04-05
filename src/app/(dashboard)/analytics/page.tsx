@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, MessagesSquare, User2 } from "lucide-react";
 import { AnalyticsCharts } from "@/components/dashboard/analytics-charts";
+import { CostSummaryCard } from "@/components/dashboard/cost-summary-card";
 
 interface AnalyticsData {
   messagesPerDay: { date: string; total: number; children: Record<string, number> }[];
@@ -12,6 +13,18 @@ interface AnalyticsData {
     totalMessages: number;
     totalConversations: number;
     mostActiveChild: string | null;
+  };
+}
+
+interface CostData {
+  daily: { date: string; messages: number }[];
+  monthly: {
+    haikuMessages: number;
+    sonnetMessages: number;
+    haikuCost: number;
+    sonnetCost: number;
+    totalCost: number;
+    periodDays: number;
   };
 }
 
@@ -54,6 +67,18 @@ export default async function AnalyticsPage() {
       presetUsage: [],
       summary: { totalMessages: 0, totalConversations: 0, mostActiveChild: null },
     };
+  }
+
+  let costData: CostData | null = null;
+  try {
+    const costRes = await fetch(`${baseUrl}/api/cost-estimate`, {
+      cache: "no-store",
+    });
+    if (costRes.ok) {
+      costData = await costRes.json();
+    }
+  } catch {
+    // Cost section is optional — page renders fine without it
   }
 
   const summaryCards = [
@@ -99,6 +124,11 @@ export default async function AnalyticsPage() {
           </Card>
         ))}
       </div>
+
+      {/* Cost summary */}
+      {costData && (
+        <CostSummaryCard daily={costData.daily} monthly={costData.monthly} />
+      )}
 
       {/* Charts */}
       <AnalyticsCharts
