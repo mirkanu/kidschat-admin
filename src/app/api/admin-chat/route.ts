@@ -67,7 +67,7 @@ export async function POST(request: Request) {
     // Model: claude-sonnet-4-6-20250514 per v2.2 architecture decision.
     // If this returns a 400, check the Anthropic error message for the correct model string.
     const stream = client.messages.stream({
-      model: "claude-sonnet-4-6-20250514",
+      model: "claude-sonnet-4-6-20250217",
       max_tokens: ADMIN_CHAT_MAX_TOKENS,
       system: systemMessage,
       messages,
