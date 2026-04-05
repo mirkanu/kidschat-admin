@@ -9,9 +9,9 @@ Requirements for admin intelligence milestone. Each maps to roadmap phases.
 
 ### Cost Tracking
 
-- [ ] **COST-01**: Dashboard shows estimated daily and monthly API cost based on message counts, separated by model (Haiku for kids, Sonnet for admin)
+- [x] **COST-01**: Dashboard shows estimated daily and monthly API cost based on message counts, separated by model (Haiku for kids, Sonnet for admin)
 - [ ] **COST-02**: Cost page includes link to Anthropic billing console with "estimate only" disclaimer
-- [ ] **COST-03**: Cost page shows message count trends (last 30 days) alongside cost estimates
+- [x] **COST-03**: Cost page shows message count trends (last 30 days) alongside cost estimates
 
 ### AI Admin Chatbot
 
@@ -52,9 +52,9 @@ Requirements for admin intelligence milestone. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| COST-01 | Phase 10 | Pending |
+| COST-01 | Phase 10 | Complete |
 | COST-02 | Phase 10 | Pending |
-| COST-03 | Phase 10 | Pending |
+| COST-03 | Phase 10 | Complete |
 | CHAT-01 | Phase 11 | Pending |
 | CHAT-02 | Phase 11 | Pending |
 | CHAT-03 | Phase 11 | Pending |

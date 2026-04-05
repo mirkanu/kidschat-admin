@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Admin Intelligence
-status: ready_to_plan
-stopped_at: null
-last_updated: "2026-04-05T02:00:00.000Z"
-last_activity: "2026-04-05 — Roadmap created for v2.2 Admin Intelligence (3 phases, 15 requirements)"
+status: planning
+stopped_at: Completed 10-cost-tracking-01-PLAN.md
+last_updated: "2026-04-05T13:18:06.169Z"
+last_activity: 2026-04-05 — v2.2 roadmap created, Phase 10 ready
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
   percent: 0
 ---
 
@@ -48,6 +48,8 @@ Progress: [░░░░░░░░░░] 0%
 - Server components query MongoDB directly (not self-referencing fetch)
 - Test mode calls Anthropic API directly (not through LibreChat)
 - System prompt shared via src/lib/system-prompt.ts (single source of truth)
+- [Phase 10-cost-tracking]: GET /api/cost-estimate: Sonnet count hardcoded to 0 for Phase 11 admin chatbot placeholder
+- [Phase 10-cost-tracking]: Cost API daily trend counts ALL messages; monthly Haiku count filters non-ADMIN users via conversation lookup
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -64,6 +66,7 @@ Progress: [░░░░░░░░░░] 0%
 |---|-------------|------|--------|-----------|
 | 1 | UI broken on mobile, menu stuck and consuming 80% width | 2026-04-04 | 2f4db60 | [1-ui-broken-on-mobile](./quick/1-ui-broken-on-mobile-menu-stuck-and-consu/) |
 | 2 | Admin conversation pages crash with SyntaxError (HTML parsed as JSON) | 2026-04-04 | 7ebf0a0 | [2-fix-admin-conversation-page-server-error](./quick/2-fix-admin-conversation-page-server-error/) |
+| Phase 10-cost-tracking P01 | 12 | 2 tasks | 3 files |
 
 ### Pending Todos
 
@@ -76,6 +79,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05
-Stopped at: v2.2 roadmap created — ready to plan Phase 10
+Last session: 2026-04-05T13:18:06.165Z
+Stopped at: Completed 10-cost-tracking-01-PLAN.md
 Resume file: None

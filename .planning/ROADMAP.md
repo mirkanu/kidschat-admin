@@ -58,7 +58,7 @@ Trust center for parents: dashboard home with safety status and activity digest,
   1. Analytics page shows an estimated daily and monthly cost card with separate line items for Haiku (children's chat) and Sonnet (admin tools)
   2. Cost card includes a clearly labeled "estimated only" disclaimer and a direct link to the Anthropic billing console
   3. A 30-day message count trend chart is visible alongside cost estimates
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 - [ ] 10-01-PLAN.md — Cost estimation library and API route
 - [ ] 10-02-PLAN.md — Cost display card and analytics page integration
@@ -99,6 +99,6 @@ Plans:
 | 7. Trust Home | v2.1 | 2/2 | Complete | 2026-04-04 |
 | 8. Safety Transparency | v2.1 | 2/2 | Complete | 2026-04-04 |
 | 9. Parent Test Mode | v2.1 | 2/2 | Complete | 2026-04-05 |
-| 10. Cost Tracking | v2.2 | 0/2 | In progress | - |
+| 10. Cost Tracking | 1/2 | In Progress|  | - |
 | 11. Admin Chatbot | v2.2 | 0/? | Not started | - |
 | 12. Prompt Editor | v2.2 | 0/? | Not started | - |
