@@ -23,13 +23,13 @@ Requirements for admin intelligence milestone. Each maps to roadmap phases.
 
 ### System Prompt Editor
 
-- [ ] **EDIT-01**: Admin can edit the system prompt text in the dashboard with a live editor
+- [x] **EDIT-01**: Admin can edit the system prompt text in the dashboard with a live editor
 - [x] **EDIT-02**: AI reviews proposed changes against a required-sections checklist and flags gaps (non-blocking)
 - [x] **EDIT-03**: Admin can test the draft prompt in the existing sandbox before deploying
 - [x] **EDIT-04**: Admin can deploy the approved prompt to GitHub Gist with one click
 - [x] **EDIT-05**: Previous prompt versions are stored for rollback
-- [ ] **EDIT-06**: Safety Rules page summaries auto-update when the prompt changes
-- [ ] **EDIT-07**: Dashboard shows "Redeploy LibreChat required" notice after Gist deploy
+- [x] **EDIT-06**: Safety Rules page summaries auto-update when the prompt changes
+- [x] **EDIT-07**: Dashboard shows "Redeploy LibreChat required" notice after Gist deploy
 
 ## Future Requirements
 
@@ -60,13 +60,13 @@ Requirements for admin intelligence milestone. Each maps to roadmap phases.
 | CHAT-03 | Phase 11 | Complete |
 | CHAT-04 | Phase 11 | Complete |
 | CHAT-05 | Phase 11 | Complete |
-| EDIT-01 | Phase 12 | Pending |
+| EDIT-01 | Phase 12 | Complete |
 | EDIT-02 | Phase 12 | Complete |
 | EDIT-03 | Phase 12 | Complete |
 | EDIT-04 | Phase 12 | Complete |
 | EDIT-05 | Phase 12 | Complete |
-| EDIT-06 | Phase 12 | Pending |
-| EDIT-07 | Phase 12 | Pending |
+| EDIT-06 | Phase 12 | Complete |
+| EDIT-07 | Phase 12 | Complete |
 
 **Coverage:**
 - v2.2 requirements: 15 total
