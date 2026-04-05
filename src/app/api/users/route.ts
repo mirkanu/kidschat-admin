@@ -3,6 +3,11 @@ import { auth } from "@/auth";
 import { getMongoClient } from "@/lib/mongodb";
 import bcryptjs from "bcryptjs";
 
+export interface NotificationPrefs {
+  safetyAlerts: boolean;
+  weeklyDigest: boolean;
+}
+
 export interface UserSummary {
   id: string;
   name: string;
@@ -10,6 +15,7 @@ export interface UserSummary {
   role: "ADMIN" | "USER";
   lastActive: string | null;
   createdAt: string;
+  notification_prefs?: NotificationPrefs;
 }
 
 export async function GET() {
@@ -34,6 +40,7 @@ export async function GET() {
     role: u.role ?? "USER",
     lastActive: u.updatedAt ? new Date(u.updatedAt).toISOString() : null,
     createdAt: u.createdAt ? new Date(u.createdAt).toISOString() : new Date().toISOString(),
+    notification_prefs: u.notification_prefs as NotificationPrefs | undefined,
   }));
 
   return NextResponse.json({ users });

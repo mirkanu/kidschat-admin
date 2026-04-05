@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UserFormDialog } from "@/components/dashboard/user-form-dialog";
+import { NotificationPrefsToggle } from "@/components/dashboard/notification-prefs-toggle";
 import type { UserSummary } from "@/app/api/users/route";
 
 interface Props {
@@ -110,6 +111,7 @@ export function UsersTable({ initialUsers }: Props) {
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
+              <TableHead>Notifications</TableHead>
               <TableHead>Last Active</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -118,7 +120,7 @@ export function UsersTable({ initialUsers }: Props) {
             {users.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={6}
                   className="text-center text-muted-foreground py-8"
                 >
                   No users found
@@ -137,6 +139,16 @@ export function UsersTable({ initialUsers }: Props) {
                     >
                       {user.role === "ADMIN" ? "Admin" : "Child"}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {user.role === "ADMIN" ? (
+                      <NotificationPrefsToggle
+                        userId={user.id}
+                        initialPrefs={user.notification_prefs}
+                      />
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatDate(user.lastActive)}

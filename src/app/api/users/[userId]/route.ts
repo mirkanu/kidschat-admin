@@ -15,9 +15,9 @@ export async function PATCH(
 
   const { userId } = await params;
   const body = await request.json();
-  const { name, role, password } = body;
+  const { name, role, password, notification_prefs } = body;
 
-  if (!name && !role && !password) {
+  if (!name && !role && !password && notification_prefs === undefined) {
     return NextResponse.json({ error: "At least one field is required" }, { status: 400 });
   }
 
@@ -27,6 +27,9 @@ export async function PATCH(
   if (role !== undefined) $set.role = role;
   if (password) {
     $set.password = await bcryptjs.hash(password, 12);
+  }
+  if (notification_prefs !== undefined) {
+    $set.notification_prefs = notification_prefs;
   }
 
   const client = await getMongoClient();

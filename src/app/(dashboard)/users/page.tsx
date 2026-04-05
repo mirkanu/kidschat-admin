@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { UsersTable } from "@/components/dashboard/users-table";
-import type { UserSummary } from "@/app/api/users/route";
+import type { UserSummary, NotificationPrefs } from "@/app/api/users/route";
 import getMongoClient from "@/lib/mongodb";
 
 async function getUsers(): Promise<UserSummary[]> {
@@ -24,6 +24,7 @@ async function getUsers(): Promise<UserSummary[]> {
       createdAt: u.createdAt
         ? new Date(u.createdAt).toISOString()
         : new Date().toISOString(),
+      notification_prefs: u.notification_prefs as NotificationPrefs | undefined,
     }));
   } catch {
     return [];
