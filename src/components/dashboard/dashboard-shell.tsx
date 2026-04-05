@@ -4,6 +4,7 @@ import { useState } from "react";
 import { NavSidebar } from "./nav-sidebar";
 import { Header } from "./header";
 import { Toaster } from "@/components/ui/sonner";
+import { AdminChatWidget } from "./admin-chat-widget";
 
 interface DashboardShellProps {
   user: { name?: string | null; email?: string | null };
@@ -21,6 +22,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
       <Toaster />
+      <AdminChatWidget />
     </div>
   );
 }
