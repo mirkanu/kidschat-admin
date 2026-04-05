@@ -60,6 +60,13 @@ Real-time safety alert emails and weekly activity summary emails to parents, pow
 
 - [ ] **Phase 13: Parent Email Notifications** — Real-time safety alert emails when concerning content detected, weekly activity summary emails with per-child usage stats and topics
   - **Goal:** Parents receive immediate email alerts for safety events and a weekly digest of each child's chat activity, so they stay informed without needing to check the dashboard
+  - **Requirements:** [NOTIFY-01, NOTIFY-02, NOTIFY-03, NOTIFY-04, NOTIFY-05]
+  - **Plans:** 3 plans
+
+Plans:
+- [ ] 13-01-PLAN.md — Resend + React Email setup, safety alert email pipeline with dedup
+- [ ] 13-02-PLAN.md — Weekly digest aggregation, API endpoint, Railway cron script
+- [ ] 13-03-PLAN.md — Notification history page, preference toggles, sidebar nav
 
 ### Phase 13: Parent Email Notifications
 
@@ -89,4 +96,4 @@ Real-time safety alert emails and weekly activity summary emails to parents, pow
 | 10. Cost Tracking | v2.2 | 2/2 | Complete | 2026-04-05 |
 | 11. Admin Chatbot | v2.2 | 2/2 | Complete | 2026-04-05 |
 | 12. Prompt Editor | v2.2 | 2/2 | Complete | 2026-04-05 |
-| 13. Parent Email Notifications | v2.3 | 0/0 | Not started | — |
+| 13. Parent Email Notifications | v2.3 | 0/3 | Planning complete | — |
