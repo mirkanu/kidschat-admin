@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Admin Intelligence
 status: planning
-stopped_at: "Checkpoint: Task 3 of 11-admin-chatbot-02-PLAN.md awaiting human verification"
-last_updated: "2026-04-05T15:08:19.563Z"
+stopped_at: Completed 12-prompt-editor-01-PLAN.md
+last_updated: "2026-04-05T15:30:19.500Z"
 last_activity: 2026-04-05 — v2.2 roadmap created, Phase 10 ready
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 6
+  completed_plans: 5
   percent: 0
 ---
 
@@ -58,6 +58,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 11-admin-chatbot]: AdminChatWidget uses z-40, stays below Sheet sidebar (z-50) on mobile
 - [Phase 11-admin-chatbot]: Chat widget context fetched once on first open and cached in state (no re-fetch per message)
 - [Phase 11-admin-chatbot]: Session-only message history in AdminChatWidget — resets on unmount, no persistence
+- [Phase 12-prompt-editor]: Deploy route saves full YAML to prompt_history before Gist PATCH for byte-perfect rollback
+- [Phase 12-prompt-editor]: app_config.active_prompt sync in deploy is non-fatal — log error but don't fail the deploy
+- [Phase 12-prompt-editor]: Review response JSON parsing strips markdown code fences before parse attempt
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -78,6 +81,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 10-cost-tracking P02 | 3 | 2 tasks | 2 files |
 | Phase 11-admin-chatbot P01 | 4 | 2 tasks | 3 files |
 | Phase 11-admin-chatbot P02 | 7 | 2 tasks | 3 files |
+| Phase 12-prompt-editor P01 | 15 | 2 tasks | 5 files |
 
 ### Pending Todos
 
@@ -90,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T14:27:22.595Z
-Stopped at: Checkpoint: Task 3 of 11-admin-chatbot-02-PLAN.md awaiting human verification
+Last session: 2026-04-05T15:30:19.485Z
+Stopped at: Completed 12-prompt-editor-01-PLAN.md
 Resume file: None

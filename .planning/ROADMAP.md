@@ -87,7 +87,7 @@ Plans:
   3. Admin can test the draft prompt in the existing sandbox before committing to deploy
   4. Admin can deploy the edited prompt to GitHub Gist with one click, after confirming via a modal — the previous version is saved for one-click rollback
   5. After a successful Gist deploy, the Safety Rules page summaries reflect the new prompt content and a "Redeploy LibreChat Required" notice is shown
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 - [ ] 12-01-PLAN.md — Backend: Gist client, deploy/review/history API routes, test-chat override
 - [ ] 12-02-PLAN.md — Frontend: Editor page with full workflow UI, Safety Rules sync, nav wiring
@@ -107,4 +107,4 @@ Plans:
 | 9. Parent Test Mode | v2.1 | 2/2 | Complete | 2026-04-05 |
 | 10. Cost Tracking | 2/2 | Complete    | 2026-04-05 | - |
 | 11. Admin Chatbot | 2/2 | Complete    | 2026-04-05 | - |
-| 12. Prompt Editor | v2.2 | 0/2 | Planning complete | - |
+| 12. Prompt Editor | 1/2 | In Progress|  | - |
