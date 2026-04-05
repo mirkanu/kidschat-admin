@@ -14,14 +14,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: { messages?: ChatMessage[] };
+  let body: { messages?: ChatMessage[]; systemPrompt?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { messages } = body;
+  const { messages, systemPrompt } = body;
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json(
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 1024,
-      system: SYSTEM_PROMPT,
+      system: systemPrompt || SYSTEM_PROMPT,
       messages,
     });
 
