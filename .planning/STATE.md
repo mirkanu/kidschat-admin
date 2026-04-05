@@ -80,6 +80,7 @@ Progress: [░░░░░░░░░░] 0%
 | 2 | Admin conversation pages crash with SyntaxError (HTML parsed as JSON) | 2026-04-04 | 7ebf0a0 | [2-fix-admin-conversation-page-server-error](./quick/2-fix-admin-conversation-page-server-error/) |
 | 3 | Blank AI response bubbles in conversations (text in content[] not text field) | 2026-04-05 | 65ba689 | [3-fix-blank-ai-response-bubbles](./quick/3-fix-blank-ai-response-bubbles-in-convers/) |
 | 4 | Markdown rendering for AI responses in conversations, test mode, chatbot | 2026-04-05 | 34d9b1c | [4-markdown-rendering](./quick/4-enable-markdown-rendering-for-ai-respons/) |
+| 5 | Fix mobile padding — responsive shell + remove double padding from pages | 2026-04-05 | 0ac31f9 | [5-fix-mobile-padding](./quick/5-fix-mobile-padding-on-admin-pages/) |
 
 ### Pending Todos
 
