@@ -61,7 +61,7 @@ export default async function SafetyRulesPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       {/* Page heading */}
       <div>
         <h1 className="text-2xl font-semibold">Safety Rules</h1>

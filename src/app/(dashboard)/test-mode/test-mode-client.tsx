@@ -192,7 +192,7 @@ export default function TestModePage() {
   }
 
   return (
-    <div className="p-6 space-y-6 flex flex-col h-full">
+    <div className="space-y-6 flex flex-col h-full">
       {/* Page heading */}
       <div>
         <h1 className="text-2xl font-semibold">Test Mode</h1>

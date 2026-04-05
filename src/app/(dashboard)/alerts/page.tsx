@@ -120,7 +120,7 @@ export default async function AlertsPage() {
   const jailbreakCount = alerts.filter((a) => a.type === "jailbreak_attempt").length;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       {/* Page heading */}
       <div>
         <h1 className="text-2xl font-semibold">Safety Alerts</h1>

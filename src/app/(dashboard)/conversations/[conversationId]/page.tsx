@@ -93,7 +93,7 @@ export default async function ConversationDetailPage({
   };
 
   return (
-    <div className="p-6">
+    <div>
       <MessageThread
         conversation={data.conversation}
         messages={data.messages}
