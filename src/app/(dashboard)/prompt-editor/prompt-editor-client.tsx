@@ -32,6 +32,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { detectSafetyEvent } from "@/lib/safety-patterns";
 
 interface ReviewSection {
@@ -392,11 +394,15 @@ export function PromptEditorClient({
                       <div
                         className={`rounded-lg px-3 py-2 text-sm max-w-[85%] ${
                           msg.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-card border"
+                            ? "bg-primary text-primary-foreground whitespace-pre-wrap"
+                            : "bg-card border prose prose-sm dark:prose-invert max-w-none"
                         }`}
                       >
-                        {msg.content}
+                        {msg.role === "assistant" ? (
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                        ) : (
+                          msg.content
+                        )}
                       </div>
                       {msg.safetyEvent && (
                         <div className={`flex items-center gap-1 mt-1 text-xs ${

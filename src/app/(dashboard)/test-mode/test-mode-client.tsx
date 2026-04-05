@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -241,13 +243,17 @@ export default function TestModePage() {
                 >
                   <div
                     className={cn(
-                      "rounded-2xl px-4 py-2.5 text-sm max-w-[80%] whitespace-pre-wrap break-words",
+                      "rounded-2xl px-4 py-2.5 text-sm max-w-[80%] break-words",
                       msg.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-foreground"
+                        ? "bg-primary text-primary-foreground whitespace-pre-wrap"
+                        : "bg-muted text-foreground prose prose-sm dark:prose-invert max-w-none"
                     )}
                   >
-                    {msg.content}
+                    {msg.role === "assistant" ? (
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                    ) : (
+                      msg.content
+                    )}
                   </div>
                   {msg.safetyEvent && (
                     <div className="max-w-[80%] w-full">

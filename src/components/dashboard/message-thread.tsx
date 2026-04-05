@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -80,8 +82,8 @@ export function MessageThread({ conversation, messages }: Props) {
                   <span className="text-xs text-muted-foreground">
                     AI Assistant
                   </span>
-                  <div className="bg-muted text-foreground rounded-2xl rounded-tl-sm px-4 py-2.5 whitespace-pre-wrap break-words">
-                    {msg.text}
+                  <div className="bg-muted text-foreground rounded-2xl rounded-tl-sm px-4 py-2.5 break-words prose prose-sm dark:prose-invert max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
                   </div>
                   <span className="text-xs text-muted-foreground">
                     {formatTimestamp(msg.createdAt)}
