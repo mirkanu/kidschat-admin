@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.2
-milestone_name: Admin Intelligence
-status: complete
-stopped_at: Milestone v2.2 complete
-last_updated: "2026-04-05T17:00:00.000Z"
-last_activity: "2026-04-05 — Milestone v2.2 Admin Intelligence shipped"
+milestone: v2.3
+milestone_name: Parent Notifications
+status: planning
+stopped_at: Completed 13-02-PLAN.md
+last_updated: "2026-04-05T19:35:29.524Z"
+last_activity: 2026-04-05 — v2.2 roadmap created, Phase 10 ready
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
-  percent: 100
+  total_phases: 1
+  completed_phases: 0
+  total_plans: 3
+  completed_plans: 1
+  percent: 0
 ---
 
 # Project State
@@ -62,6 +62,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 12-prompt-editor]: app_config.active_prompt sync in deploy is non-fatal — log error but don't fail the deploy
 - [Phase 12-prompt-editor]: Review response JSON parsing strips markdown code fences before parse attempt
 - [Phase 12-prompt-editor]: Server component wraps MongoDB query in try/catch and silently falls back to SYSTEM_PROMPT — avoids crashes during first-deploy scenario
+- [Phase 13-parent-email-notifications]: Lazy import for resend in weekly-digest route — prevents build failure when RESEND_API_KEY absent
+- [Phase 13-parent-email-notifications]: formatDigestStats extracted as pure function for unit testability without live MongoDB
+- [Phase 13-parent-email-notifications]: notification_prefs.weeklyDigest !== false semantics: null/undefined means opted-in (default true)
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -81,6 +84,7 @@ Progress: [░░░░░░░░░░] 0%
 | 3 | Blank AI response bubbles in conversations (text in content[] not text field) | 2026-04-05 | 65ba689 | [3-fix-blank-ai-response-bubbles](./quick/3-fix-blank-ai-response-bubbles-in-convers/) |
 | 4 | Markdown rendering for AI responses in conversations, test mode, chatbot | 2026-04-05 | 34d9b1c | [4-markdown-rendering](./quick/4-enable-markdown-rendering-for-ai-respons/) |
 | 5 | Fix mobile padding — responsive shell + remove double padding from pages | 2026-04-05 | 0ac31f9 | [5-fix-mobile-padding](./quick/5-fix-mobile-padding-on-admin-pages/) |
+| Phase 13-parent-email-notifications P02 | 22 | 2 tasks | 5 files |
 
 ### Pending Todos
 
@@ -93,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T15:42:03.092Z
-Stopped at: Completed 12-02-PLAN.md (awaiting checkpoint human-verify Task 3)
+Last session: 2026-04-05T19:35:29.511Z
+Stopped at: Completed 13-02-PLAN.md
 Resume file: None
