@@ -96,4 +96,4 @@ Plans:
 | 10. Cost Tracking | v2.2 | 2/2 | Complete | 2026-04-05 |
 | 11. Admin Chatbot | v2.2 | 2/2 | Complete | 2026-04-05 |
 | 12. Prompt Editor | v2.2 | 2/2 | Complete | 2026-04-05 |
-| 13. Parent Email Notifications | 1/3 | In Progress|  | — |
+| 13. Parent Email Notifications | 2/3 | In Progress|  | — |
