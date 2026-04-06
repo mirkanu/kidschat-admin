@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 Phase: 10 of 12 (Cost Tracking)
 Plan: — (not yet planned)
 Status: Ready to plan
-Last activity: 2026-04-06 — Completed quick task 7: Disable Temporary Chat button on LibreChat (YAML parse error fix)
+Last activity: 2026-04-06 — Completed quick task 8: Make Last 24 Hours boxes on admin dashboard clickable links
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -92,6 +92,7 @@ Progress: [░░░░░░░░░░] 0%
 | 5 | Fix mobile padding — responsive shell + remove double padding from pages | 2026-04-05 | 0ac31f9 | [5-fix-mobile-padding](./quick/5-fix-mobile-padding-on-admin-pages/) |
 | 6 | Add prominent link to kid-facing frontend on admin Test Mode page | 2026-04-06 | 6bebd65 | [6-add-prominent-link-to-frontend-on-admin-](./quick/6-add-prominent-link-to-frontend-on-admin-/) |
 | 7 | Disable Temporary Chat button on LibreChat frontend (fixed YAML parse error) | 2026-04-06 | f7f5fa9 | [7-disable-temporary-chat-button-on-librech](./quick/7-disable-temporary-chat-button-on-librech/) |
+| 8 | Make Last 24 Hours boxes on admin dashboard clickable links | 2026-04-06 | bd0007b | [8-make-last-24-hours-boxes-on-admin-dashbo](./quick/8-make-last-24-hours-boxes-on-admin-dashbo/) |
 | Phase 13-parent-email-notifications P02 | 22 | 2 tasks | 5 files |
 | Phase 13-parent-email-notifications P01 | 25 | 2 tasks | 9 files |
 | Phase 13-parent-email-notifications P03 | 13 | 2 tasks | 9 files |
