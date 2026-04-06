@@ -118,12 +118,12 @@ export function ActivityDigestCard({ digest }: { digest: ActivityDigest }) {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div className="flex flex-col items-center gap-1 rounded-lg border p-3">
+          <Link href="/conversations" className="flex flex-col items-center gap-1 rounded-lg border p-3 transition-colors hover:bg-accent hover:border-accent-foreground/20 active:scale-[0.98]">
             <MessageSquare className="h-5 w-5 text-muted-foreground" />
             <span className="text-2xl font-bold">{digest.messagesSent}</span>
             <span className="text-xs text-muted-foreground">Messages Sent</span>
-          </div>
-          <div className="flex flex-col items-center gap-1 rounded-lg border p-3">
+          </Link>
+          <Link href="/alerts" className="flex flex-col items-center gap-1 rounded-lg border p-3 transition-colors hover:bg-accent hover:border-accent-foreground/20 active:scale-[0.98]">
             <AlertTriangle
               className={`h-5 w-5 ${
                 digest.safetyEventsDetected > 0 ? "text-yellow-500" : "text-muted-foreground"
@@ -131,12 +131,12 @@ export function ActivityDigestCard({ digest }: { digest: ActivityDigest }) {
             />
             <span className="text-2xl font-bold">{digest.safetyEventsDetected}</span>
             <span className="text-xs text-muted-foreground">Safety Events</span>
-          </div>
-          <div className="flex flex-col items-center gap-1 rounded-lg border p-3">
+          </Link>
+          <Link href="/users" className="flex flex-col items-center gap-1 rounded-lg border p-3 transition-colors hover:bg-accent hover:border-accent-foreground/20 active:scale-[0.98]">
             <Users className="h-5 w-5 text-muted-foreground" />
             <span className="text-2xl font-bold">{digest.activeChildren}</span>
             <span className="text-xs text-muted-foreground">Active Children</span>
-          </div>
+          </Link>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">System health:</span>
