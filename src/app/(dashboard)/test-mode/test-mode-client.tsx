@@ -14,6 +14,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Activity,
+  ExternalLink,
 } from "lucide-react";
 import { detectSafetyEvent } from "@/lib/safety-patterns";
 import { cn } from "@/lib/utils";
@@ -109,6 +110,8 @@ function LoadingDots() {
 // Main component
 // ---------------------------------------------------------------------------
 
+const frontendUrl = process.env.NEXT_PUBLIC_LIBRECHAT_URL || "https://librechat-production-bff2.up.railway.app";
+
 export default function TestModePage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -200,6 +203,17 @@ export default function TestModePage() {
           Send test messages to see safety rules in action
         </p>
       </div>
+
+      {/* Frontend link */}
+      <a
+        href={frontendUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 rounded-lg bg-primary text-primary-foreground px-4 py-3 text-sm font-medium hover:bg-primary/90 transition-colors w-fit"
+      >
+        <ExternalLink className="h-4 w-4" />
+        Open Kid Chat (Live Frontend)
+      </a>
 
       {/* Scenario buttons */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
