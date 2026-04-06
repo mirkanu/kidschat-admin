@@ -56,7 +56,7 @@ export async function updateGist(
   gistId: string,
   filename: string,
   content: string
-): Promise<void> {
+): Promise<{ version: string }> {
   const token = getToken();
   const res = await fetch(`${GITHUB_API_BASE}/gists/${gistId}`, {
     method: "PATCH",
@@ -72,4 +72,7 @@ export async function updateGist(
     const errBody = await res.text();
     throw new Error(`GitHub Gist update failed (${res.status}): ${errBody}`);
   }
+
+  const data = (await res.json()) as { history: Array<{ version: string }> };
+  return { version: data.history?.[0]?.version ?? "" };
 }

@@ -112,14 +112,45 @@ export async function POST(request: Request) {
   const updatedYaml = replaceSystemPrompt(currentGistContent, draft);
 
   // Step 4: Push updated content to Gist
+  let gistVersion = "";
   try {
-    await updateGist(gistId, GIST_FILENAME, updatedYaml);
+    const result = await updateGist(gistId, GIST_FILENAME, updatedYaml);
+    gistVersion = result.version;
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to update Gist: ${message}` },
       { status: 502 }
     );
+  }
+
+  // Step 4b: Update CONFIG_PATH on LibreChat service to point to new Gist commit
+  if (gistVersion) {
+    const railwayToken = process.env.RAILWAY_API_TOKEN;
+    const projectId = process.env.RAILWAY_PROJECT_ID;
+    const libreServiceId = process.env.RAILWAY_SERVICE_LIBRECHAT_ID;
+    const envId = process.env.RAILWAY_ENVIRONMENT_ID;
+
+    if (railwayToken && projectId && libreServiceId && envId) {
+      const newConfigPath = `https://gist.githubusercontent.com/mirkanu/${gistId}/raw/${gistVersion}/${GIST_FILENAME}`;
+      try {
+        const railwayRes = await fetch("https://backboard.railway.com/graphql/v2", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${railwayToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query: `mutation { variableUpsert(input: { projectId: "${projectId}", serviceId: "${libreServiceId}", environmentId: "${envId}", name: "CONFIG_PATH", value: "${newConfigPath}" }) }`,
+          }),
+        });
+        if (!railwayRes.ok) {
+          console.error("Failed to update CONFIG_PATH:", await railwayRes.text());
+        }
+      } catch (err) {
+        console.error("Failed to update CONFIG_PATH:", err);
+      }
+    }
   }
 
   // Step 5: Update app_config.active_prompt for Safety Rules sync
