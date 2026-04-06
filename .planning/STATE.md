@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 Phase: 10 of 12 (Cost Tracking)
 Plan: — (not yet planned)
 Status: Ready to plan
-Last activity: 2026-04-05 — v2.2 roadmap created, Phase 10 ready
+Last activity: 2026-04-06 — Completed quick task 6: Add prominent link to frontend on admin Test page
 
 Progress: [░░░░░░░░░░] 0%
 
