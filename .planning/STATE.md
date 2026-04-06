@@ -90,6 +90,7 @@ Progress: [░░░░░░░░░░] 0%
 | 3 | Blank AI response bubbles in conversations (text in content[] not text field) | 2026-04-05 | 65ba689 | [3-fix-blank-ai-response-bubbles](./quick/3-fix-blank-ai-response-bubbles-in-convers/) |
 | 4 | Markdown rendering for AI responses in conversations, test mode, chatbot | 2026-04-05 | 34d9b1c | [4-markdown-rendering](./quick/4-enable-markdown-rendering-for-ai-respons/) |
 | 5 | Fix mobile padding — responsive shell + remove double padding from pages | 2026-04-05 | 0ac31f9 | [5-fix-mobile-padding](./quick/5-fix-mobile-padding-on-admin-pages/) |
+| 6 | Add prominent link to kid-facing frontend on admin Test Mode page | 2026-04-06 | 6bebd65 | [6-add-prominent-link-to-frontend-on-admin-](./quick/6-add-prominent-link-to-frontend-on-admin-/) |
 | Phase 13-parent-email-notifications P02 | 22 | 2 tasks | 5 files |
 | Phase 13-parent-email-notifications P01 | 25 | 2 tasks | 9 files |
 | Phase 13-parent-email-notifications P03 | 13 | 2 tasks | 9 files |
