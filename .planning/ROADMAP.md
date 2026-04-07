@@ -63,6 +63,16 @@ Real-time safety alert emails and weekly activity summary emails to parents, pow
 
 </details>
 
+<details open>
+<summary>◆ v2.4 Image Generation (Phases 14-15) — IN PROGRESS</summary>
+
+DALL-E 3 image generation for child users with safety guardrails, abuse detection, and rate limiting.
+
+- [ ] **Phase 14: Enable & Safeguard Image Generation** — DALL-E 3 via LibreChat Agents endpoint, child-appropriate system prompt, safety filters verified
+- [ ] **Phase 15: Safety Alert Extension & Rate Limiting** — Image-prompt safety patterns, parent email alerts, per-user daily image rate limit, admin image counts
+
+</details>
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -80,3 +90,5 @@ Real-time safety alert emails and weekly activity summary emails to parents, pow
 | 11. Admin Chatbot | v2.2 | 2/2 | Complete | 2026-04-05 |
 | 12. Prompt Editor | v2.2 | 2/2 | Complete | 2026-04-05 |
 | 13. Parent Email Notifications | v2.3 | 3/3 | Complete | 2026-04-05 |
+| 14. Enable & Safeguard Image Generation | v2.4 | 0/0 | Planning | — |
+| 15. Safety Alert Extension & Rate Limiting | v2.4 | 0/0 | Pending | — |
