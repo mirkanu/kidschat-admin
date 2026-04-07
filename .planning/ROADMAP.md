@@ -68,8 +68,11 @@ Real-time safety alert emails and weekly activity summary emails to parents, pow
 
 DALL-E 3 image generation for child users with safety guardrails, abuse detection, and rate limiting.
 
-- [ ] **Phase 14: Enable & Safeguard Image Generation** — DALL-E 3 via LibreChat Agents endpoint, child-appropriate system prompt, safety filters verified
-- [ ] **Phase 15: Safety Alert Extension & Rate Limiting** — Image-prompt safety patterns, parent email alerts, per-user daily image rate limit, admin image counts
+### Phase 14: Enable & Safeguard Image Generation
+DALL-E 3 via LibreChat Agents endpoint, child-appropriate system prompt, safety filters verified
+
+### Phase 15: Safety Alert Extension & Rate Limiting
+Image-prompt safety patterns, parent email alerts, per-user daily image rate limit, admin image counts
 
 </details>
 
