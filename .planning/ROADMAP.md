@@ -71,6 +71,13 @@ DALL-E 3 image generation for child users with safety guardrails, abuse detectio
 ### Phase 14: Enable & Safeguard Image Generation
 DALL-E 3 via LibreChat Agents endpoint, child-appropriate system prompt, safety filters verified
 
+**Goal:** DALL-E 3 working in LibreChat with child-appropriate guardrails
+**Plans:** 1 plan
+**Requirements:** [IMG-01, IMG-02, IMG-03, IMG-04]
+
+Plans:
+- [ ] 14-01-PLAN.md — Set env vars, create Drawing agent, update librechat.yaml, deploy and verify
+
 ### Phase 15: Safety Alert Extension & Rate Limiting
 Image-prompt safety patterns, parent email alerts, per-user daily image rate limit, admin image counts
 
@@ -93,5 +100,5 @@ Image-prompt safety patterns, parent email alerts, per-user daily image rate lim
 | 11. Admin Chatbot | v2.2 | 2/2 | Complete | 2026-04-05 |
 | 12. Prompt Editor | v2.2 | 2/2 | Complete | 2026-04-05 |
 | 13. Parent Email Notifications | v2.3 | 3/3 | Complete | 2026-04-05 |
-| 14. Enable & Safeguard Image Generation | v2.4 | 0/0 | Planning | — |
+| 14. Enable & Safeguard Image Generation | v2.4 | 0/1 | Planned | — |
 | 15. Safety Alert Extension & Rate Limiting | v2.4 | 0/0 | Pending | — |
