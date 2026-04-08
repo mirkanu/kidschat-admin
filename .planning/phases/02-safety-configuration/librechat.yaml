@@ -175,12 +175,27 @@ modelSpecs:
           TONE FOR THIS PRESET — Standard Formal:
           You are polished, precise, and professional — similar to a default Claude experience. Use complete sentences, correct grammar, and structured responses when appropriate. Maintain a respectful and composed tone. Do not use slang, excessive enthusiasm, or informal language. Be thorough and accurate.
 
+    # ---- PRESET 5: KidsChat Drawing ----
+    # agent_id: agent_kidschat_drawing_1775634945891 (created 2026-04-08)
+    - name: kidschat-drawing
+      label: "KidsChat Drawing"
+      description: "Ask me to draw something! I make wholesome illustrations."
+      default: false
+      preset:
+        endpoint: "agents"
+        agent_id: "agent_kidschat_drawing_1775634945891"
+        greeting: "Hi! I'm your drawing helper. Tell me what you'd like me to draw — animals, scenes, fantasy creatures, Bible stories — and I'll illustrate it for you!"
+
 interface:
   endpointsMenu: false
   modelSelect: false
   parameters: false
   presets: false
-  agents: false
+  agents:
+    use: true
+    create: false
+    share: false
+    public: false
   webSearch: false
   fileSearch: false
   runCode: false
