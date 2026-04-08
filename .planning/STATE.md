@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.3
-milestone_name: Parent Notifications
+milestone: v1.0
+milestone_name: milestone
 status: planning
-stopped_at: Completed 13-03-PLAN.md — Phase 13 fully complete
-last_updated: "2026-04-05T21:20:15.618Z"
-last_activity: 2026-04-05 — v2.2 roadmap created, Phase 10 ready
+stopped_at: "Checkpoint: Task 4 human-verify — awaiting DALL-E 3 end-to-end verification in LibreChat"
+last_updated: "2026-04-08T08:04:38.261Z"
+last_activity: "2026-04-06 — Completed quick task 8: Make Last 24 Hours boxes on admin dashboard clickable links"
 progress:
-  total_phases: 1
+  total_phases: 2
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 1
+  completed_plans: 1
   percent: 0
 ---
 
@@ -71,6 +71,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 13-parent-email-notifications]: Notification page uses direct MongoDB query (server component) — consistent with rest of project
 - [Phase 13-parent-email-notifications]: NotificationPrefsToggle uses native checkbox — Switch component not installed in shadcn ui folder
 - [Phase 13-parent-email-notifications]: /api/notify/* excluded from auth middleware — routes use cron-secret header auth, not session cookies
+- [Phase 14-enable-safeguard-image-generation]: Drawing agent created directly in MongoDB (agent_id: agent_kidschat_drawing_1775634945891) due to LibreChat rate-limit ban during setup
+- [Phase 14-enable-safeguard-image-generation]: interface.agents uses object form {use:true, create:false, share:false, public:false} — not boolean true (deprecated in LibreChat v0.7.5+)
+- [Phase 14-enable-safeguard-image-generation]: DALL-E 3 only: DALLE3_API_KEY set, DALLE2_API_KEY intentionally absent. ENDPOINTS updated to 'anthropic,agents'
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -97,6 +100,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 13-parent-email-notifications P01 | 25 | 2 tasks | 9 files |
 | Phase 13-parent-email-notifications P03 | 13 | 2 tasks | 9 files |
 | Phase 13-parent-email-notifications P03 | 45 | 3 tasks | 10 files |
+| Phase 14-enable-safeguard-image-generation P01 | multi-session | 3 tasks | 1 files |
 
 ### Pending Todos
 
@@ -109,6 +113,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T12:48:00.000Z
-Stopped at: Completed quick task 7 — Disabled Temporary Chat button on LibreChat
+Last session: 2026-04-08T08:04:38.257Z
+Stopped at: Checkpoint: Task 4 human-verify — awaiting DALL-E 3 end-to-end verification in LibreChat
 Resume file: None
