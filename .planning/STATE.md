@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 Phase: 10 of 12 (Cost Tracking)
 Plan: — (not yet planned)
 Status: Ready to plan
-Last activity: 2026-04-06 — Completed quick task 8: Make Last 24 Hours boxes on admin dashboard clickable links
+Last activity: 2026-04-09 — Completed quick task 9: Chat bubble overlaps Send button on mobile Test Mode page
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -101,6 +101,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 13-parent-email-notifications P03 | 13 | 2 tasks | 9 files |
 | Phase 13-parent-email-notifications P03 | 45 | 3 tasks | 10 files |
 | Phase 14-enable-safeguard-image-generation P01 | multi-session | 3 tasks | 1 files |
+| 9 | Chat bubble overlaps Send button on mobile Test Mode page | 2026-04-09 | 7eeee8d | [9-on-mobile-on-the-test-mode-admin-page-th](./quick/9-on-mobile-on-the-test-mode-admin-page-th/) |
 
 ### Pending Todos
 
