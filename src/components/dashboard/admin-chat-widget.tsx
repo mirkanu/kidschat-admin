@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { MessageCircle, X, SendHorizontal } from "lucide-react";
@@ -58,6 +59,7 @@ function LoadingDots() {
 // ---------------------------------------------------------------------------
 
 export function AdminChatWidget() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -183,6 +185,13 @@ export function AdminChatWidget() {
   function handleChipClick(question: string) {
     handleSubmit(question);
   }
+
+  // ---------------------------------------------------------------------------
+  // Hide on test-mode page — it has its own chat UI and the bubble overlaps
+  // its Send button on mobile
+  // ---------------------------------------------------------------------------
+
+  if (pathname === "/test-mode") return null;
 
   // ---------------------------------------------------------------------------
   // Collapsed state — floating button
