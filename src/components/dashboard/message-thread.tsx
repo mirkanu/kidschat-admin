@@ -7,12 +7,20 @@ import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+interface ImageAttachment {
+  fileId: string;
+  url: string;
+  width?: number;
+  height?: number;
+}
+
 interface MessageItem {
   messageId: string;
   text: string;
   isCreatedByUser: boolean;
   sender: string;
   createdAt: string; // ISO string
+  images: ImageAttachment[];
 }
 
 interface Props {
@@ -82,9 +90,27 @@ export function MessageThread({ conversation, messages }: Props) {
                   <span className="text-xs text-muted-foreground">
                     AI Assistant
                   </span>
-                  <div className="bg-muted text-foreground rounded-2xl rounded-tl-sm px-4 py-2.5 break-words prose prose-sm dark:prose-invert max-w-none">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
-                  </div>
+                  {msg.text && (
+                    <div className="bg-muted text-foreground rounded-2xl rounded-tl-sm px-4 py-2.5 break-words prose prose-sm dark:prose-invert max-w-none">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+                    </div>
+                  )}
+                  {msg.images.length > 0 && (
+                    <div className="flex flex-col gap-2 mt-1">
+                      {msg.images.map((img) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          key={img.fileId || img.url}
+                          src={img.url}
+                          alt="Generated image"
+                          width={img.width ?? 400}
+                          height={img.height ?? 400}
+                          className="rounded-lg border max-w-full h-auto"
+                          loading="lazy"
+                        />
+                      ))}
+                    </div>
+                  )}
                   <span className="text-xs text-muted-foreground">
                     {formatTimestamp(msg.createdAt)}
                   </span>
