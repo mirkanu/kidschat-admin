@@ -313,9 +313,21 @@ ${isGo ? "**Impact on Plan 02:** Bonus offer delivery via direct MongoDB message
   console.log("\nSynthetic test result appended to MONGO-INSPECTION.md");
 }
 
+async function runCleanup(db: ReturnType<MongoClient["db"]>, messageId: string) {
+  console.log(`\nCleaning up synthetic message: ${messageId}`);
+  const result = await db.collection("messages").deleteOne({ messageId });
+  if (result.deletedCount > 0) {
+    console.log("Synthetic message deleted successfully.");
+  } else {
+    console.log("Message not found (may already be deleted).");
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const syntheticMode = args.includes("--synthetic-message");
+  const cleanupIdx = args.indexOf("--cleanup");
+  const cleanupMessageId = cleanupIdx >= 0 ? args[cleanupIdx + 1] : null;
 
   const uri = process.env.MONGODB_URI;
   if (!uri) {
@@ -329,7 +341,9 @@ async function main() {
 
   console.log("Connected to MongoDB (Railway)");
 
-  if (syntheticMode) {
+  if (cleanupMessageId) {
+    await runCleanup(db, cleanupMessageId);
+  } else if (syntheticMode) {
     await runSyntheticMessage(db);
   } else {
     const rows = await runInspection(db);

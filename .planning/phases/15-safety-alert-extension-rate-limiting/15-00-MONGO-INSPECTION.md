@@ -57,7 +57,22 @@
 
 ## Synthetic Message Test
 
-*(Pending — run with `--synthetic-message` flag)*
+**Test performed:** 2026-04-10T10:51:47.890Z
+**messageId:** `69d8d4b3ecb1d4b13e993563`
+**conversationId:** `d7533159-bd56-4643-a276-9c35ce2086c9` (Sebastian's "Drawing Assistance Alternatives Offered" conversation)
+**userId:** `69d0315763d6125f1f553e97` (Sebastian)
+**text:** `PHASE-15-SYNTHETIC-TEST-1775817907890`
+**agent_id:** `agent_wxgt6su7d3pcosiil3` (Friendly Tutor)
 
-VERDICT: PENDING
+The synthetic message has been inserted into MongoDB. The `conversations.updatedAt` has also been updated to trigger UI refresh.
+
+**Human verification required:** Please log in to LibreChat as Sebastian and open the "Drawing Assistance Alternatives Offered" conversation. Confirm whether the message `PHASE-15-SYNTHETIC-TEST-1775817907890` appears in the chat.
+
+**Cleanup:** After confirming the verdict, delete the message:
+```js
+db.messages.deleteOne({ messageId: "69d8d4b3ecb1d4b13e993563" })
+```
+Or run: `MONGODB_URI=... npx tsx scripts/mongo-inspect.ts --cleanup 69d8d4b3ecb1d4b13e993563`
+
+VERDICT: PENDING — awaiting human verification at Task 4 checkpoint
 
