@@ -265,9 +265,14 @@ describe("bonus-delivery.ts", () => {
 
       const bonusPurchasesCol = makeCollection();
       const settingsCol = makeCollection();
+      // Use new schema field names (Plan 15-04)
       settingsCol.findOne = jest.fn().mockResolvedValue({
-        weeklyBonusCap: 5,
-        bonusPackSize: 2,
+        key: "global_defaults",
+        weeklyBonusCapEur: 5.0,
+        bonusPackEur: 2.0,
+        dailyCostCapEur: 0.10,
+        monthlyCostCapEur: 2.00,
+        bonusMessageTemplate: "test",
       });
       settingsCol.updateOne = jest.fn().mockResolvedValue({ modifiedCount: 1 });
 
@@ -283,6 +288,11 @@ describe("bonus-delivery.ts", () => {
       const lockedCol = makeCollection(lockedDocs);
       lockedCol.find = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue(lockedDocs) });
 
+      const balanceStateCol = makeCollection([{
+        userId: "user1", activeOfferMessageId: "offer1", activeOfferExpiresAt: new Date(Date.now() + 300000),
+        activeOfferConversationId: "conv1", monthlySpendEur: 0, warnedAt70PctOn: null, lastDailyReset: new Date(), lastMonthlyReset: new Date(),
+      }]);
+
       const aclCol = makeCollection();
       const db = makeMockDb({
         bonus_purchases: bonusPurchasesCol,
@@ -290,6 +300,8 @@ describe("bonus-delivery.ts", () => {
         agents: agentsCol,
         locked_acl_entries: lockedCol,
         aclentries: aclCol,
+        balance_state: balanceStateCol,
+        balances: makeCollection([{ user: "user1", tokenCredits: 0 }]),
       });
 
       await applyBonusCredit("user1", makePendingState("image_cap"), db);
@@ -302,9 +314,6 @@ describe("bonus-delivery.ts", () => {
       };
       expect(insertedDoc.userId).toBe("user1");
       expect(insertedDoc.packSizeEUR).toBe(2.0);
-
-      // Should clear the pending state in settings
-      expect(settingsCol.updateOne).toHaveBeenCalled();
     });
 
     it("for lockType 'monthly_cap' → inserts bonus_purchases, adds tokenCredits via $inc, clears pending state", async () => {
@@ -314,30 +323,28 @@ describe("bonus-delivery.ts", () => {
       });
 
       const settingsCol = makeCollection();
+      // Use new schema field names (Plan 15-04)
       settingsCol.findOne = jest.fn().mockResolvedValue({
-        weeklyBonusCap: 5,
-        bonusPackSize: 2,
+        key: "global_defaults",
+        weeklyBonusCapEur: 5.0,
+        bonusPackEur: 2.0,
+        dailyCostCapEur: 0.10,
+        monthlyCostCapEur: 2.00,
+        bonusMessageTemplate: "test",
       });
       settingsCol.updateOne = jest.fn().mockResolvedValue({ modifiedCount: 1 });
 
-      const balancesCol = makeCollection();
-
-      const agentDocs = [
-        { _id: "oid1", agentId: "agent_wxgt6su7d3pcosiil3" },
-      ];
-      const agentsCol = makeCollection(agentDocs);
-      agentsCol.find = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue(agentDocs) });
-
-      const lockedCol = makeCollection([]);
-      lockedCol.find = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
+      const balancesCol = makeCollection([{ user: "user1", tokenCredits: 0 }]);
+      const balanceStateCol = makeCollection([{
+        userId: "user1", activeOfferMessageId: "offer1", activeOfferExpiresAt: new Date(Date.now() + 300000),
+        activeOfferConversationId: "conv1", monthlySpendEur: 0, warnedAt70PctOn: null, lastDailyReset: new Date(), lastMonthlyReset: new Date(),
+      }]);
 
       const db = makeMockDb({
         bonus_purchases: bonusPurchasesCol,
         settings: settingsCol,
         balances: balancesCol,
-        agents: agentsCol,
-        locked_acl_entries: lockedCol,
-        aclentries: makeCollection(),
+        balance_state: balanceStateCol,
       });
 
       await applyBonusCredit("user1", makePendingState("monthly_cap"), db);
@@ -354,15 +361,20 @@ describe("bonus-delivery.ts", () => {
 
     it("respects weekly bonus cap: throws or returns early if getWeeklyBonusSpend + packSize > weeklyBonusCap", async () => {
       const bonusPurchasesCol = makeCollection();
-      // Weekly spend already at cap
+      // Weekly spend already at cap (5.0 >= 5.0)
       bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({
-        toArray: jest.fn().mockResolvedValue([{ totalSpend: 5.0 }]), // 5.0 = weeklyBonusCap
+        toArray: jest.fn().mockResolvedValue([{ totalSpend: 5.0 }]),
       });
 
       const settingsCol = makeCollection();
+      // Use new schema field names (Plan 15-04)
       settingsCol.findOne = jest.fn().mockResolvedValue({
-        weeklyBonusCap: 5,
-        bonusPackSize: 2,
+        key: "global_defaults",
+        weeklyBonusCapEur: 5.0,
+        bonusPackEur: 2.0,
+        dailyCostCapEur: 0.10,
+        monthlyCostCapEur: 2.00,
+        bonusMessageTemplate: "test",
       });
 
       const db = makeMockDb({

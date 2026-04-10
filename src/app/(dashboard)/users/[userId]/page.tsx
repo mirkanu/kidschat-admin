@@ -8,10 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, MessageSquare, Image, Calendar, Coins, ShoppingCart } from "lucide-react";
-import { getEffectiveLimits } from "@/lib/settings";
-import { getImageCountToday, getDailyMessageCount, getMonthlySpendEUR } from "@/lib/cost-ledger";
-import { getActiveBonusCredit, getWeeklyBonusSpend } from "@/lib/bonus-purchases";
+import { ArrowLeft, Calendar, Coins, ShoppingCart } from "lucide-react";
+import { evaluateChildState } from "@/lib/budget";
+import { getWeeklyBonusSpend } from "@/lib/bonus-purchases";
 
 interface User {
   id: string;
@@ -56,45 +55,36 @@ async function getUser(userId: string): Promise<User | null> {
 }
 
 interface UsageStats {
-  imageCountToday: number;
-  messageCountToday: number;
-  monthlySpendEUR: number;
-  activeBonusCredit: number;
-  weeklyBonusSpend: number;
-  limits: {
-    dailyImageLimit: number;
-    dailyMessageLimit: number;
-    monthlyCostCapEUR: number;
-    weeklyBonusCap: number;
-  };
+  remainingEur: number;
+  dailyCapEur: number;
+  dailyPctRemaining: number;
+  monthlySpendEur: number;
+  monthlyCapEur: number;
+  monthlyCapExhausted: boolean;
+  weeklyBonusSpentEur: number;
+  weeklyBonusCapEur: number;
+  hasActiveOffer: boolean;
 }
 
 async function getUserUsageStats(userId: string): Promise<UsageStats> {
   const client = await getMongoClient();
   const db = client.db("test");
 
-  const [imageCountToday, messageCountToday, monthlySpendEUR, activeBonusCredit, weeklyBonusSpend, limits] =
-    await Promise.all([
-      getImageCountToday(userId, db),
-      getDailyMessageCount(userId, db),
-      getMonthlySpendEUR(userId, db),
-      getActiveBonusCredit(userId, db),
-      getWeeklyBonusSpend(userId, db),
-      getEffectiveLimits(userId, db),
-    ]);
+  const [childState, weeklyBonusSpentEur] = await Promise.all([
+    evaluateChildState(userId, db),
+    getWeeklyBonusSpend(userId, db),
+  ]);
 
   return {
-    imageCountToday,
-    messageCountToday,
-    monthlySpendEUR,
-    activeBonusCredit,
-    weeklyBonusSpend,
-    limits: {
-      dailyImageLimit: limits.dailyImageLimit,
-      dailyMessageLimit: limits.dailyMessageLimit,
-      monthlyCostCapEUR: limits.monthlyCostCapEUR,
-      weeklyBonusCap: limits.weeklyBonusCap,
-    },
+    remainingEur: childState.remainingEur,
+    dailyCapEur: childState.dailyCapEur,
+    dailyPctRemaining: childState.dailyPctRemaining,
+    monthlySpendEur: childState.monthlySpendEur,
+    monthlyCapEur: childState.monthlyCapEur,
+    monthlyCapExhausted: childState.monthlyCapExhausted,
+    weeklyBonusSpentEur,
+    weeklyBonusCapEur: childState.monthlyCapEur > 0 ? 0.50 : 0.50, // from HARDCODED_DEFAULTS
+    hasActiveOffer: childState.hasActiveOffer,
   };
 }
 
@@ -122,54 +112,40 @@ function UsageSkeleton() {
 async function UsageSection({ userId }: { userId: string }) {
   const stats = await getUserUsageStats(userId);
 
-  const imagePercent = Math.min(
-    100,
-    Math.round((stats.imageCountToday / stats.limits.dailyImageLimit) * 100)
-  );
-  const messagePercent = Math.min(
-    100,
-    Math.round((stats.messageCountToday / stats.limits.dailyMessageLimit) * 100)
-  );
-  const monthlyPercent = Math.min(
-    100,
-    Math.round((stats.monthlySpendEUR / stats.limits.monthlyCostCapEUR) * 100)
-  );
+  const dailyPercent = Math.min(100, Math.round((1 - stats.dailyPctRemaining) * 100));
+  const monthlyPercent = stats.monthlyCapEur > 0
+    ? Math.min(100, Math.round((stats.monthlySpendEur / stats.monthlyCapEur) * 100))
+    : 0;
+  const weeklyBonusPercent = stats.weeklyBonusCapEur > 0
+    ? Math.min(100, Math.round((stats.weeklyBonusSpentEur / stats.weeklyBonusCapEur) * 100))
+    : null;
 
   const usageItems = [
     {
-      label: "Images today",
-      value: `${stats.imageCountToday} / ${stats.limits.dailyImageLimit}`,
-      percent: imagePercent,
-      icon: Image,
-      color: imagePercent >= 90 ? "bg-red-500" : imagePercent >= 70 ? "bg-yellow-500" : "bg-blue-500",
-    },
-    {
-      label: "Messages today",
-      value: `${stats.messageCountToday} / ${stats.limits.dailyMessageLimit}`,
-      percent: messagePercent,
-      icon: MessageSquare,
-      color: messagePercent >= 90 ? "bg-red-500" : messagePercent >= 70 ? "bg-yellow-500" : "bg-green-500",
+      label: "Daily budget used",
+      value: `€${(stats.dailyCapEur - stats.remainingEur).toFixed(3)} / €${stats.dailyCapEur.toFixed(2)}`,
+      percent: dailyPercent,
+      icon: Calendar,
+      color: dailyPercent >= 90 ? "bg-red-500" : dailyPercent >= 70 ? "bg-yellow-500" : "bg-blue-500",
     },
     {
       label: "Monthly spend",
-      value: `€${stats.monthlySpendEUR.toFixed(2)} / €${stats.limits.monthlyCostCapEUR.toFixed(2)}`,
+      value: `€${stats.monthlySpendEur.toFixed(2)} / €${stats.monthlyCapEur.toFixed(2)}`,
       percent: monthlyPercent,
       icon: Calendar,
       color: monthlyPercent >= 90 ? "bg-red-500" : monthlyPercent >= 70 ? "bg-yellow-500" : "bg-purple-500",
     },
     {
-      label: "Active bonus credit",
-      value: stats.activeBonusCredit > 0 ? `€${stats.activeBonusCredit.toFixed(2)}` : "None",
+      label: "Active bonus offer",
+      value: stats.hasActiveOffer ? "Active (awaiting YES)" : "None",
       percent: null,
       icon: Coins,
       color: "bg-amber-500",
     },
     {
       label: "Bonus purchases (week)",
-      value: `€${stats.weeklyBonusSpend.toFixed(2)} / €${stats.limits.weeklyBonusCap.toFixed(2)}`,
-      percent: stats.limits.weeklyBonusCap > 0
-        ? Math.min(100, Math.round((stats.weeklyBonusSpend / stats.limits.weeklyBonusCap) * 100))
-        : null,
+      value: `€${stats.weeklyBonusSpentEur.toFixed(2)} / €${stats.weeklyBonusCapEur.toFixed(2)}`,
+      percent: weeklyBonusPercent,
       icon: ShoppingCart,
       color: "bg-violet-500",
     },

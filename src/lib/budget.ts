@@ -158,8 +158,8 @@ export async function getEffectiveBudget(userId: string, db: Db): Promise<Effect
     col.findOne({ key: "child_override", userId } as Parameters<typeof col.findOne>[0]),
   ]);
 
-  const g = globalDoc ?? {};
-  const o = overrideDoc ?? {};
+  const g: Partial<GlobalDefaults> = globalDoc ?? {};
+  const o: Partial<ChildOverride> = overrideDoc ?? {};
   const d = HARDCODED_DEFAULTS;
 
   return {

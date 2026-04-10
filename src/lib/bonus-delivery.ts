@@ -1,10 +1,13 @@
 /**
  * Bonus delivery lib — Phase 15 "YES" bonus purchase flow.
  *
+ * Plan 15-04: Removed enforcement.ts imports (lockImageAccess, unlockImageAccess,
+ * unlockAllAccess). ACL-based locking is no longer used — LibreChat's native
+ * tokenCredits enforcement supersedes it.
+ *
  * Implements:
  * - sendBonusOfferMessage: inserts a bonus offer into the messages collection
- * - detectBonusConfirmation: checks if child typed "YES" within 5 min
- * - applyBonusCredit: credits the bonus and unlocks access
+ * - detectBonusConfirmation: checks if child typed "YES" within 5 min (legacy helper)
  *
  * Field names from 15-00-MONGO-INSPECTION.md:
  *   messages: messageId, user, conversationId, isCreatedByUser, text, endpoint, agent_id, etc.
@@ -13,14 +16,9 @@
 
 import { ObjectId } from "mongodb";
 import type { Db } from "mongodb";
-import { getWeeklyBonusSpend, getStartOfWeekUTC } from "@/lib/bonus-purchases";
-import { unlockImageAccess, unlockAllAccess } from "@/lib/enforcement";
+import { getWeeklyBonusSpend } from "@/lib/bonus-purchases";
 
-type SettingsDoc = Record<string, unknown> & { _id?: string };
 type ConversationDoc = Record<string, unknown>;
-
-const EUR_RATE = parseFloat(process.env.USD_TO_EUR_RATE ?? "0.92");
-const TOKEN_CREDIT_PER_EUR = 1_000_000; // 1M credits per EUR
 
 export interface PendingState {
   awaitingBonusConfirmation?: boolean;
@@ -32,7 +30,7 @@ export interface PendingState {
 }
 
 /**
- * Inserts a bonus offer message into the messages collection.
+ * Inserts a bonus offer message (or warning message) into the messages collection.
  * Pattern 8: direct MongoDB insert (confirmed viable by synthetic probe in 15-00).
  * Also updates conversations.updatedAt to trigger UI refresh (Pitfall 6).
  *
@@ -82,6 +80,10 @@ export async function sendBonusOfferMessage(args: {
  * Checks if the child typed "YES" in their conversation within 5 minutes of the offer.
  * Uses a strict regex: /^\s*yes\.?\s*$/i to match "yes", "YES", "yes."
  *
+ * @deprecated The change-stream-listener now handles YES detection inline via
+ * balance_state.activeOfferMessageId + createdAt comparison. This function is
+ * kept for backward compat with the bonus-delivery tests.
+ *
  * Returns true if a matching message is found within the 5-minute window.
  */
 export async function detectBonusConfirmation(
@@ -115,76 +117,53 @@ export async function detectBonusConfirmation(
 }
 
 /**
- * Credits the bonus pack and unlocks access.
+ * @deprecated Use applyBonusCredit from budget.ts instead.
+ * Kept for backward compat with existing tests. Delegates to budget.ts.
+ *
+ * Credits the bonus pack and updates balances.
  * - Checks the weekly bonus cap before proceeding
  * - Inserts a bonus_purchases record
- * - Unlocks image access (for image_cap) or adds tokenCredits (for monthly_cap)
- * - Clears the awaiting confirmation state in settings
+ * - $inc balances.tokenCredits
+ * - Clears balance_state.activeOfferMessageId
  */
 export async function applyBonusCredit(userId: string, pending: PendingState, db: Db): Promise<void> {
-  const { lockType, confirmedViaMessageId, packSizeEUR: pendingPackSize } = pending;
+  const { confirmedViaMessageId, packSizeEUR: pendingPackSize } = pending;
 
-  if (!lockType || !confirmedViaMessageId) {
-    throw new Error("Invalid pending state: missing lockType or confirmedViaMessageId");
+  if (!confirmedViaMessageId) {
+    throw new Error("Invalid pending state: missing confirmedViaMessageId");
   }
 
-  // Get effective pack size and weekly cap from settings
-  const settingsCol = db.collection<SettingsDoc>("settings");
-  const settingsDoc = await settingsCol
-    .findOne({ _id: "global_defaults" } as Parameters<typeof settingsCol.findOne>[0]);
+  // Get pack size from settings or pending state
+  // Check both new schema fields (weeklyBonusCapEur, bonusPackEur) and legacy field names
+  const settingsCol = db.collection("settings");
+  const settingsDoc = await settingsCol.findOne(
+    { key: "global_defaults" } as Parameters<typeof settingsCol.findOne>[0]
+  );
 
-  const weeklyBonusCap = (settingsDoc?.weeklyBonusCap as number | undefined) ?? 5.0;
-  const packSizeEUR = pendingPackSize ?? (settingsDoc?.bonusPackSize as number | undefined) ?? 2.0;
+  const weeklyBonusCapEur =
+    (settingsDoc?.weeklyBonusCapEur as number | undefined) ??
+    (settingsDoc?.weeklyBonusCap as number | undefined) ??
+    0.50;
+  const packSizeEur =
+    pendingPackSize ??
+    (settingsDoc?.bonusPackEur as number | undefined) ??
+    (settingsDoc?.bonusPackSize as number | undefined) ??
+    0.20;
 
   // Check weekly bonus cap
   const currentWeeklySpend = await getWeeklyBonusSpend(userId, db);
-  if (currentWeeklySpend + packSizeEUR > weeklyBonusCap) {
+  if (currentWeeklySpend + packSizeEur > weeklyBonusCapEur) {
     throw new Error(
-      `Weekly bonus cap exceeded: current spend €${currentWeeklySpend} + pack €${packSizeEUR} > cap €${weeklyBonusCap}`
+      `Weekly bonus cap exceeded: current spend €${currentWeeklySpend} + pack €${packSizeEur} > cap €${weeklyBonusCapEur}`
     );
   }
 
-  const now = new Date();
-  const midnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
-  const weekOf = getStartOfWeekUTC(now).toISOString().split("T")[0];
-
-  // Insert bonus_purchases record
-  await db.collection("bonus_purchases").insertOne({
+  // Delegate to budget.ts for the actual operation
+  const { applyBonusCredit: budgetApplyBonus } = await import("@/lib/budget");
+  await budgetApplyBonus({
     userId,
-    packSizeEUR,
-    purchasedAt: now,
-    confirmedViaMessageId,
-    expiresAt: midnight,
-    creditRemainingEUR: packSizeEUR,
-    weekOf,
+    db,
+    amountEur: packSizeEur,
+    confirmationMessageId: confirmedViaMessageId,
   });
-
-  // Unlock access based on lock type
-  if (lockType === "image_cap") {
-    await unlockImageAccess(userId, db);
-  } else if (lockType === "monthly_cap") {
-    // Add tokenCredits to balance via $inc
-    const creditsToAdd = Math.floor((packSizeEUR / EUR_RATE) * TOKEN_CREDIT_PER_EUR);
-    await db.collection("balances").updateOne(
-      { user: userId },
-      { $inc: { tokenCredits: creditsToAdd } },
-      { upsert: true }
-    );
-    // Also unlock image ACL
-    await unlockImageAccess(userId, db, "monthly_cost_cap");
-  }
-
-  // Clear the awaiting confirmation state
-  const settingsColUpdate = db.collection<SettingsDoc>("settings");
-  await settingsColUpdate.updateOne(
-    { _id: `override_${userId}` } as Parameters<typeof settingsColUpdate.updateOne>[0],
-    {
-      $unset: {
-        awaitingBonusConfirmation: "",
-        confirmationOfferedAt: "",
-        lockType: "",
-        activeConversationId: "",
-      },
-    }
-  );
 }

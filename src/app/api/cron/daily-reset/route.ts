@@ -1,16 +1,15 @@
 /**
  * POST /api/cron/daily-reset
  *
- * Runs at midnight UTC:
- * 1. Restores ACL entries for children locked by daily_image_cap or daily_message_cap
- * 2. Expires bonus_purchases where expiresAt < now (sets creditRemainingEUR: 0)
+ * Plan 15-04 rewrite: Uses budget.ts topUpDailyBudget for all non-admin children.
+ * Replaces the old ACL-unlock approach with LibreChat-native tokenCredits top-up.
  *
  * Schedule: 0 0 * * * (midnight UTC)
  * Auth: x-cron-secret header
  */
 import { NextRequest, NextResponse } from "next/server";
 import getMongoClient from "@/lib/mongodb";
-import { unlockImageAccess } from "@/lib/enforcement";
+import { topUpDailyBudget } from "@/lib/budget";
 
 export async function POST(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
@@ -22,54 +21,26 @@ export async function POST(req: NextRequest) {
   const client = await getMongoClient();
   const db = client.db("test");
 
-  // Find unique userIds with daily image/message cap locks
-  const lockedEntries = await db
-    .collection("locked_acl_entries")
-    .find({ lockReason: { $in: ["daily_image_cap", "daily_message_cap"] } })
+  // Fetch all non-admin users
+  const users = await db
+    .collection("users")
+    .find({ role: { $ne: "ADMIN" } }, { projection: { _id: 1 } })
     .toArray();
 
-  const usersByReason = new Map<string, Set<string>>();
-  for (const entry of lockedEntries) {
-    const userId = entry.principalId as string;
-    const reason = entry.lockReason as string;
-    if (!usersByReason.has(reason)) {
-      usersByReason.set(reason, new Set());
-    }
-    usersByReason.get(reason)!.add(userId);
-  }
+  let reset = 0;
+  const errors: string[] = [];
 
-  let unlocked = 0;
-
-  for (const [reason, userIds] of usersByReason.entries()) {
-    for (const userId of userIds) {
-      try {
-        await unlockImageAccess(userId, db, reason as "daily_image_cap" | "daily_message_cap");
-        unlocked++;
-      } catch (err) {
-        console.error(`[daily-reset] Error unlocking ${userId} for ${reason}:`, err);
-      }
+  for (const user of users) {
+    const userId = user._id.toString();
+    try {
+      await topUpDailyBudget(userId, db);
+      reset++;
+    } catch (err) {
+      console.error(`[daily-reset] Error resetting userId=${userId}:`, err);
+      errors.push(userId);
     }
   }
 
-  // Also clear awaitingBonusConfirmation states (daily reset clears pending offers)
-  await db.collection("settings").updateMany(
-    { awaitingBonusConfirmation: true } as Parameters<ReturnType<typeof db.collection>["updateMany"]>[0],
-    {
-      $unset: {
-        awaitingBonusConfirmation: "",
-        confirmationOfferedAt: "",
-        lockType: "",
-        activeConversationId: "",
-      },
-    }
-  );
-
-  // Expire bonus_purchases where expiresAt < now
-  const now = new Date();
-  await db.collection("bonus_purchases").updateMany(
-    { expiresAt: { $lt: now }, creditRemainingEUR: { $gt: 0 } },
-    { $set: { creditRemainingEUR: 0 } }
-  );
-
-  return NextResponse.json({ unlocked });
+  console.log(`[daily-reset] Completed: reset=${reset}, errors=${errors.length}`);
+  return NextResponse.json({ reset, errors });
 }

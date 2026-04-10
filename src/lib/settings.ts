@@ -1,80 +1,79 @@
 /**
- * Settings lib — per-child configurable limits for Phase 15 rate limiting.
+ * Settings lib — Plan 15-04 rewrite.
  *
- * Storage: MongoDB `settings` collection
- * - `global_defaults` document: shared default values for all children
- * - `override_{userId}` document: per-child overrides (sparse — only fields being overridden)
+ * New schema:
+ * - { key: "global_defaults", dailyCostCapEur, monthlyCostCapEur, bonusPackEur, weeklyBonusCapEur, bonusMessageTemplate }
+ * - { key: "child_override", userId, dailyCostCapEur?, monthlyCostCapEur?, ... }
  *
- * Override precedence: override.field ?? global.field ?? HARDCODED_DEFAULTS.field
+ * getEffectiveBudget and related types are in src/lib/budget.ts.
+ * This file is a thin wrapper that re-exports them for backward compatibility
+ * and provides ensureDefaultSettings.
+ *
+ * Plan 15-05 will refactor the admin UI to use budget.ts directly.
  */
 
 import type { Db } from "mongodb";
 
+// Re-export new types and function from budget.ts as canonical source
+export type { GlobalDefaults, ChildOverride, EffectiveBudget } from "@/lib/budget";
+export { HARDCODED_DEFAULTS, getEffectiveBudget } from "@/lib/budget";
+
+// ---- Legacy EffectiveLimits alias (for Plan 15-05 to clean up) ----
+// The admin UI (settings-form.tsx, users/[userId]/page.tsx) still uses
+// EffectiveLimits + getEffectiveLimits. We keep a stub that maps to the new
+// budget schema so the build doesn't break. Plan 15-05 removes this.
+
 export interface EffectiveLimits {
-  /** Maximum AI-generated images per day (resets midnight UTC) */
+  /** @deprecated — use dailyCostCapEur from EffectiveBudget */
   dailyImageLimit: number;
-  /** Maximum AI chat messages per day (resets midnight UTC) */
+  /** @deprecated — use dailyCostCapEur from EffectiveBudget */
   dailyMessageLimit: number;
-  /** Maximum cumulative spend in EUR per month (resets 1st of month UTC) */
+  /** @deprecated — use monthlyCostCapEur from EffectiveBudget */
   monthlyCostCapEUR: number;
-  /** Maximum bonus credit purchasable per week in EUR (resets Monday UTC) */
+  /** @deprecated — use weeklyBonusCapEur from EffectiveBudget */
   weeklyBonusCap: number;
-  /** Size of a single bonus pack in EUR */
+  /** @deprecated — use bonusPackEur from EffectiveBudget */
   bonusPackSize: number;
-  /** Admin-editable message shown to child when offering bonus purchase */
   bonusMessageTemplate: string;
 }
 
-/** Hardcoded fallback values — used when no MongoDB settings exist */
-export const HARDCODED_DEFAULTS: EffectiveLimits = {
-  dailyImageLimit: 10,
-  dailyMessageLimit: 50,
-  monthlyCostCapEUR: 10.0,
-  weeklyBonusCap: 5.0,
-  bonusPackSize: 2.0,
-  bonusMessageTemplate:
-    "You've reached your limit for today. Would you like to unlock \u20ac2 of extra usage? This will come off your GoHenry. Type YES to confirm.",
-};
-
-type SettingsDoc = Partial<EffectiveLimits> & { _id?: string };
+import { getEffectiveBudget as _getEffectiveBudget } from "@/lib/budget";
 
 /**
- * Returns the effective limits for a child by merging:
- *   override document > global_defaults document > HARDCODED_DEFAULTS
+ * @deprecated Use getEffectiveBudget from budget.ts instead.
+ * Kept for Plan 15-05 compatibility — returns legacy shape.
  */
 export async function getEffectiveLimits(userId: string, db: Db): Promise<EffectiveLimits> {
-  const col = db.collection<SettingsDoc>("settings");
-
-  const [globalDoc, overrideDoc] = await Promise.all([
-    col.findOne({ _id: "global_defaults" } as Parameters<typeof col.findOne>[0]),
-    col.findOne({ _id: `override_${userId}` } as Parameters<typeof col.findOne>[0]),
-  ]);
-
-  const g: Partial<EffectiveLimits> = globalDoc ?? {};
-  const o: Partial<EffectiveLimits> = overrideDoc ?? {};
-  const d = HARDCODED_DEFAULTS;
-
+  const budget = await _getEffectiveBudget(userId, db);
   return {
-    dailyImageLimit: (o.dailyImageLimit ?? g.dailyImageLimit ?? d.dailyImageLimit) as number,
-    dailyMessageLimit: (o.dailyMessageLimit ?? g.dailyMessageLimit ?? d.dailyMessageLimit) as number,
-    monthlyCostCapEUR: (o.monthlyCostCapEUR ?? g.monthlyCostCapEUR ?? d.monthlyCostCapEUR) as number,
-    weeklyBonusCap: (o.weeklyBonusCap ?? g.weeklyBonusCap ?? d.weeklyBonusCap) as number,
-    bonusPackSize: (o.bonusPackSize ?? g.bonusPackSize ?? d.bonusPackSize) as number,
-    bonusMessageTemplate: (o.bonusMessageTemplate ?? g.bonusMessageTemplate ?? d.bonusMessageTemplate) as string,
+    dailyImageLimit:     10,   // legacy field — no longer enforced
+    dailyMessageLimit:   50,   // legacy field — no longer enforced
+    monthlyCostCapEUR:   budget.monthlyCostCapEur,
+    weeklyBonusCap:      budget.weeklyBonusCapEur,
+    bonusPackSize:       budget.bonusPackEur,
+    bonusMessageTemplate: budget.bonusMessageTemplate,
   };
 }
 
+type SettingsDoc = Record<string, unknown> & { _id?: string };
+
 /**
  * Inserts a global_defaults document with HARDCODED_DEFAULTS values if one doesn't exist.
+ * Uses new schema shape (key: "global_defaults").
  * Safe to call at startup — no-op if already present.
  */
 export async function ensureDefaultSettings(db: Db): Promise<void> {
   const col = db.collection<SettingsDoc>("settings");
-  const existing = await col.findOne({ _id: "global_defaults" } as Parameters<typeof col.findOne>[0]);
+  const existing = await col.findOne({ key: "global_defaults" } as Parameters<typeof col.findOne>[0]);
   if (existing) return;
 
   await col.insertOne({
     _id: "global_defaults",
-    ...HARDCODED_DEFAULTS,
+    key: "global_defaults",
+    dailyCostCapEur: 0.10,
+    monthlyCostCapEur: 2.00,
+    bonusPackEur: 0.20,
+    weeklyBonusCapEur: 0.50,
+    bonusMessageTemplate: "You've reached your limit. Type YES to unlock extra usage.",
   } as Parameters<typeof col.insertOne>[0]);
 }

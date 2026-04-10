@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { auth } from "@/auth";
 import getMongoClient from "@/lib/mongodb";
-import { HARDCODED_DEFAULTS } from "@/lib/settings";
+import { getEffectiveLimits } from "@/lib/settings";
 import type { EffectiveLimits } from "@/lib/settings";
 import { SettingsForm } from "./settings-form";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,58 +12,40 @@ interface ChildUser {
   name: string;
 }
 
-type SettingsDoc = Partial<EffectiveLimits> & { _id?: string };
-
 async function getSettingsData() {
   const client = await getMongoClient();
   const db = client.db("test");
-  const settingsCol = db.collection<SettingsDoc>("settings");
+  const settingsCol = db.collection("settings");
 
-  // Get global defaults and all non-ADMIN users in parallel
-  const [globalDoc, childUsers, overrideDocs] = await Promise.all([
-    settingsCol.findOne({ _id: "global_defaults" } as Parameters<typeof settingsCol.findOne>[0]),
-    db
-      .collection("users")
-      .find({ role: { $ne: "ADMIN" } })
-      .project<{ _id: { toString(): string }; name: string }>({ _id: 1, name: 1 })
-      .sort({ name: 1 })
-      .toArray(),
-    settingsCol
-      .find({ _id: { $regex: /^override_/ } } as Parameters<typeof settingsCol.find>[0])
-      .toArray(),
-  ]);
+  // Get child users list
+  const childUsers = await db
+    .collection("users")
+    .find({ role: { $ne: "ADMIN" } })
+    .project<{ _id: { toString(): string }; name: string }>({ _id: 1, name: 1 })
+    .sort({ name: 1 })
+    .toArray();
 
-  const g: Partial<EffectiveLimits> = globalDoc ?? {};
-  const d = HARDCODED_DEFAULTS;
+  // Global defaults via the legacy shim (maps new budget schema to old EffectiveLimits shape)
+  // Use a dummy userId — global only, no override
+  const globalDefaults = await getEffectiveLimits("__global__", db);
 
-  const globalDefaults: EffectiveLimits = {
-    dailyImageLimit: g.dailyImageLimit ?? d.dailyImageLimit,
-    dailyMessageLimit: g.dailyMessageLimit ?? d.dailyMessageLimit,
-    monthlyCostCapEUR: g.monthlyCostCapEUR ?? d.monthlyCostCapEUR,
-    weeklyBonusCap: g.weeklyBonusCap ?? d.weeklyBonusCap,
-    bonusPackSize: g.bonusPackSize ?? d.bonusPackSize,
-    bonusMessageTemplate: g.bonusMessageTemplate ?? d.bonusMessageTemplate,
-  };
+  // Per-child overrides: fetch docs with key: "child_override"
+  const overrideDocs = await settingsCol
+    .find({ key: "child_override" } as Parameters<typeof settingsCol.find>[0])
+    .toArray();
 
   // Build override map
   const overrideMap = new Map<string, Partial<EffectiveLimits>>();
   for (const doc of overrideDocs) {
-    const id = (doc._id as string).replace("override_", "");
-    // Strip MongoDB metadata, keep only EffectiveLimits fields
-    const { _id: _, ...rest } = doc;
-    // Filter out any non-limits fields (like awaitingBonusConfirmation)
-    const limitFields: (keyof EffectiveLimits)[] = [
-      "dailyImageLimit", "dailyMessageLimit", "monthlyCostCapEUR",
-      "weeklyBonusCap", "bonusPackSize", "bonusMessageTemplate"
-    ];
+    const userId = doc.userId as string;
+    if (!userId) continue;
     const overrideOnly: Partial<EffectiveLimits> = {};
-    for (const field of limitFields) {
-      if (rest[field] !== undefined) {
-        (overrideOnly as Record<string, unknown>)[field] = rest[field];
-      }
-    }
+    // Map new schema fields to legacy EffectiveLimits shape for the settings form
+    if (doc.monthlyCostCapEur != null) overrideOnly.monthlyCostCapEUR = doc.monthlyCostCapEur as number;
+    if (doc.bonusPackEur != null) overrideOnly.bonusPackSize = doc.bonusPackEur as number;
+    if (doc.weeklyBonusCapEur != null) overrideOnly.weeklyBonusCap = doc.weeklyBonusCapEur as number;
     if (Object.keys(overrideOnly).length > 0) {
-      overrideMap.set(id, overrideOnly);
+      overrideMap.set(userId, overrideOnly);
     }
   }
 
