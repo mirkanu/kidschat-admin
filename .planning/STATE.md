@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 15-02-PLAN.md — Phase 15 all plans complete
-last_updated: "2026-04-10T16:06:44.788Z"
+stopped_at: Completed 15-03-PLAN.md
+last_updated: "2026-04-10T20:02:33.188Z"
 last_activity: "2026-04-09 — Completed quick task 9: Chat bubble overlaps Send button on mobile Test Mode page"
 progress:
   total_phases: 2
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 1
+  total_plans: 7
+  completed_plans: 5
   percent: 0
 ---
 
@@ -87,6 +87,10 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 15-safety-alert-extension-rate-limiting]: serviceInstanceRedeploy reuses cached Docker image — must use railway up for fresh source builds
 - [Phase 15-safety-alert-extension-rate-limiting]: Navigation fix: child name rows in /users list link to /users/{userId} — admin rows unchanged (no detail page for admins)
 - [Phase 15-safety-alert-extension-rate-limiting]: Per-child overrides broken + schema rework pending: dailyImageLimit+dailyMessageLimit to be replaced by dailyCostCapEur in gap-closure phase 15.1
+- [Phase 15-safety-alert-extension-rate-limiting]: Railway MongoDB is standalone (error 40573): change streams NOT supported, Plan 15-04 uses 60s setInterval polling in instrumentation.ts instead
+- [Phase 15-safety-alert-extension-rate-limiting]: instrumentation.ts register() fires at Next.js 15 startup in ~850ms — no experimental flag needed, viable as in-process polling host
+- [Phase 15-safety-alert-extension-rate-limiting]: LibreChat native balance display confirmed visible to children ('Balance: 10,000,000' in Settings); Plan 15-05 supplements with threshold synthetic messages, not a custom UI
+- [Phase 15-safety-alert-extension-rate-limiting]: Original Path B (/api/cron/tick with CRON_SECRET) superseded by in-process setInterval — simpler, no HTTP hop, no new Railway service for the tick loop
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -130,6 +134,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-10T15:46:22.260Z
-Stopped at: Completed 15-02-PLAN.md — Phase 15 all plans complete
+Last session: 2026-04-10T20:02:15.244Z
+Stopped at: Completed 15-03-PLAN.md
 Resume file: None

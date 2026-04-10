@@ -46,32 +46,21 @@ The $changeStream stage is only supported on replica sets — Change streams req
 
 ## LibreChat Balance UI
 
-**Status:** PENDING OPERATOR VERIFICATION
+**Status:** CONFIRMED VISIBLE
 
-**Instructions:**
-1. Open https://librechat-production-bff2.up.railway.app in an incognito window
-2. Log in as Sebastian (sebastian.kuhs@kidschat.local / KidsChat2026!Sebastian)
-3. Look at: sidebar, user menu, account/profile area, anywhere balance info might appear
-4. Record one of:
-   - `NATIVE_TOKEN_DISPLAY_VISIBLE: <exact text the kid sees — "Credits: X"? "$X.00"? progress bar? other?>`
-   - `NATIVE_TOKEN_DISPLAY_HIDDEN: <describe where you looked>`
-5. Check if any menu or settings toggle needs to be enabled for balance to appear
-6. Save screenshot to `.planning/phases/15-safety-alert-extension-rate-limiting/15-03-balance-sidebar.png`
-   OR describe what you see in text below
+**Date verified:** 2026-04-10
 
 **Operator observation:**
-_To be filled in — see instructions above_
+`NATIVE_TOKEN_DISPLAY_VISIBLE: "Balance: 10,000,000"` — Sebastian (test child account) sees this value in LibreChat's Settings page. LibreChat's native balance display IS enabled and rendered for children.
 
-<!-- Example outcomes:
-NATIVE_TOKEN_DISPLAY_VISIBLE: "Credits: 1,000,000" shown in bottom-left sidebar under username
-NATIVE_TOKEN_DISPLAY_HIDDEN: Checked sidebar, user menu, account settings — no balance widget visible
--->
+**Implication for Plan 15-05:**
+Plan 15-05 does NOT need to build a kid-facing usage UI from scratch. It can rely on LibreChat's native display for the numeric balance, and supplement with 70% warning synthetic messages for proactive alerts ("You've used 70% of your daily allowance — keep going!"). The native display surfaces the raw token number; the synthetic message layer adds human-readable context when thresholds are approaching.
 
 ---
 
 ## Locked Decisions for Plan 15-04
 
-**Status:** PENDING — fill in after LibreChat balance UI verification above
+**Status:** LOCKED — all three probes complete, operator approved
 
 ```
 change_stream: no
@@ -85,22 +74,22 @@ approach:
   # change_stream=no AND instrumentation_hook=yes →
   # instrumentation.ts running a 60s setInterval that polls messages by createdAt > lastSeen
   # No new Railway service needed. All logic runs inside the admin Next.js process.
+  # NOTE: The original Path B (/api/cron/tick HTTP endpoint) is superseded — the setInterval
+  # runs in-process, requires no CRON_SECRET, and has no HTTP hop overhead.
 
-native_balance_display: <operator fill in: visible | hidden | partial>
-  # PENDING: Operator must log in as Sebastian and check sidebar
+native_balance_display: visible
+  # CONFIRMED: "Balance: 10,000,000" visible in LibreChat Settings page for Sebastian.
+  # Plan 15-05 can rely on native display for numeric balance; add synthetic threshold messages
+  # for proactive human-readable alerts at 70% usage.
 
 reset_crons_mechanism: railway.toml
   # Per user preference (Automate Railway feedback) — config-as-code preferred.
-  # Daily reset: 0 0 * * *
-  # Monthly reset: 0 0 1 * *
+  # Daily reset as cron service: 0 0 * * *
+  # Monthly reset as cron service: 0 0 1 * *
 
 resumeToken_persistence: none
   # N/A: change streams not supported. Polling uses createdAt timestamp in balance_state.
   # balance_state.lastSeenAt (createdAt of last processed message) replaces resumeToken.
 ```
 
-**DECIDED:** instrumentation.ts + 60s polling (messages by createdAt > lastSeen), with resetCrons via railway.toml
-
-_Note: The above DECIDED line is pre-filled from empirical probe results for change_stream (NO) and instrumentation_hook (YES). Operator must confirm native_balance_display before this decision is fully locked. If native_balance_display=hidden and that changes the approach, update this section._
-
-<!-- Operator: after LibreChat verification, confirm or update the DECIDED line above. Then type your approval signal to proceed to Plan 15-04. -->
+**DECIDED:** instrumentation.ts + 60s setInterval polling (messages.createdAt > balance_state.lastSeenAt), runs inside the admin Next.js process. Daily and monthly reset crons ship via railway.toml as separate Railway cron services. No new Railway services for the polling tick loop. No CRON_SECRET needed for polling.
