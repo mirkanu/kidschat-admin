@@ -21,17 +21,8 @@ export async function register() {
     return;
   }
 
-  // Use dynamic import with webpackIgnore to prevent webpack from bundling
-  // the MongoDB-dependent change-stream-listener module.
-  // The NEXT_RUNTIME guard ensures this only runs server-side.
   try {
-    const listenerModule = await import(
-      /* webpackIgnore: true */
-      "./lib/change-stream-listener"
-    );
-    const { startChangeStreamListener } = listenerModule as {
-      startChangeStreamListener: () => Promise<void>;
-    };
+    const { startChangeStreamListener } = await import("@/lib/change-stream-listener");
     startChangeStreamListener().catch((err: unknown) => {
       console.error("[instrumentation] change stream listener failed:", err);
     });
