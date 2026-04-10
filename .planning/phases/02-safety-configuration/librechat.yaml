@@ -83,3 +83,11 @@ fileConfig:
   endpoints:
     default:
       disabled: true
+
+balance:
+  enabled: true
+  startBalance: 10000000
+  autoRefillEnabled: false
+  refillIntervalValue: 30
+  refillIntervalUnit: days
+  refillAmount: 0
