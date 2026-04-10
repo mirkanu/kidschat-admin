@@ -129,6 +129,7 @@ export default async function AlertsPage() {
 
   const redirectCount = alerts.filter((a) => a.type === "safety_redirect").length;
   const jailbreakCount = alerts.filter((a) => a.type === "jailbreak_attempt").length;
+  const imagePromptCount = alerts.filter((a) => a.type === "image_prompt").length;
 
   return (
     <div className="space-y-6">
@@ -163,6 +164,17 @@ export default async function AlertsPage() {
             {jailbreakCount}
           </Badge>
         </div>
+        {imagePromptCount > 0 && (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Image requests:</span>
+            <Badge
+              variant="secondary"
+              className="bg-orange-100 text-orange-800 hover:bg-orange-100 border-orange-200 font-semibold"
+            >
+              {imagePromptCount}
+            </Badge>
+          </div>
+        )}
       </div>
 
       <AlertsTable initialAlerts={alerts} />

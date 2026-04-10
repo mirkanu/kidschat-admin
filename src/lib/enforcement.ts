@@ -12,6 +12,8 @@
 
 import type { Db } from "mongodb";
 import { getEffectiveLimits } from "@/lib/settings";
+
+type SettingsDoc = Record<string, unknown> & { _id?: string };
 import { getImageCountToday, getDailyMessageCount, getMonthlySpendEUR } from "@/lib/cost-ledger";
 import { getWeeklyBonusSpend, getActiveBonusCredit } from "@/lib/bonus-purchases";
 import { sendBonusOfferMessage } from "@/lib/bonus-delivery";
@@ -154,9 +156,9 @@ export async function unlockAllAccess(userId: string, db: Db, credits: number): 
  */
 export async function enforceChildLimits(userId: string, childName: string, db: Db): Promise<EnforcementResult> {
   // Check if already awaiting bonus confirmation
-  const overrideDoc = await db
-    .collection("settings")
-    .findOne({ _id: `override_${userId}` } as Parameters<ReturnType<Db["collection"]>["findOne"]>[0]);
+  const settingsCol = db.collection<SettingsDoc>("settings");
+  const overrideDoc = await settingsCol
+    .findOne({ _id: `override_${userId}` } as Parameters<typeof settingsCol.findOne>[0]);
 
   if (overrideDoc?.awaitingBonusConfirmation === true) {
     return { action: "already_awaiting", userId };
@@ -227,7 +229,6 @@ async function _offerBonus(
   // Find most recent conversation for the child
   const conv = await db.collection("conversations").findOne(
     { user: userId },
-    // @ts-expect-error sort is valid MongoDB option
     { sort: { updatedAt: -1 } }
   );
 
@@ -245,8 +246,9 @@ async function _offerBonus(
   });
 
   // Record awaiting state in settings
-  await db.collection("settings").updateOne(
-    { _id: `override_${userId}` } as Parameters<ReturnType<Db["collection"]>["updateOne"]>[0],
+  const settingsColUpdate = db.collection<SettingsDoc>("settings");
+  await settingsColUpdate.updateOne(
+    { _id: `override_${userId}` } as Parameters<typeof settingsColUpdate.updateOne>[0],
     {
       $set: {
         awaitingBonusConfirmation: true,

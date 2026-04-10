@@ -19,12 +19,13 @@ interface AlertsTableProps {
   initialAlerts: SafetyEvent[];
 }
 
-type FilterType = "all" | "safety_redirect" | "jailbreak_attempt";
+type FilterType = "all" | "safety_redirect" | "jailbreak_attempt" | "image_prompt";
 
 const FILTER_TABS: Array<{ label: string; value: FilterType }> = [
   { label: "All", value: "all" },
   { label: "Safety Redirects", value: "safety_redirect" },
   { label: "Jailbreak Attempts", value: "jailbreak_attempt" },
+  { label: "Image Requests", value: "image_prompt" },
 ];
 
 function formatDateTime(isoString: string): string {
@@ -103,6 +104,13 @@ export function AlertsTable({ initialAlerts }: AlertsTableProps) {
                         className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 border-yellow-200 text-xs whitespace-nowrap"
                       >
                         Safety Redirect
+                      </Badge>
+                    ) : alert.type === "image_prompt" ? (
+                      <Badge
+                        variant="secondary"
+                        className="bg-orange-100 text-orange-800 hover:bg-orange-100 border-orange-200 text-xs whitespace-nowrap"
+                      >
+                        Image
                       </Badge>
                     ) : (
                       <Badge

@@ -1,9 +1,13 @@
+import { Suspense } from "react";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, MessagesSquare, User2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { AnalyticsCharts } from "@/components/dashboard/analytics-charts";
 import { CostSummaryCard } from "@/components/dashboard/cost-summary-card";
+import { ImageTrendCard } from "@/components/dashboard/image-trend-card";
+import getMongoClient from "@/lib/mongodb";
 
 interface AnalyticsData {
   messagesPerDay: { date: string; total: number; children: Record<string, number> }[];
@@ -28,6 +32,11 @@ interface CostData {
   };
 }
 
+interface ImageTrendData {
+  daily: { date: string; images: number }[];
+  total: number;
+}
+
 async function getAnalytics(): Promise<AnalyticsData> {
   const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
   const res = await fetch(`${baseUrl}/api/analytics`, {
@@ -38,6 +47,44 @@ async function getAnalytics(): Promise<AnalyticsData> {
     throw new Error("Failed to fetch analytics");
   }
   return res.json();
+}
+
+async function ImageTrendSection() {
+  const client = await getMongoClient();
+  const db = client.db("test");
+
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  try {
+    const raw = await db
+      .collection("files")
+      .aggregate<{ _id: string; count: number }>([
+        {
+          $match: {
+            context: "image_generation",
+            createdAt: { $gte: thirtyDaysAgo },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+            },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ])
+      .toArray();
+
+    const daily = raw.map((r) => ({ date: r._id, images: r.count }));
+    const total = daily.reduce((sum, d) => sum + d.images, 0);
+
+    return <ImageTrendCard daily={daily} total={total} />;
+  } catch {
+    return null; // Image trend section is optional — graceful degradation
+  }
 }
 
 export default async function AnalyticsPage() {
@@ -80,6 +127,7 @@ export default async function AnalyticsPage() {
   } catch {
     // Cost section is optional — page renders fine without it
   }
+
 
   const summaryCards = [
     {
@@ -129,6 +177,11 @@ export default async function AnalyticsPage() {
       {costData && (
         <CostSummaryCard daily={costData.daily} monthly={costData.monthly} />
       )}
+
+      {/* Image trend — streams in independently */}
+      <Suspense fallback={<Skeleton className="h-64 w-full rounded-lg" />}>
+        <ImageTrendSection />
+      </Suspense>
 
       {/* Charts */}
       <AnalyticsCharts

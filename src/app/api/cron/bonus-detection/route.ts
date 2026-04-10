@@ -12,6 +12,8 @@ import getMongoClient from "@/lib/mongodb";
 import { detectBonusConfirmation, applyBonusCredit } from "@/lib/bonus-delivery";
 import type { PendingState } from "@/lib/bonus-delivery";
 
+type SettingsDoc = Record<string, unknown> & { _id?: string };
+
 export async function POST(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   const headerSecret = req.headers.get("x-cron-secret");
@@ -21,11 +23,11 @@ export async function POST(req: NextRequest) {
 
   const client = await getMongoClient();
   const db = client.db("test");
+  const settingsCol = db.collection<SettingsDoc>("settings");
 
   // Find all docs with awaitingBonusConfirmation: true
-  const pending = await db
-    .collection("settings")
-    .find({ awaitingBonusConfirmation: true })
+  const pending = await settingsCol
+    .find({ awaitingBonusConfirmation: true } as Parameters<typeof settingsCol.find>[0])
     .toArray();
 
   let confirmed = 0;
@@ -34,7 +36,8 @@ export async function POST(req: NextRequest) {
   const FIVE_MINUTES_MS = 5 * 60 * 1000;
 
   for (const doc of pending) {
-    const userId = (doc._id as string).replace("override_", "");
+    const docId = String(doc._id ?? "");
+    const userId = docId.replace("override_", "");
     const pendingState: PendingState = {
       awaitingBonusConfirmation: true,
       confirmationOfferedAt: doc.confirmationOfferedAt as Date,
@@ -46,8 +49,8 @@ export async function POST(req: NextRequest) {
     const offeredAt = doc.confirmationOfferedAt as Date | undefined;
     if (!offeredAt || Date.now() - offeredAt.getTime() > FIVE_MINUTES_MS) {
       // Expired — clear the pending state
-      await db.collection("settings").updateOne(
-        { _id: doc._id } as Parameters<ReturnType<typeof db.collection>["updateOne"]>[0],
+      await settingsCol.updateOne(
+        { _id: docId } as Parameters<typeof settingsCol.updateOne>[0],
         {
           $unset: {
             awaitingBonusConfirmation: "",
@@ -73,7 +76,7 @@ export async function POST(req: NextRequest) {
           isCreatedByUser: true,
           createdAt: { $gte: offeredAt, $lte: expiryTime },
           text: { $regex: /^\s*yes\.?\s*$/i },
-        } as Parameters<ReturnType<typeof db.collection>["findOne"]>[0]);
+        });
 
         const pendingWithMsg: PendingState = {
           ...pendingState,

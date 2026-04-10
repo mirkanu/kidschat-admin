@@ -16,6 +16,9 @@ import type { Db } from "mongodb";
 import { getWeeklyBonusSpend, getStartOfWeekUTC } from "@/lib/bonus-purchases";
 import { unlockImageAccess, unlockAllAccess } from "@/lib/enforcement";
 
+type SettingsDoc = Record<string, unknown> & { _id?: string };
+type ConversationDoc = Record<string, unknown>;
+
 const EUR_RATE = parseFloat(process.env.USD_TO_EUR_RATE ?? "0.92");
 const TOKEN_CREDIT_PER_EUR = 1_000_000; // 1M credits per EUR
 
@@ -66,8 +69,9 @@ export async function sendBonusOfferMessage(args: {
   await db.collection("messages").insertOne(messageDoc);
 
   // Update conversations.updatedAt to trigger LibreChat UI refresh (Pitfall 6)
-  await db.collection("conversations").updateOne(
-    { conversationId } as Parameters<ReturnType<Db["collection"]>["updateOne"]>[0],
+  const convsCol = db.collection<ConversationDoc>("conversations");
+  await convsCol.updateOne(
+    { conversationId } as Parameters<typeof convsCol.updateOne>[0],
     { $set: { updatedAt: now } }
   );
 
@@ -105,7 +109,7 @@ export async function detectBonusConfirmation(
     isCreatedByUser: true,
     createdAt: { $gte: confirmationOfferedAt, $lte: expiryTime },
     text: { $regex: /^\s*yes\.?\s*$/i },
-  } as Parameters<ReturnType<Db["collection"]>["findOne"]>[0]);
+  });
 
   return yesMessage !== null;
 }
@@ -125,9 +129,9 @@ export async function applyBonusCredit(userId: string, pending: PendingState, db
   }
 
   // Get effective pack size and weekly cap from settings
-  const settingsDoc = await db
-    .collection("settings")
-    .findOne({ _id: "global_defaults" } as Parameters<ReturnType<Db["collection"]>["findOne"]>[0]);
+  const settingsCol = db.collection<SettingsDoc>("settings");
+  const settingsDoc = await settingsCol
+    .findOne({ _id: "global_defaults" } as Parameters<typeof settingsCol.findOne>[0]);
 
   const weeklyBonusCap = (settingsDoc?.weeklyBonusCap as number | undefined) ?? 5.0;
   const packSizeEUR = pendingPackSize ?? (settingsDoc?.bonusPackSize as number | undefined) ?? 2.0;
@@ -171,8 +175,9 @@ export async function applyBonusCredit(userId: string, pending: PendingState, db
   }
 
   // Clear the awaiting confirmation state
-  await db.collection("settings").updateOne(
-    { _id: `override_${userId}` } as Parameters<ReturnType<Db["collection"]>["updateOne"]>[0],
+  const settingsColUpdate = db.collection<SettingsDoc>("settings");
+  await settingsColUpdate.updateOne(
+    { _id: `override_${userId}` } as Parameters<typeof settingsColUpdate.updateOne>[0],
     {
       $unset: {
         awaitingBonusConfirmation: "",

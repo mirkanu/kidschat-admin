@@ -50,8 +50,8 @@ export async function getEffectiveLimits(userId: string, db: Db): Promise<Effect
     col.findOne({ _id: `override_${userId}` } as Parameters<typeof col.findOne>[0]),
   ]);
 
-  const g = globalDoc ?? {};
-  const o = overrideDoc ?? {};
+  const g: Partial<EffectiveLimits> = globalDoc ?? {};
+  const o: Partial<EffectiveLimits> = overrideDoc ?? {};
   const d = HARDCODED_DEFAULTS;
 
   return {

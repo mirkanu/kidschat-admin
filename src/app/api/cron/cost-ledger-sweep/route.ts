@@ -25,9 +25,11 @@ export async function POST(req: NextRequest) {
 
   const client = await getMongoClient();
   const db = client.db("test");
+  type CronStateDoc = { _id?: string; lastPoll?: Date };
+  const cronStateCol = db.collection<CronStateDoc>("cron_state");
 
   // Read lastPoll from cron_state, default to 5 minutes ago
-  const cronState = await db.collection("cron_state").findOne({ _id: "cost_ledger_sweep" } as Parameters<ReturnType<typeof db.collection>["findOne"]>[0]);
+  const cronState = await cronStateCol.findOne({ _id: "cost_ledger_sweep" } as Parameters<typeof cronStateCol.findOne>[0]);
   const lastPoll: Date = cronState?.lastPoll instanceof Date
     ? cronState.lastPoll
     : new Date(Date.now() - DEFAULT_LOOKBACK_MS);
@@ -45,8 +47,8 @@ export async function POST(req: NextRequest) {
 
   if (newMessages.length === 0) {
     // Update lastPoll even on empty run
-    await db.collection("cron_state").updateOne(
-      { _id: "cost_ledger_sweep" } as Parameters<ReturnType<typeof db.collection>["updateOne"]>[0],
+    await cronStateCol.updateOne(
+      { _id: "cost_ledger_sweep" } as Parameters<typeof cronStateCol.updateOne>[0],
       { $set: { lastPoll: now } },
       { upsert: true }
     );
@@ -136,8 +138,8 @@ export async function POST(req: NextRequest) {
   }
 
   // Update lastPoll
-  await db.collection("cron_state").updateOne(
-    { _id: "cost_ledger_sweep" } as Parameters<ReturnType<typeof db.collection>["updateOne"]>[0],
+  await cronStateCol.updateOne(
+    { _id: "cost_ledger_sweep" } as Parameters<typeof cronStateCol.updateOne>[0],
     { $set: { lastPoll: now } },
     { upsert: true }
   );
