@@ -100,5 +100,5 @@ Image-prompt safety patterns, parent email alerts, per-user daily image rate lim
 | 11. Admin Chatbot | v2.2 | 2/2 | Complete | 2026-04-05 |
 | 12. Prompt Editor | v2.2 | 2/2 | Complete | 2026-04-05 |
 | 13. Parent Email Notifications | v2.3 | 3/3 | Complete | 2026-04-05 |
-| 14. Enable & Safeguard Image Generation | 1/1 | Complete   | 2026-04-08 | — |
+| 14. Enable & Safeguard Image Generation | 1/1 | Complete    | 2026-04-10 | — |
 | 15. Safety Alert Extension & Rate Limiting | v2.4 | 0/0 | Pending | — |
