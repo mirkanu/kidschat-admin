@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 15-01-PLAN.md
-last_updated: "2026-04-10T10:56:06.172Z"
+stopped_at: Completed 15-00-PLAN.md
+last_updated: "2026-04-10T11:04:04.246Z"
 last_activity: "2026-04-09 — Completed quick task 9: Chat bubble overlaps Send button on mobile Test Mode page"
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 4
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 ---
 
@@ -77,6 +77,10 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 15-safety-alert-extension-rate-limiting]: IMAGE_PROMPT_PATTERNS exported from safety-patterns.ts; horror pattern requires adjacent attack/person context to avoid cartoon-monster false positives
 - [Phase 15-safety-alert-extension-rate-limiting]: settings.ts HARDCODED_DEFAULTS: dailyImageLimit=10, dailyMessageLimit=50, monthlyCostCapEUR=10, weeklyBonusCap=5, bonusPackSize=2
 - [Phase 15-safety-alert-extension-rate-limiting]: CONFIG_PATH pins specific Gist revision 8a4a743 for reproducible deploys; GITHUB_GIST_TOKEN in Railway is expired and needs refresh
+- [Phase 15-safety-alert-extension-rate-limiting]: balances collection is plural (not balance) — all Plan 01/02 code uses db.collection('balances')
+- [Phase 15-safety-alert-extension-rate-limiting]: aclentries use principalId (not user) and resourceId is MongoDB ObjectId — must resolve agent _id before ACL query
+- [Phase 15-safety-alert-extension-rate-limiting]: tokenCount is flat integer — cost ledger must apply char-formula for input/output split billing
+- [Phase 15-safety-alert-extension-rate-limiting]: Synthetic message VERDICT: GO — admin-inserted messages render in LibreChat child UI; Pattern 8 bonus offer delivery is viable
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -106,6 +110,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 14-enable-safeguard-image-generation P01 | multi-session | 3 tasks | 1 files |
 | 9 | Chat bubble overlaps Send button on mobile Test Mode page | 2026-04-09 | 7eeee8d | [9-on-mobile-on-the-test-mode-admin-page-th](./quick/9-on-mobile-on-the-test-mode-admin-page-th/) |
 | Phase 15-safety-alert-extension-rate-limiting P01 | 35 | 3 tasks | 12 files |
+| Phase 15-safety-alert-extension-rate-limiting P00 | 35 | 4 tasks | 10 files |
 
 ### Pending Todos
 
@@ -118,6 +123,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-10T10:56:06.168Z
-Stopped at: Completed 15-01-PLAN.md
+Last session: 2026-04-10T11:03:48.982Z
+Stopped at: Completed 15-00-PLAN.md
 Resume file: None

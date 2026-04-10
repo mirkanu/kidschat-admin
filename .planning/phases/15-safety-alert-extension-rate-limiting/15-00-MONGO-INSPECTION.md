@@ -45,7 +45,7 @@
 
 ## Plan 02 Implications
 
-*(To be filled by the human at the checkpoint)*
+*(Confirmed at Task 4 checkpoint — 2026-04-10)*
 
 - **balance.enabled is NOT SET** in librechat.yaml — `balances` collection is empty. Plan 01 MUST implement its own cost tracking (`cost_ledger` collection) independently of LibreChat's native balance system. Setting `balance.enabled: true` in librechat.yaml is optional but would enable LibreChat's own token deduction — however this is separate from our EUR-based monthly cost cap.
 - **aclentries use field name `principalId`** — Plan 02 enforcement code MUST use `principalId` when querying/modifying ACL entries for user access control. NOT `user`.
@@ -74,5 +74,9 @@ db.messages.deleteOne({ messageId: "69d8d4b3ecb1d4b13e993563" })
 ```
 Or run: `MONGODB_URI=... npx tsx scripts/mongo-inspect.ts --cleanup 69d8d4b3ecb1d4b13e993563`
 
-VERDICT: PENDING — awaiting human verification at Task 4 checkpoint
+VERDICT: GO — synthetic insertion renders in LibreChat UI
+
+**Confirmation:** Sebastian logged in to LibreChat, opened the "Drawing Assistance Alternatives Offered" conversation, and confirmed the message `PHASE-15-SYNTHETIC-TEST-1775817907890` rendered in the child's chat UI. Admin-inserted messages are visible to the child without any additional signaling. Pattern 8 (admin-injected bonus offer delivery) is viable.
+
+**Cleanup:** Synthetic message `69d8d4b3ecb1d4b13e993563` deleted from MongoDB on 2026-04-10.
 
