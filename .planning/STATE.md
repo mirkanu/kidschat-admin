@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: "Checkpoint:human-verify Task 5 — 15-02 enforcement smoke test"
-last_updated: "2026-04-10T12:29:54.312Z"
+stopped_at: Completed 15-02-PLAN.md — Phase 15 all plans complete
+last_updated: "2026-04-10T15:46:49.511Z"
 last_activity: "2026-04-09 — Completed quick task 9: Chat bubble overlaps Send button on mobile Test Mode page"
 progress:
   total_phases: 2
@@ -85,6 +85,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 15-safety-alert-extension-rate-limiting]: awaitingBonusConfirmation state stored in settings override_{userId} doc — avoids new collection
 - [Phase 15-safety-alert-extension-rate-limiting]: Railway cron schedules require manual dashboard configuration — no CLI/GraphQL API support available
 - [Phase 15-safety-alert-extension-rate-limiting]: serviceInstanceRedeploy reuses cached Docker image — must use railway up for fresh source builds
+- [Phase 15-safety-alert-extension-rate-limiting]: Navigation fix: child name rows in /users list link to /users/{userId} — admin rows unchanged (no detail page for admins)
+- [Phase 15-safety-alert-extension-rate-limiting]: Per-child overrides broken + schema rework pending: dailyImageLimit+dailyMessageLimit to be replaced by dailyCostCapEur in gap-closure phase 15.1
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -128,6 +130,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-10T12:29:54.307Z
-Stopped at: Checkpoint:human-verify Task 5 — 15-02 enforcement smoke test
+Last session: 2026-04-10T15:46:22.260Z
+Stopped at: Completed 15-02-PLAN.md — Phase 15 all plans complete
 Resume file: None

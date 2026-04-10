@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -129,7 +130,18 @@ export function UsersTable({ initialUsers }: Props) {
             ) : (
               users.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.name}</TableCell>
+                  <TableCell className="font-medium">
+                    {user.role !== "ADMIN" ? (
+                      <Link
+                        href={`/users/${user.id}`}
+                        className="hover:underline text-foreground"
+                      >
+                        {user.name}
+                      </Link>
+                    ) : (
+                      user.name
+                    )}
+                  </TableCell>
                   <TableCell className="text-muted-foreground">
                     {user.email}
                   </TableCell>

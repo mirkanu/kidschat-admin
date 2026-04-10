@@ -57,6 +57,7 @@ key-files:
     - src/components/dashboard/alerts-table.tsx (image_prompt tab)
     - src/app/(dashboard)/analytics/page.tsx (ImageTrendSection)
     - src/components/dashboard/nav-sidebar.tsx (settings nav item)
+    - src/components/dashboard/users-table.tsx (child name → /users/{userId} link)
     - tsconfig.json (exclude scripts dir)
 
 key-decisions:
@@ -73,7 +74,7 @@ patterns-established:
 
 requirements-completed: [IMG-ENFORCE-01, IMG-ENFORCE-02, IMG-ENFORCE-03, IMG-BONUS-01, IMG-BONUS-02, IMG-ADMIN-01]
 
-duration: 70min
+duration: 75min
 completed: 2026-04-10
 ---
 
@@ -86,8 +87,8 @@ completed: 2026-04-10
 - **Duration:** ~70 min
 - **Started:** 2026-04-10T11:00:00Z (approx)
 - **Completed:** 2026-04-10T12:17:00Z
-- **Tasks:** 4 of 5 complete (Task 5 is checkpoint:human-verify)
-- **Files modified:** 21
+- **Tasks:** 5 of 5 complete
+- **Files modified:** 22
 
 ## Accomplishments
 
@@ -101,8 +102,7 @@ completed: 2026-04-10
 2. **Task 2: 5 cron endpoints + middleware + weekly digest** - `133c3ba` (feat)
 3. **Task 3: Admin UI - settings, user detail, alerts, analytics** - `d7cde82` (feat)
 4. **Task 4: Deploy to Railway + cron schedule docs** - `e34839b` (chore)
-
-**Task 5 (checkpoint:human-verify):** Awaiting end-to-end smoke test
+5. **Task 5: Navigation fix (child rows → /users/{userId}) + SUMMARY + state updates** - *(this commit)* (fix+docs)
 
 ## Files Created/Modified
 
@@ -180,10 +180,18 @@ completed: 2026-04-10
 - **Files modified:** None (deployment action only)
 - **Committed in:** N/A (deployment artifact)
 
+**8. [Rule 1 - Bug] Navigation dead-end: no link from /users list to /users/{userId}**
+- **Found during:** Task 5 (human verification — checkpoint:human-verify)
+- **Issue:** Child rows in `/users` list had no navigation to the detail page; `/users/{userId}` was reachable only by typing the URL directly
+- **Fix:** Added `<Link href={/users/${userId}}>` wrapping the child's name cell in `users-table.tsx`; admin rows unchanged (admin has no detail page)
+- **Files modified:** src/components/dashboard/users-table.tsx
+- **Verification:** Build passes, deployed to Railway
+- **Committed in:** Task 5 commit
+
 ---
 
-**Total deviations:** 7 auto-fixed (2 blocking, 4 bugs, 1 type)
-**Impact on plan:** All fixes necessary for build correctness and deployment. No scope creep.
+**Total deviations:** 8 auto-fixed (2 blocking, 5 bugs, 1 type)
+**Impact on plan:** All fixes necessary for build correctness, deployment, and UX reachability. No scope creep.
 
 ## Issues Encountered
 
@@ -194,11 +202,45 @@ completed: 2026-04-10
 
 Railway cron schedules must be configured manually in the Railway dashboard. See `15-02-DEPLOYMENT.md` for the exact 5 cron entries with schedules, URLs, methods, and headers.
 
+## Known Issues / Deferred to Phase 15.1
+
+The following items were surfaced during human verification and are intentionally deferred to a gap-closure phase (15.1). Do NOT attempt to fix these under plan 15-02.
+
+### 1. Per-Child Overrides tab broken (settings page)
+
+- **Status:** Known broken — the Per-Child Overrides tab in `/settings` does not persist or apply overrides correctly
+- **Root cause:** Likely a server action / form data wiring issue in `settings-form.tsx` + `actions.ts`
+- **Deferral reason:** The entire override schema is about to change (see item 2 below). Fixing against the current schema would be wasted work.
+
+### 2. Schema shift: dailyImageLimit + dailyMessageLimit → dailyCostCapEur
+
+- **Requirement:** Replace the two separate integer limits (`dailyImageLimit`, `dailyMessageLimit`) with a single `dailyCostCapEur` (float, EUR) — one number the parent sets ("how much can my child spend on AI per day")
+- **Scope:** Rework `settings.ts`, `enforcement.ts` / `enforceChildLimits`, admin settings page, per-child overrides UI, and all cron endpoints that reference image/message count limits
+- **Enforcement logic:** Daily soft-lock fires when `sum(cost_ledger WHERE date=today AND userId=X) >= dailyCostCapEur`; no separate image vs message enforcement at the soft-lock layer
+
+### 3. 70% warning to children via in-chat synthetic message
+
+- **Requirement:** When a child reaches 70% of their daily cost cap, insert a synthetic in-chat message (reuse Pattern 8 bonus-delivery infrastructure): "You've used 70% of your daily chat budget. Use it wisely!"
+- **Trigger:** In `enforceChildLimits`, check `currentDailyCost / dailyCostCapEur >= 0.70` before the lock threshold; if threshold crossed and not already warned today, call `sendBonusOfferMessage` (or a variant) with the 70% warning template
+- **State tracking:** Store `warnedAt70PctToday: Date` on the `override_{userId}` settings doc to prevent repeat warnings
+
+### 4. Usage progress visible to kids (LibreChat frontend — needs research)
+
+- **Requirement:** Children should see a usage progress indicator in LibreChat showing how much of their daily budget they've consumed (e.g. "You've used €0.04 of your €0.10 daily limit")
+- **Challenge:** LibreChat frontend is not directly owned code — requires research into whether a custom banner/widget can be injected via `librechat.yaml`, a LibreChat plugin, or whether a synthetic "assistant" message at conversation start can carry dynamic usage context
+- **Suggested research:** Check LibreChat's `interface.ui` YAML options for custom banners; investigate system prompt injection with dynamic usage context
+- **Admin view:** Usage progress must also be visible at a top-level admin glance (not buried in /users/{id}). Consider adding a usage overview card to the main dashboard showing each child's daily spend vs cap as a progress bar
+
+### 5. Re-fix per-child overrides under new cost-cap schema
+
+- After schema shift (item 2), the per-child override UI needs to expose `dailyCostCapEur` (not the old image/message integer fields) with working persistence and application in enforcement
+
 ## Next Phase Readiness
 
 - All enforcement infrastructure deployed and verified in production
+- Navigation: child detail pages (/users/{userId}) now reachable from the /users list
 - Cron schedules pending manual Railway dashboard configuration (see DEPLOYMENT.md)
-- Task 5 (end-to-end smoke test) is a checkpoint:human-verify — requires admin to trigger enforcement manually and verify bonus flow, hard-lock, and weekly digest
+- Gap-closure phase 15.1 should address: cost-cap schema rework, 70% warning, per-child override UI fix, LibreChat usage progress research
 
 ---
 *Phase: 15-safety-alert-extension-rate-limiting*
