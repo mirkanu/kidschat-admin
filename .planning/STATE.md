@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 15-00-PLAN.md
-last_updated: "2026-04-10T11:04:04.246Z"
+stopped_at: "Checkpoint:human-verify Task 5 — 15-02 enforcement smoke test"
+last_updated: "2026-04-10T12:29:54.312Z"
 last_activity: "2026-04-09 — Completed quick task 9: Chat bubble overlaps Send button on mobile Test Mode page"
 progress:
   total_phases: 2
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -81,6 +81,10 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 15-safety-alert-extension-rate-limiting]: aclentries use principalId (not user) and resourceId is MongoDB ObjectId — must resolve agent _id before ACL query
 - [Phase 15-safety-alert-extension-rate-limiting]: tokenCount is flat integer — cost ledger must apply char-formula for input/output split billing
 - [Phase 15-safety-alert-extension-rate-limiting]: Synthetic message VERDICT: GO — admin-inserted messages render in LibreChat child UI; Pattern 8 bonus offer delivery is viable
+- [Phase 15-safety-alert-extension-rate-limiting]: Two-tier locking: ACL entry removal (daily/soft) + tokenCredits=0 (monthly/hard); hard lock also calls lockImageAccess for belt-and-suspenders
+- [Phase 15-safety-alert-extension-rate-limiting]: awaitingBonusConfirmation state stored in settings override_{userId} doc — avoids new collection
+- [Phase 15-safety-alert-extension-rate-limiting]: Railway cron schedules require manual dashboard configuration — no CLI/GraphQL API support available
+- [Phase 15-safety-alert-extension-rate-limiting]: serviceInstanceRedeploy reuses cached Docker image — must use railway up for fresh source builds
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -111,6 +115,7 @@ Progress: [░░░░░░░░░░] 0%
 | 9 | Chat bubble overlaps Send button on mobile Test Mode page | 2026-04-09 | 7eeee8d | [9-on-mobile-on-the-test-mode-admin-page-th](./quick/9-on-mobile-on-the-test-mode-admin-page-th/) |
 | Phase 15-safety-alert-extension-rate-limiting P01 | 35 | 3 tasks | 12 files |
 | Phase 15-safety-alert-extension-rate-limiting P00 | 35 | 4 tasks | 10 files |
+| Phase 15-safety-alert-extension-rate-limiting P02 | 70 | 4 tasks | 21 files |
 
 ### Pending Todos
 
@@ -123,6 +128,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-10T11:03:48.982Z
-Stopped at: Completed 15-00-PLAN.md
+Last session: 2026-04-10T12:29:54.307Z
+Stopped at: Checkpoint:human-verify Task 5 — 15-02 enforcement smoke test
 Resume file: None
