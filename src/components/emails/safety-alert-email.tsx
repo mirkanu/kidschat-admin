@@ -13,7 +13,7 @@ import {
 
 export interface SafetyAlertEmailProps {
   childName: string;
-  alertType: "safety_redirect" | "jailbreak_attempt";
+  alertType: "safety_redirect" | "jailbreak_attempt" | "image_prompt";
   matchedPattern: string;
   messageExcerpt: string;
   detectedAt: string;
@@ -23,6 +23,7 @@ export interface SafetyAlertEmailProps {
 const ALERT_TYPE_LABELS: Record<SafetyAlertEmailProps["alertType"], string> = {
   safety_redirect: "Safety Redirect",
   jailbreak_attempt: "Jailbreak Attempt",
+  image_prompt: "Inappropriate Image Request",
 };
 
 export function SafetyAlertEmail({

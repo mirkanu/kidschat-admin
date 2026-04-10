@@ -14,7 +14,7 @@ import { getFromAddress, getAdminUrl } from "@/lib/email-utils";
 
 export interface NotifySafetyAlertInput {
   childName: string;
-  alertType: "safety_redirect" | "jailbreak_attempt";
+  alertType: "safety_redirect" | "jailbreak_attempt" | "image_prompt";
   matchedPattern: string;
   messageExcerpt: string;
   detectedAt: string;
@@ -78,7 +78,12 @@ export async function notifySafetyAlert(
 
   // --- Build and send email ---
   const conversationUrl = `${getAdminUrl()}/conversations/${conversationId}`;
-  const subject = `Safety Alert: ${alertType === "jailbreak_attempt" ? "Jailbreak Attempt" : "Safety Redirect"} detected for ${childName}`;
+  const subject =
+    alertType === "image_prompt"
+      ? `Image Alert: Inappropriate image request detected for ${childName}`
+      : alertType === "jailbreak_attempt"
+        ? `Safety Alert: Jailbreak Attempt detected for ${childName}`
+        : `Safety Alert: Safety Redirect detected for ${childName}`;
 
   const { data, error } = await resend.emails.send({
     from: getFromAddress(),
