@@ -82,7 +82,7 @@ Plans:
 Image-prompt safety patterns, parent email alerts, per-child daily image + message + monthly cost limits, bonus "Extra Usage" purchase flow via in-chat YES confirmation, admin settings page
 
 **Goal:** Image prompt abuse detected + parents notified; runaway costs prevented via configurable per-child daily/monthly limits with admin UI; children can buy bonus "Extra Usage" packs.
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 **Requirements:** [IMG-SAFETY-01, IMG-SAFETY-02, IMG-SAFETY-03, IMG-SAFETY-04, IMG-LIMITS-01, IMG-LIMITS-02, IMG-LIMITS-03, IMG-LIMITS-04, IMG-ENFORCE-01, IMG-ENFORCE-02, IMG-ENFORCE-03, IMG-BONUS-01, IMG-BONUS-02, IMG-ADMIN-01]
 
 Plans:
@@ -110,4 +110,4 @@ Plans:
 | 12. Prompt Editor | v2.2 | 2/2 | Complete | 2026-04-05 |
 | 13. Parent Email Notifications | v2.3 | 3/3 | Complete | 2026-04-05 |
 | 14. Enable & Safeguard Image Generation | 1/1 | Complete    | 2026-04-10 | — |
-| 15. Safety Alert Extension & Rate Limiting | v2.4 | 0/3 | Planned | — |
+| 15. Safety Alert Extension & Rate Limiting | 1/3 | In Progress|  | — |

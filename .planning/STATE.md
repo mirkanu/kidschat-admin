@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: "Completed quick task 9: Hide AdminChatWidget on /test-mode page on mobile"
-last_updated: "2026-04-10T09:20:56.412Z"
+stopped_at: Completed 15-01-PLAN.md
+last_updated: "2026-04-10T10:56:06.172Z"
 last_activity: "2026-04-09 — Completed quick task 9: Chat bubble overlaps Send button on mobile Test Mode page"
 progress:
   total_phases: 2
   completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  total_plans: 4
+  completed_plans: 2
   percent: 0
 ---
 
@@ -74,6 +74,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 14-enable-safeguard-image-generation]: Drawing agent created directly in MongoDB (agent_id: agent_kidschat_drawing_1775634945891) due to LibreChat rate-limit ban during setup
 - [Phase 14-enable-safeguard-image-generation]: interface.agents uses object form {use:true, create:false, share:false, public:false} — not boolean true (deprecated in LibreChat v0.7.5+)
 - [Phase 14-enable-safeguard-image-generation]: DALL-E 3 only: DALLE3_API_KEY set, DALLE2_API_KEY intentionally absent. ENDPOINTS updated to 'anthropic,agents'
+- [Phase 15-safety-alert-extension-rate-limiting]: IMAGE_PROMPT_PATTERNS exported from safety-patterns.ts; horror pattern requires adjacent attack/person context to avoid cartoon-monster false positives
+- [Phase 15-safety-alert-extension-rate-limiting]: settings.ts HARDCODED_DEFAULTS: dailyImageLimit=10, dailyMessageLimit=50, monthlyCostCapEUR=10, weeklyBonusCap=5, bonusPackSize=2
+- [Phase 15-safety-alert-extension-rate-limiting]: CONFIG_PATH pins specific Gist revision 8a4a743 for reproducible deploys; GITHUB_GIST_TOKEN in Railway is expired and needs refresh
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -102,6 +105,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 13-parent-email-notifications P03 | 45 | 3 tasks | 10 files |
 | Phase 14-enable-safeguard-image-generation P01 | multi-session | 3 tasks | 1 files |
 | 9 | Chat bubble overlaps Send button on mobile Test Mode page | 2026-04-09 | 7eeee8d | [9-on-mobile-on-the-test-mode-admin-page-th](./quick/9-on-mobile-on-the-test-mode-admin-page-th/) |
+| Phase 15-safety-alert-extension-rate-limiting P01 | 35 | 3 tasks | 12 files |
 
 ### Pending Todos
 
@@ -114,6 +118,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-09T21:19:06.947Z
-Stopped at: Completed quick task 9: Hide AdminChatWidget on /test-mode page on mobile
+Last session: 2026-04-10T10:56:06.168Z
+Stopped at: Completed 15-01-PLAN.md
 Resume file: None
