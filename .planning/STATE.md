@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 15-03-PLAN.md
-last_updated: "2026-04-10T20:02:33.188Z"
+stopped_at: Completed 15-04-PLAN.md
+last_updated: "2026-04-10T21:13:45.740Z"
 last_activity: "2026-04-09 — Completed quick task 9: Chat bubble overlaps Send button on mobile Test Mode page"
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
@@ -91,6 +91,10 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 15-safety-alert-extension-rate-limiting]: instrumentation.ts register() fires at Next.js 15 startup in ~850ms — no experimental flag needed, viable as in-process polling host
 - [Phase 15-safety-alert-extension-rate-limiting]: LibreChat native balance display confirmed visible to children ('Balance: 10,000,000' in Settings); Plan 15-05 supplements with threshold synthetic messages, not a custom UI
 - [Phase 15-safety-alert-extension-rate-limiting]: Original Path B (/api/cron/tick with CRON_SECRET) superseded by in-process setInterval — simpler, no HTTP hop, no new Railway service for the tick loop
+- [Phase 15-safety-alert-extension-rate-limiting]: Path chosen: instrumentation.ts + 60s setInterval polling (change streams unavailable — locked by 15-03)
+- [Phase 15-safety-alert-extension-rate-limiting]: budget.ts replaces cost-ledger.ts + enforcement.ts: native tokenCredits as single source of truth
+- [Phase 15-safety-alert-extension-rate-limiting]: railway.toml config-as-code for daily-reset + monthly-reset crons (no dashboard clicks)
+- [Phase 15-safety-alert-extension-rate-limiting]: Migration run via temporary API endpoint (Railway internal MongoDB not accessible externally via railway run)
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -122,6 +126,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 15-safety-alert-extension-rate-limiting P01 | 35 | 3 tasks | 12 files |
 | Phase 15-safety-alert-extension-rate-limiting P00 | 35 | 4 tasks | 10 files |
 | Phase 15-safety-alert-extension-rate-limiting P02 | 70 | 4 tasks | 21 files |
+| Phase 15-safety-alert-extension-rate-limiting P04 | 63 | 4 tasks | 19 files |
 
 ### Pending Todos
 
@@ -134,6 +139,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-10T20:02:15.244Z
-Stopped at: Completed 15-03-PLAN.md
+Last session: 2026-04-10T21:13:15.732Z
+Stopped at: Completed 15-04-PLAN.md
 Resume file: None
