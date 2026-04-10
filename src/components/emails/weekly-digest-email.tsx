@@ -15,6 +15,8 @@ export interface ChildWeeklyStat {
   totalMessages: number;
   activeDays: number;
   topPresets: string[];
+  bonusPurchasesThisWeek?: number;
+  totalBonusSpendEUR?: number;
 }
 
 export interface WeeklyDigestEmailProps {
@@ -186,6 +188,23 @@ export function WeeklyDigestEmail({ children, weekOf }: WeeklyDigestEmailProps) 
                     </tr>
                   </tbody>
                 </table>
+
+                {/* Bonus purchases section — only shown when > 0 */}
+                {(child.bonusPurchasesThisWeek ?? 0) > 0 && (
+                  <Text
+                    style={{
+                      color: "#7c3aed",
+                      fontSize: "13px",
+                      margin: "8px 0 4px",
+                      padding: "6px 12px",
+                      backgroundColor: "#f5f3ff",
+                      borderRadius: "4px",
+                      borderLeft: "3px solid #7c3aed",
+                    }}
+                  >
+                    Bonus Purchases This Week: €{(child.totalBonusSpendEUR ?? 0).toFixed(2)} ({child.bonusPurchasesThisWeek} purchase{child.bonusPurchasesThisWeek !== 1 ? "s" : ""})
+                  </Text>
+                )}
 
                 {index < children.length - 1 && (
                   <Hr
