@@ -2,93 +2,156 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { auth } from "@/auth";
 import getMongoClient from "@/lib/mongodb";
-import { getEffectiveLimits } from "@/lib/settings";
-import type { EffectiveLimits } from "@/lib/settings";
+import { HARDCODED_DEFAULTS } from "@/lib/budget";
+import type { GlobalDefaults, ChildOverride } from "@/lib/budget";
 import { SettingsForm } from "./settings-form";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { ChildOverrideRow } from "./types";
 
-interface ChildUser {
-  id: string;
-  name: string;
-}
+// ---------------------------------------------------------------------------
+// Data fetching
+// ---------------------------------------------------------------------------
 
-async function getSettingsData() {
+async function getSettingsData(): Promise<{
+  globals: GlobalDefaults;
+  overrides: ChildOverrideRow[];
+  lastUpdated: string | null;
+}> {
   const client = await getMongoClient();
   const db = client.db("test");
   const settingsCol = db.collection("settings");
 
-  // Get child users list
+  // Fetch all children (non-admin users)
   const childUsers = await db
     .collection("users")
-    .find({ role: { $ne: "ADMIN" } })
+    .find({ role: { $ne: "ADMIN" } } as Record<string, unknown>)
     .project<{ _id: { toString(): string }; name: string }>({ _id: 1, name: 1 })
     .sort({ name: 1 })
     .toArray();
 
-  // Global defaults via the legacy shim (maps new budget schema to old EffectiveLimits shape)
-  // Use a dummy userId — global only, no override
-  const globalDefaults = await getEffectiveLimits("__global__", db);
+  // Fetch global defaults
+  const globalDoc = await settingsCol.findOne(
+    { key: "global_defaults" } as Record<string, unknown>
+  );
 
-  // Per-child overrides: fetch docs with key: "child_override"
+  const globals: GlobalDefaults = {
+    key: "global_defaults",
+    dailyCostCapEur:
+      (globalDoc?.dailyCostCapEur as number | undefined) ??
+      HARDCODED_DEFAULTS.dailyCostCapEur,
+    monthlyCostCapEur:
+      (globalDoc?.monthlyCostCapEur as number | undefined) ??
+      HARDCODED_DEFAULTS.monthlyCostCapEur,
+    bonusPackEur:
+      (globalDoc?.bonusPackEur as number | undefined) ??
+      HARDCODED_DEFAULTS.bonusPackEur,
+    weeklyBonusCapEur:
+      (globalDoc?.weeklyBonusCapEur as number | undefined) ??
+      HARDCODED_DEFAULTS.weeklyBonusCapEur,
+    bonusMessageTemplate:
+      (globalDoc?.bonusMessageTemplate as string | undefined) ??
+      HARDCODED_DEFAULTS.bonusMessageTemplate,
+  };
+
+  // Fetch per-child override docs
   const overrideDocs = await settingsCol
-    .find({ key: "child_override" } as Parameters<typeof settingsCol.find>[0])
+    .find({ key: "child_override" } as Record<string, unknown>)
     .toArray();
 
-  // Build override map
-  const overrideMap = new Map<string, Partial<EffectiveLimits>>();
+  // Build override map keyed by userId
+  const overrideMap = new Map<string, Partial<Omit<ChildOverride, "key" | "userId">>>();
   for (const doc of overrideDocs) {
-    const userId = doc.userId as string;
-    if (!userId) continue;
-    const overrideOnly: Partial<EffectiveLimits> = {};
-    // Map new schema fields to legacy EffectiveLimits shape for the settings form
-    if (doc.monthlyCostCapEur != null) overrideOnly.monthlyCostCapEUR = doc.monthlyCostCapEur as number;
-    if (doc.bonusPackEur != null) overrideOnly.bonusPackSize = doc.bonusPackEur as number;
-    if (doc.weeklyBonusCapEur != null) overrideOnly.weeklyBonusCap = doc.weeklyBonusCapEur as number;
-    if (Object.keys(overrideOnly).length > 0) {
-      overrideMap.set(userId, overrideOnly);
-    }
+    const uid = doc.userId as string | undefined;
+    if (!uid) continue;
+    const entry: Partial<Omit<ChildOverride, "key" | "userId">> = {};
+    if (doc.dailyCostCapEur != null) entry.dailyCostCapEur = doc.dailyCostCapEur as number;
+    if (doc.monthlyCostCapEur != null) entry.monthlyCostCapEur = doc.monthlyCostCapEur as number;
+    if (doc.bonusPackEur != null) entry.bonusPackEur = doc.bonusPackEur as number;
+    if (doc.weeklyBonusCapEur != null) entry.weeklyBonusCapEur = doc.weeklyBonusCapEur as number;
+    overrideMap.set(uid, Object.keys(entry).length > 0 ? entry : null as unknown as typeof entry);
   }
 
-  const children: ChildUser[] = childUsers.map((u) => ({
-    id: u._id.toString(),
-    name: u.name ?? "Unknown",
-  }));
+  const overrides: ChildOverrideRow[] = childUsers.map((u) => {
+    const uid = u._id.toString();
+    const override = overrideMap.get(uid) ?? null;
+    return {
+      userId: uid,
+      childName: u.name ?? "Unknown",
+      override: override && Object.keys(override).length > 0 ? override : null,
+    };
+  });
 
-  const childOverrides = children.map((child) => ({
-    userId: child.id,
-    childName: child.name,
-    override: overrideMap.get(child.id) ?? null,
-  }));
+  const lastUpdated = globalDoc?.updatedAt
+    ? new Date(globalDoc.updatedAt as Date).toLocaleString()
+    : null;
 
-  return { globalDefaults, childOverrides };
+  return { globals, overrides, lastUpdated };
 }
+
+// ---------------------------------------------------------------------------
+// Server sub-component (inside Suspense)
+// ---------------------------------------------------------------------------
 
 async function SettingsContent() {
-  const { globalDefaults, childOverrides } = await getSettingsData();
-  return <SettingsForm globalDefaults={globalDefaults} childOverrides={childOverrides} />;
+  const { globals, overrides, lastUpdated } = await getSettingsData();
+  return (
+    <SettingsForm globals={globals} overrides={overrides} lastUpdated={lastUpdated} />
+  );
 }
+
+// ---------------------------------------------------------------------------
+// Skeleton fallback (shown while SettingsContent is streaming)
+// ---------------------------------------------------------------------------
 
 function SettingsFormSkeleton() {
   return (
     <div className="space-y-6">
+      {/* Tabs header */}
       <div className="flex gap-2">
         <Skeleton className="h-9 w-36 rounded-md" />
-        <Skeleton className="h-9 w-40 rounded-md" />
+        <Skeleton className="h-9 w-44 rounded-md" />
       </div>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="grid grid-cols-3 items-center gap-4">
-          <Skeleton className="h-4 w-32 ml-auto" />
-          <div className="col-span-2">
-            <Skeleton className={i === 4 ? "h-20 w-full" : "h-9 w-full"} />
-          </div>
+
+      {/* Global defaults tab inputs */}
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-px w-full" />
         </div>
-      ))}
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="grid grid-cols-3 items-center gap-4">
+            <Skeleton className="h-4 w-32 ml-auto" />
+            <div className="col-span-2">
+              <Skeleton className={i === 3 ? "h-20 w-full" : "h-9 w-full"} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Per-child table skeleton */}
+      <div className="rounded-md border">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 p-3 border-b last:border-0">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-8 w-28" />
+            <Skeleton className="h-8 w-28" />
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-7 w-16" />
+          </div>
+        ))}
+      </div>
+
       <div className="flex justify-end">
         <Skeleton className="h-9 w-40" />
       </div>
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -99,7 +162,7 @@ export default async function SettingsPage() {
       <div>
         <h1 className="text-2xl font-semibold">Settings</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Configure global usage limits and per-child overrides.
+          Configure daily and monthly cost caps and per-child overrides.
         </p>
       </div>
 

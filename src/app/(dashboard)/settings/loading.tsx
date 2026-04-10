@@ -6,24 +6,24 @@ export default function SettingsLoading() {
       {/* Page header */}
       <div className="space-y-2">
         <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-4 w-64" />
+        <Skeleton className="h-4 w-72" />
       </div>
 
       {/* Tabs header */}
       <div className="flex gap-2">
         <Skeleton className="h-9 w-36 rounded-md" />
-        <Skeleton className="h-9 w-40 rounded-md" />
+        <Skeleton className="h-9 w-44 rounded-md" />
       </div>
 
-      {/* Form skeleton */}
-      <div className="space-y-6">
+      {/* Global defaults section */}
+      <div className="space-y-4">
         <div className="space-y-2">
-          <Skeleton className="h-5 w-28" />
+          <Skeleton className="h-4 w-20" />
           <Skeleton className="h-px w-full" />
         </div>
 
-        {/* Field rows */}
-        {Array.from({ length: 3 }).map((_, i) => (
+        {/* 4 number input rows (dailyCostCapEur, monthlyCostCapEur, bonusPackEur, weeklyBonusCapEur) */}
+        {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="grid grid-cols-3 items-center gap-4">
             <Skeleton className="h-4 w-32 ml-auto" />
             <div className="col-span-2">
@@ -32,24 +32,48 @@ export default function SettingsLoading() {
           </div>
         ))}
 
-        <div className="space-y-2 pt-2">
-          <Skeleton className="h-5 w-44" />
-          <Skeleton className="h-px w-full" />
-        </div>
-
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i + 3} className="grid grid-cols-3 items-center gap-4">
-            <Skeleton className="h-4 w-32 ml-auto" />
-            <div className="col-span-2">
-              <Skeleton className={i === 2 ? "h-20 w-full" : "h-9 w-full"} />
-            </div>
+        {/* Textarea (bonusMessageTemplate) */}
+        <div className="grid grid-cols-3 items-start gap-4">
+          <Skeleton className="h-4 w-28 ml-auto mt-2" />
+          <div className="col-span-2">
+            <Skeleton className="h-20 w-full" />
           </div>
-        ))}
+        </div>
+      </div>
+
+      {/* Per-child overrides table skeleton */}
+      <div className="space-y-3 pt-2">
+        <Skeleton className="h-4 w-80" />
+        <div className="rounded-md border overflow-hidden">
+          {/* Table header */}
+          <div className="flex items-center gap-3 p-3 border-b bg-muted/40">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-3 w-28" />
+            <Skeleton className="h-3 w-16 ml-auto" />
+          </div>
+          {/* 2–3 placeholder child rows */}
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 p-3 border-b last:border-0"
+            >
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-8 w-28" />
+              <Skeleton className="h-8 w-28" />
+              <Skeleton className="h-8 w-24" />
+              <Skeleton className="h-8 w-24" />
+              <Skeleton className="h-7 w-14 ml-auto" />
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Save button */}
       <div className="flex justify-end">
-        <Skeleton className="h-9 w-40" />
+        <Skeleton className="h-9 w-44" />
       </div>
     </div>
   );

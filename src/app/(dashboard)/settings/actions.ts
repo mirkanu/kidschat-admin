@@ -2,135 +2,194 @@
 
 import { revalidatePath } from "next/cache";
 import getMongoClient from "@/lib/mongodb";
-import type { EffectiveLimits } from "@/lib/settings";
+import type { GlobalDefaults, ChildOverride } from "@/lib/budget";
 
-type SettingsFields = Partial<EffectiveLimits>;
-type SettingsDoc = Partial<EffectiveLimits> & { _id?: string };
+// ---------------------------------------------------------------------------
+// Helper
+// ---------------------------------------------------------------------------
 
-function parseNumber(value: FormDataEntryValue | null): number | undefined {
+function parseOptionalFloat(
+  value: FormDataEntryValue | null
+): number | undefined {
   if (value === null || value === "") return undefined;
   const n = parseFloat(value as string);
-  return isNaN(n) ? undefined : n;
+  if (isNaN(n) || n < 0) return undefined;
+  return n;
 }
 
+// ---------------------------------------------------------------------------
+// Save global defaults
+// ---------------------------------------------------------------------------
+
 /**
- * Save global default settings.
+ * Upserts the global_defaults settings doc.
+ * Called from the Global Defaults tab form in settings-form.tsx.
  */
-export async function saveGlobalDefaults(formData: FormData): Promise<{ success: boolean; error?: string }> {
+export async function saveGlobalDefaults(
+  formData: FormData
+): Promise<{ ok: boolean; error?: string }> {
   try {
-    const updates: SettingsFields = {};
+    const dailyCostCapEur = parseOptionalFloat(formData.get("dailyCostCapEur"));
+    const monthlyCostCapEur = parseOptionalFloat(
+      formData.get("monthlyCostCapEur")
+    );
+    const bonusPackEur = parseOptionalFloat(formData.get("bonusPackEur"));
+    const weeklyBonusCapEur = parseOptionalFloat(
+      formData.get("weeklyBonusCapEur")
+    );
+    const bonusMessageTemplateRaw = formData.get("bonusMessageTemplate");
+    const bonusMessageTemplate =
+      typeof bonusMessageTemplateRaw === "string"
+        ? bonusMessageTemplateRaw.trim().slice(0, 500)
+        : undefined;
 
-    const dailyImageLimit = parseNumber(formData.get("dailyImageLimit"));
-    if (dailyImageLimit !== undefined) updates.dailyImageLimit = dailyImageLimit;
+    // Build update — only include fields that were provided
+    const setFields: Partial<Omit<GlobalDefaults, "key">> = {};
+    if (dailyCostCapEur !== undefined) setFields.dailyCostCapEur = dailyCostCapEur;
+    if (monthlyCostCapEur !== undefined)
+      setFields.monthlyCostCapEur = monthlyCostCapEur;
+    if (bonusPackEur !== undefined) setFields.bonusPackEur = bonusPackEur;
+    if (weeklyBonusCapEur !== undefined)
+      setFields.weeklyBonusCapEur = weeklyBonusCapEur;
+    if (bonusMessageTemplate !== undefined && bonusMessageTemplate.length > 0)
+      setFields.bonusMessageTemplate = bonusMessageTemplate;
 
-    const dailyMessageLimit = parseNumber(formData.get("dailyMessageLimit"));
-    if (dailyMessageLimit !== undefined) updates.dailyMessageLimit = dailyMessageLimit;
-
-    const monthlyCostCapEUR = parseNumber(formData.get("monthlyCostCapEUR"));
-    if (monthlyCostCapEUR !== undefined) updates.monthlyCostCapEUR = monthlyCostCapEUR;
-
-    const weeklyBonusCap = parseNumber(formData.get("weeklyBonusCap"));
-    if (weeklyBonusCap !== undefined) updates.weeklyBonusCap = weeklyBonusCap;
-
-    const bonusPackSize = parseNumber(formData.get("bonusPackSize"));
-    if (bonusPackSize !== undefined) updates.bonusPackSize = bonusPackSize;
-
-    const bonusMessageTemplate = formData.get("bonusMessageTemplate");
-    if (bonusMessageTemplate && typeof bonusMessageTemplate === "string" && bonusMessageTemplate.trim()) {
-      updates.bonusMessageTemplate = bonusMessageTemplate.trim();
-    }
-
-    if (Object.keys(updates).length === 0) {
-      return { success: false, error: "No changes to save" };
+    if (Object.keys(setFields).length === 0) {
+      return { ok: false, error: "No changes to save" };
     }
 
     const client = await getMongoClient();
     const db = client.db("test");
-    const col = db.collection<SettingsDoc>("settings");
 
-    await col.updateOne(
-      { _id: "global_defaults" } as Parameters<typeof col.updateOne>[0],
-      { $set: updates },
-      { upsert: true }
-    );
+    await db
+      .collection("settings")
+      .updateOne(
+        { key: "global_defaults" } as Record<string, unknown>,
+        { $set: { key: "global_defaults", ...setFields } },
+        { upsert: true }
+      );
 
     revalidatePath("/settings");
-    return { success: true };
+    revalidatePath("/"); // dashboard home reads limits for the overview card
+
+    return { ok: true };
   } catch (err) {
     console.error("[saveGlobalDefaults] error:", err);
-    return { success: false, error: "Failed to save settings" };
+    return { ok: false, error: "Failed to save global defaults" };
   }
 }
 
+// ---------------------------------------------------------------------------
+// Save per-child override
+// ---------------------------------------------------------------------------
+
 /**
- * Save per-child override settings.
+ * Upserts a child_override settings doc.
+ *
+ * CRITICAL: userId is a CLOSURE PARAMETER — never read from formData.
+ * This is the fix for the Plan 15-02 wiring bug where userId was accidentally
+ * read from formData and could be missing/wrong depending on form state.
+ *
+ * Usage: <form action={saveChildOverride.bind(null, user._id.toString())}>
+ *   (server action closure pattern — userId baked in at bind time)
  */
 export async function saveChildOverride(
   userId: string,
   formData: FormData
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ ok: boolean; userId: string; error?: string }> {
   try {
-    const updates: SettingsFields = {};
+    // Parse each optional field; empty string → exclude from override (falls back to global)
+    const dailyCostCapEur = parseOptionalFloat(formData.get("dailyCostCapEur"));
+    const monthlyCostCapEur = parseOptionalFloat(
+      formData.get("monthlyCostCapEur")
+    );
+    const bonusPackEur = parseOptionalFloat(formData.get("bonusPackEur"));
+    const weeklyBonusCapEur = parseOptionalFloat(
+      formData.get("weeklyBonusCapEur")
+    );
 
-    const dailyImageLimit = parseNumber(formData.get("dailyImageLimit"));
-    if (dailyImageLimit !== undefined) updates.dailyImageLimit = dailyImageLimit;
+    const setFields: Partial<Omit<ChildOverride, "key" | "userId">> = {};
+    const unsetFields: Record<string, ""  > = {};
 
-    const dailyMessageLimit = parseNumber(formData.get("dailyMessageLimit"));
-    if (dailyMessageLimit !== undefined) updates.dailyMessageLimit = dailyMessageLimit;
+    // Fields with values → set; fields without values → unset (fall back to global)
+    if (dailyCostCapEur !== undefined) {
+      setFields.dailyCostCapEur = dailyCostCapEur;
+    } else {
+      unsetFields.dailyCostCapEur = "";
+    }
 
-    const monthlyCostCapEUR = parseNumber(formData.get("monthlyCostCapEUR"));
-    if (monthlyCostCapEUR !== undefined) updates.monthlyCostCapEUR = monthlyCostCapEUR;
+    if (monthlyCostCapEur !== undefined) {
+      setFields.monthlyCostCapEur = monthlyCostCapEur;
+    } else {
+      unsetFields.monthlyCostCapEur = "";
+    }
 
-    const weeklyBonusCap = parseNumber(formData.get("weeklyBonusCap"));
-    if (weeklyBonusCap !== undefined) updates.weeklyBonusCap = weeklyBonusCap;
+    if (bonusPackEur !== undefined) {
+      setFields.bonusPackEur = bonusPackEur;
+    } else {
+      unsetFields.bonusPackEur = "";
+    }
 
-    const bonusPackSize = parseNumber(formData.get("bonusPackSize"));
-    if (bonusPackSize !== undefined) updates.bonusPackSize = bonusPackSize;
+    if (weeklyBonusCapEur !== undefined) {
+      setFields.weeklyBonusCapEur = weeklyBonusCapEur;
+    } else {
+      unsetFields.weeklyBonusCapEur = "";
+    }
 
-    const bonusMessageTemplate = formData.get("bonusMessageTemplate");
-    if (bonusMessageTemplate && typeof bonusMessageTemplate === "string" && bonusMessageTemplate.trim()) {
-      updates.bonusMessageTemplate = bonusMessageTemplate.trim();
+    const update: Record<string, unknown> = {
+      $set: { key: "child_override", userId, ...setFields },
+    };
+    if (Object.keys(unsetFields).length > 0) {
+      update.$unset = unsetFields;
     }
 
     const client = await getMongoClient();
     const db = client.db("test");
-    const col = db.collection<SettingsDoc>("settings");
 
-    await col.updateOne(
-      { _id: `override_${userId}` } as Parameters<typeof col.updateOne>[0],
-      { $set: updates },
-      { upsert: true }
-    );
+    await db
+      .collection("settings")
+      .updateOne(
+        { key: "child_override", userId } as Record<string, unknown>,
+        update,
+        { upsert: true }
+      );
 
     revalidatePath("/settings");
     revalidatePath(`/users/${userId}`);
-    return { success: true };
+    revalidatePath("/");
+
+    return { ok: true, userId };
   } catch (err) {
     console.error("[saveChildOverride] error:", err);
-    return { success: false, error: "Failed to save override" };
+    return { ok: false, userId, error: "Failed to save override" };
   }
 }
 
+// ---------------------------------------------------------------------------
+// Delete per-child override
+// ---------------------------------------------------------------------------
+
 /**
- * Delete per-child override (revert to global defaults).
+ * Deletes the child_override doc for a user, reverting to global defaults.
  */
 export async function deleteChildOverride(
   userId: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ ok: boolean; error?: string }> {
   try {
     const client = await getMongoClient();
     const db = client.db("test");
-    const col = db.collection<SettingsDoc>("settings");
 
-    await col.deleteOne(
-      { _id: `override_${userId}` } as Parameters<typeof col.deleteOne>[0]
-    );
+    await db
+      .collection("settings")
+      .deleteOne({ key: "child_override", userId } as Record<string, unknown>);
 
     revalidatePath("/settings");
     revalidatePath(`/users/${userId}`);
-    return { success: true };
+    revalidatePath("/");
+
+    return { ok: true };
   } catch (err) {
     console.error("[deleteChildOverride] error:", err);
-    return { success: false, error: "Failed to delete override" };
+    return { ok: false, error: "Failed to delete override" };
   }
 }
