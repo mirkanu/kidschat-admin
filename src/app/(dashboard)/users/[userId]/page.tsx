@@ -6,11 +6,8 @@ import getMongoClient from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Calendar, Coins, ShoppingCart } from "lucide-react";
-import { evaluateChildState } from "@/lib/budget";
-import { getWeeklyBonusSpend } from "@/lib/bonus-purchases";
+import { ArrowLeft } from "lucide-react";
+import { UsageBars, UsageBarsSkeleton } from "@/components/dashboard/usage-bars";
 
 interface User {
   id: string;
@@ -52,131 +49,6 @@ async function getUser(userId: string): Promise<User | null> {
   } catch {
     return null;
   }
-}
-
-interface UsageStats {
-  remainingEur: number;
-  dailyCapEur: number;
-  dailyPctRemaining: number;
-  monthlySpendEur: number;
-  monthlyCapEur: number;
-  monthlyCapExhausted: boolean;
-  weeklyBonusSpentEur: number;
-  weeklyBonusCapEur: number;
-  hasActiveOffer: boolean;
-}
-
-async function getUserUsageStats(userId: string): Promise<UsageStats> {
-  const client = await getMongoClient();
-  const db = client.db("test");
-
-  const [childState, weeklyBonusSpentEur] = await Promise.all([
-    evaluateChildState(userId, db),
-    getWeeklyBonusSpend(userId, db),
-  ]);
-
-  return {
-    remainingEur: childState.remainingEur,
-    dailyCapEur: childState.dailyCapEur,
-    dailyPctRemaining: childState.dailyPctRemaining,
-    monthlySpendEur: childState.monthlySpendEur,
-    monthlyCapEur: childState.monthlyCapEur,
-    monthlyCapExhausted: childState.monthlyCapExhausted,
-    weeklyBonusSpentEur,
-    weeklyBonusCapEur: childState.monthlyCapEur > 0 ? 0.50 : 0.50, // from HARDCODED_DEFAULTS
-    hasActiveOffer: childState.hasActiveOffer,
-  };
-}
-
-function UsageSkeleton() {
-  return (
-    <Card>
-      <CardHeader>
-        <Skeleton className="h-5 w-28" />
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="space-y-2 rounded-md border p-3">
-              <Skeleton className="h-3 w-24" />
-              <Skeleton className="h-6 w-16" />
-              <Skeleton className="h-2 w-full rounded-full" />
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-async function UsageSection({ userId }: { userId: string }) {
-  const stats = await getUserUsageStats(userId);
-
-  const dailyPercent = Math.min(100, Math.round((1 - stats.dailyPctRemaining) * 100));
-  const monthlyPercent = stats.monthlyCapEur > 0
-    ? Math.min(100, Math.round((stats.monthlySpendEur / stats.monthlyCapEur) * 100))
-    : 0;
-  const weeklyBonusPercent = stats.weeklyBonusCapEur > 0
-    ? Math.min(100, Math.round((stats.weeklyBonusSpentEur / stats.weeklyBonusCapEur) * 100))
-    : null;
-
-  const usageItems = [
-    {
-      label: "Daily budget used",
-      value: `€${(stats.dailyCapEur - stats.remainingEur).toFixed(3)} / €${stats.dailyCapEur.toFixed(2)}`,
-      percent: dailyPercent,
-      icon: Calendar,
-      color: dailyPercent >= 90 ? "bg-red-500" : dailyPercent >= 70 ? "bg-yellow-500" : "bg-blue-500",
-    },
-    {
-      label: "Monthly spend",
-      value: `€${stats.monthlySpendEur.toFixed(2)} / €${stats.monthlyCapEur.toFixed(2)}`,
-      percent: monthlyPercent,
-      icon: Calendar,
-      color: monthlyPercent >= 90 ? "bg-red-500" : monthlyPercent >= 70 ? "bg-yellow-500" : "bg-purple-500",
-    },
-    {
-      label: "Active bonus offer",
-      value: stats.hasActiveOffer ? "Active (awaiting YES)" : "None",
-      percent: null,
-      icon: Coins,
-      color: "bg-amber-500",
-    },
-    {
-      label: "Bonus purchases (week)",
-      value: `€${stats.weeklyBonusSpentEur.toFixed(2)} / €${stats.weeklyBonusCapEur.toFixed(2)}`,
-      percent: weeklyBonusPercent,
-      icon: ShoppingCart,
-      color: "bg-violet-500",
-    },
-  ];
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Usage &amp; Limits</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {usageItems.map((item) => (
-            <div key={item.label} className="rounded-md border p-3 space-y-2">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <item.icon className="h-3.5 w-3.5" />
-                {item.label}
-              </div>
-              <div className="text-sm font-semibold">{item.value}</div>
-              {item.percent !== null && (
-                <Progress
-                  value={item.percent}
-                  className="h-1.5"
-                />
-              )}
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
 }
 
 function formatDate(isoString: string | null): string {
@@ -251,10 +123,10 @@ export default async function UserDetailPage({
         </CardContent>
       </Card>
 
-      {/* Usage & Limits — streams in independently via Suspense */}
+      {/* Usage & Limits — 2 bars: daily spend + monthly spend */}
       {user.role !== "ADMIN" && (
-        <Suspense fallback={<UsageSkeleton />}>
-          <UsageSection userId={userId} />
+        <Suspense fallback={<UsageBarsSkeleton />}>
+          <UsageBars userId={userId} childName={user.name} />
         </Suspense>
       )}
 

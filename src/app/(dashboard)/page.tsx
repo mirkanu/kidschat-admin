@@ -9,6 +9,10 @@ import {
   RecentAlertsCard,
   QuickLinksGrid,
 } from "./page-client";
+import {
+  DailySpendOverviewCard,
+  DailySpendOverviewSkeleton,
+} from "@/components/dashboard/daily-spend-overview-card";
 
 // ---------------------------------------------------------------------------
 // Async server sub-components — each fetches its own data slice
@@ -113,6 +117,11 @@ export default async function DashboardPage() {
         <h2 className="text-2xl font-bold tracking-tight">Welcome back, {firstName}</h2>
         <p className="text-muted-foreground">Your KidsChat safety overview.</p>
       </div>
+
+      {/* Section 0: Today's spend per child (top card) */}
+      <Suspense fallback={<DailySpendOverviewSkeleton />}>
+        <DailySpendOverviewCard />
+      </Suspense>
 
       {/* Section 1: Safety Status */}
       <Suspense fallback={<StatusSkeleton />}>
