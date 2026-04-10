@@ -13,7 +13,7 @@
  *   - tokensToEur(tokens) = tokens * HAIKU_USD_PER_TOKEN * EUR_PER_USD
  */
 
-import type { Db, ObjectId } from "mongodb";
+import { ObjectId, type Db } from "mongodb";
 import { getWeeklyBonusSpend } from "@/lib/bonus-purchases";
 
 // ---------------------------------------------------------------------------
@@ -214,15 +214,18 @@ export async function ensureBalanceState(userId: string, db: Db): Promise<Balanc
 // Balance functions
 // ---------------------------------------------------------------------------
 
-type BalancesDoc = { user: string; tokenCredits: number } & { _id?: ObjectId };
+type BalancesDoc = { user: ObjectId; tokenCredits: number } & { _id?: ObjectId };
 
 /**
  * Returns the child's remaining budget in EUR, derived from balances.tokenCredits.
  * Clamps to 0 if tokenCredits is missing or negative.
+ *
+ * NOTE: LibreChat stores `balances.user` as ObjectId (not string). Always convert
+ * userId → ObjectId before querying/upserting to avoid creating parallel docs.
  */
 export async function getRemainingEur(userId: string, db: Db): Promise<number> {
   const col = db.collection<BalancesDoc>("balances");
-  const doc = await col.findOne({ user: userId } as Parameters<typeof col.findOne>[0]);
+  const doc = await col.findOne({ user: new ObjectId(userId) });
   if (!doc) return 0;
   const credits = Math.max(0, doc.tokenCredits ?? 0);
   return tokensToEur(credits);
@@ -244,10 +247,10 @@ export async function topUpDailyBudget(userId: string, db: Db): Promise<void> {
   const now = new Date();
   const credits = eurToTokens(budget.dailyCostCapEur);
 
-  // Update balances
+  // Update balances — use ObjectId to match LibreChat's schema
   const balancesCol = db.collection<BalancesDoc>("balances");
   await balancesCol.updateOne(
-    { user: userId } as Parameters<typeof balancesCol.updateOne>[0],
+    { user: new ObjectId(userId) },
     { $set: { tokenCredits: credits } },
     { upsert: true }
   );
@@ -350,11 +353,11 @@ export async function applyBonusCredit(args: {
     weekOf,
   });
 
-  // $inc balances.tokenCredits
+  // $inc balances.tokenCredits — use ObjectId to match LibreChat's schema
   const creditsToAdd = eurToTokens(amountEur);
   const balancesCol = db.collection<BalancesDoc>("balances");
   await balancesCol.updateOne(
-    { user: userId } as Parameters<typeof balancesCol.updateOne>[0],
+    { user: new ObjectId(userId) },
     { $inc: { tokenCredits: creditsToAdd } },
     { upsert: true }
   );

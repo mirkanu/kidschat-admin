@@ -136,7 +136,7 @@ describe("budget.ts", () => {
   describe("getEffectiveBudget", () => {
     it("no settings docs → HARDCODED_DEFAULTS (dailyCostCapEur=0.10, monthlyCostCapEur=2.00)", async () => {
       const db = makeMockDb({ settings: [] });
-      const budget = await getEffectiveBudget("user1", db) as Record<string, unknown>;
+      const budget = await getEffectiveBudget("000000000000000000000001", db) as Record<string, unknown>;
       expect(budget.dailyCostCapEur).toBe(0.10);
       expect(budget.monthlyCostCapEur).toBe(2.00);
       expect(budget.bonusPackEur).toBe(0.20);
@@ -152,7 +152,7 @@ describe("budget.ts", () => {
         return null;
       });
       const db = makeMockDb({ settings: settingsCol });
-      const budget = await getEffectiveBudget("user1", db) as Record<string, unknown>;
+      const budget = await getEffectiveBudget("000000000000000000000001", db) as Record<string, unknown>;
       expect(budget.dailyCostCapEur).toBe(0.20);
       expect(budget.monthlyCostCapEur).toBe(3.00);
     });
@@ -164,13 +164,13 @@ describe("budget.ts", () => {
         if (q.key === "global_defaults" || q._id === "global_defaults") {
           return { key: "global_defaults", dailyCostCapEur: 0.10, monthlyCostCapEur: 2.00, bonusPackEur: 0.20, weeklyBonusCapEur: 0.50, bonusMessageTemplate: "default" };
         }
-        if ((q.key === "child_override" || (q._id as string)?.startsWith?.("override_")) && (q.userId === "user1" || (q._id as string) === "override_user1")) {
-          return { key: "child_override", userId: "user1", dailyCostCapEur: 0.50 };
+        if ((q.key === "child_override" || (q._id as string)?.startsWith?.("override_")) && (q.userId === "000000000000000000000001" || (q._id as string) === "override_000000000000000000000001")) {
+          return { key: "child_override", userId: "000000000000000000000001", dailyCostCapEur: 0.50 };
         }
         return null;
       });
       const db = makeMockDb({ settings: settingsCol });
-      const budget = await getEffectiveBudget("user1", db) as Record<string, unknown>;
+      const budget = await getEffectiveBudget("000000000000000000000001", db) as Record<string, unknown>;
       expect(budget.dailyCostCapEur).toBe(0.50); // override wins
       expect(budget.monthlyCostCapEur).toBe(2.00); // falls back to global
     });
@@ -186,7 +186,7 @@ describe("budget.ts", () => {
         return null;
       });
       const db = makeMockDb({ settings: settingsCol });
-      const budget = await getEffectiveBudget("user2", db) as Record<string, unknown>;
+      const budget = await getEffectiveBudget("000000000000000000000002", db) as Record<string, unknown>;
       expect(budget.dailyCostCapEur).toBe(0.10); // global
     });
   });
@@ -198,11 +198,11 @@ describe("budget.ts", () => {
       const balanceStateCol = makeCollection([]);
       const db = makeMockDb({ balance_state: balanceStateCol });
 
-      await ensureBalanceState("user1", db);
+      await ensureBalanceState("000000000000000000000001", db);
 
       expect(balanceStateCol.insertOne).toHaveBeenCalled();
       const insertedDoc = balanceStateCol._inserted[0] as Record<string, unknown>;
-      expect(insertedDoc.userId).toBe("user1");
+      expect(insertedDoc.userId).toBe("000000000000000000000001");
       expect(insertedDoc.monthlySpendEur).toBe(0);
       expect(insertedDoc.warnedAt70PctOn).toBeNull();
       expect(insertedDoc.activeOfferMessageId).toBeNull();
@@ -211,11 +211,11 @@ describe("budget.ts", () => {
     });
 
     it("existing doc → no-op (insertOne not called)", async () => {
-      const existingDoc = { userId: "user1", monthlySpendEur: 0.5, warnedAt70PctOn: null, activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() };
+      const existingDoc = { userId: "000000000000000000000001", monthlySpendEur: 0.5, warnedAt70PctOn: null, activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() };
       const balanceStateCol = makeCollection([existingDoc]);
       const db = makeMockDb({ balance_state: balanceStateCol });
 
-      await ensureBalanceState("user1", db);
+      await ensureBalanceState("000000000000000000000001", db);
 
       expect(balanceStateCol.insertOne).not.toHaveBeenCalled();
     });
@@ -226,10 +226,10 @@ describe("budget.ts", () => {
   describe("getRemainingEur", () => {
     it("tokenCredits=108695 → returns ≈ 0.10 within 0.001", async () => {
       const tokensForTenCents = eurToTokens(0.10);
-      const balancesCol = makeCollection([{ user: "user1", tokenCredits: tokensForTenCents }]);
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: tokensForTenCents }]);
       const db = makeMockDb({ balances: balancesCol });
 
-      const remaining = await getRemainingEur("user1", db);
+      const remaining = await getRemainingEur("000000000000000000000001", db);
       expect(Math.abs(remaining - 0.10)).toBeLessThan(0.001);
     });
 
@@ -237,15 +237,15 @@ describe("budget.ts", () => {
       const balancesCol = makeCollection([]);
       const db = makeMockDb({ balances: balancesCol });
 
-      const remaining = await getRemainingEur("user1", db);
+      const remaining = await getRemainingEur("000000000000000000000001", db);
       expect(remaining).toBe(0);
     });
 
     it("negative tokenCredits → returns 0 (clamp)", async () => {
-      const balancesCol = makeCollection([{ user: "user1", tokenCredits: -100 }]);
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: -100 }]);
       const db = makeMockDb({ balances: balancesCol });
 
-      const remaining = await getRemainingEur("user1", db);
+      const remaining = await getRemainingEur("000000000000000000000001", db);
       expect(remaining).toBe(0);
     });
   });
@@ -256,13 +256,13 @@ describe("budget.ts", () => {
     it("sets balances.tokenCredits to eurToTokens(dailyCostCapEur)", async () => {
       const settingsCol = makeCollection();
       settingsCol.findOne = jest.fn().mockResolvedValue(null); // use defaults
-      const balancesCol = makeCollection([{ user: "user1", tokenCredits: 0 }]);
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
       const balanceStateCol = makeCollection([
-        { userId: "user1", monthlySpendEur: 0, warnedAt70PctOn: "2026-04-09", activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+        { userId: "000000000000000000000001", monthlySpendEur: 0, warnedAt70PctOn: "2026-04-09", activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
       ]);
       const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol });
 
-      await topUpDailyBudget("user1", db);
+      await topUpDailyBudget("000000000000000000000001", db);
 
       // balances.tokenCredits should be updated
       expect(balancesCol.updateOne).toHaveBeenCalled();
@@ -275,12 +275,12 @@ describe("budget.ts", () => {
     it("clears balance_state.warnedAt70PctOn to null", async () => {
       const settingsCol = makeCollection();
       settingsCol.findOne = jest.fn().mockResolvedValue(null);
-      const balancesCol = makeCollection([{ user: "user1", tokenCredits: 0 }]);
-      const balanceStateDoc = { userId: "user1", monthlySpendEur: 0, warnedAt70PctOn: "2026-04-09", activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() };
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
+      const balanceStateDoc = { userId: "000000000000000000000001", monthlySpendEur: 0, warnedAt70PctOn: "2026-04-09", activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() };
       const balanceStateCol = makeCollection([balanceStateDoc]);
       const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol });
 
-      await topUpDailyBudget("user1", db);
+      await topUpDailyBudget("000000000000000000000001", db);
 
       // balance_state should be updated (warnedAt70PctOn cleared)
       expect(balanceStateCol.updateOne).toHaveBeenCalled();
@@ -298,13 +298,13 @@ describe("budget.ts", () => {
     it("sets balance_state.monthlySpendEur to 0 and calls topUpDailyBudget (balances updated)", async () => {
       const settingsCol = makeCollection();
       settingsCol.findOne = jest.fn().mockResolvedValue(null);
-      const balancesCol = makeCollection([{ user: "user1", tokenCredits: 0 }]);
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
       const balanceStateCol = makeCollection([
-        { userId: "user1", monthlySpendEur: 1.50, warnedAt70PctOn: null, activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+        { userId: "000000000000000000000001", monthlySpendEur: 1.50, warnedAt70PctOn: null, activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
       ]);
       const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol });
 
-      await topUpMonthlyBudget("user1", db);
+      await topUpMonthlyBudget("000000000000000000000001", db);
 
       // balance_state should be updated (monthlySpendEur = 0 and lastMonthlyReset)
       expect(balanceStateCol.updateOne).toHaveBeenCalled();
@@ -319,7 +319,7 @@ describe("budget.ts", () => {
 
   describe("applyBonusCredit", () => {
     const baseBalanceStateDoc = {
-      userId: "user1",
+      userId: "000000000000000000000001",
       monthlySpendEur: 0,
       warnedAt70PctOn: null,
       activeOfferMessageId: "offer_msg_123",
@@ -334,15 +334,15 @@ describe("budget.ts", () => {
       settingsCol.findOne = jest.fn().mockResolvedValue(null); // defaults
       const bonusPurchasesCol = makeCollection();
       bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
-      const balancesCol = makeCollection([{ user: "user1", tokenCredits: 0 }]);
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
       const balanceStateCol = makeCollection([baseBalanceStateDoc]);
       const db = makeMockDb({ settings: settingsCol, bonus_purchases: bonusPurchasesCol, balances: balancesCol, balance_state: balanceStateCol });
 
-      await applyBonusCredit({ userId: "user1", db, amountEur: 0.20, confirmationMessageId: "msg_yes_1" });
+      await applyBonusCredit({ userId: "000000000000000000000001", db, amountEur: 0.20, confirmationMessageId: "msg_yes_1" });
 
       expect(bonusPurchasesCol.insertOne).toHaveBeenCalled();
       const purchaseDoc = bonusPurchasesCol._inserted[0] as Record<string, unknown>;
-      expect(purchaseDoc.userId).toBe("user1");
+      expect(purchaseDoc.userId).toBe("000000000000000000000001");
       expect(purchaseDoc.packSizeEUR).toBe(0.20);
 
       expect(balancesCol.updateOne).toHaveBeenCalled();
@@ -356,11 +356,11 @@ describe("budget.ts", () => {
       settingsCol.findOne = jest.fn().mockResolvedValue(null);
       const bonusPurchasesCol = makeCollection();
       bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
-      const balancesCol = makeCollection([{ user: "user1", tokenCredits: 0 }]);
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
       const balanceStateCol = makeCollection([baseBalanceStateDoc]);
       const db = makeMockDb({ settings: settingsCol, bonus_purchases: bonusPurchasesCol, balances: balancesCol, balance_state: balanceStateCol });
 
-      await applyBonusCredit({ userId: "user1", db, amountEur: 0.20, confirmationMessageId: "msg_yes_1" });
+      await applyBonusCredit({ userId: "000000000000000000000001", db, amountEur: 0.20, confirmationMessageId: "msg_yes_1" });
 
       // balance_state should be updated to clear the offer
       expect(balanceStateCol.updateOne).toHaveBeenCalled();
@@ -371,7 +371,7 @@ describe("budget.ts", () => {
     it("throws if amountEur <= 0", async () => {
       const db = makeMockDb({});
       await expect(
-        applyBonusCredit({ userId: "user1", db, amountEur: 0, confirmationMessageId: "msg1" })
+        applyBonusCredit({ userId: "000000000000000000000001", db, amountEur: 0, confirmationMessageId: "msg1" })
       ).rejects.toThrow();
     });
 
@@ -386,7 +386,7 @@ describe("budget.ts", () => {
       const db = makeMockDb({ settings: settingsCol, bonus_purchases: bonusPurchasesCol });
 
       await expect(
-        applyBonusCredit({ userId: "user1", db, amountEur: 0.20, confirmationMessageId: "msg1" })
+        applyBonusCredit({ userId: "000000000000000000000001", db, amountEur: 0.20, confirmationMessageId: "msg1" })
       ).rejects.toThrow();
     });
   });
@@ -399,16 +399,16 @@ describe("budget.ts", () => {
       settingsCol.findOne = jest.fn().mockResolvedValue(null); // defaults: dailyCostCapEur=0.10
       // Half the daily cap remaining
       const halfTokens = eurToTokens(0.05);
-      const balancesCol = makeCollection([{ user: "user1", tokenCredits: halfTokens }]);
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: halfTokens }]);
       const balanceStateCol = makeCollection([
-        { userId: "user1", monthlySpendEur: 0.50, warnedAt70PctOn: null, activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+        { userId: "000000000000000000000001", monthlySpendEur: 0.50, warnedAt70PctOn: null, activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
       ]);
       const bonusPurchasesCol = makeCollection();
       bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
       const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol, bonus_purchases: bonusPurchasesCol });
 
-      const state = await evaluateChildState("user1", db) as Record<string, unknown>;
-      expect(state.userId).toBe("user1");
+      const state = await evaluateChildState("000000000000000000000001", db) as Record<string, unknown>;
+      expect(state.userId).toBe("000000000000000000000001");
       // ~0.05 remaining out of 0.10 = ~50%
       expect(state.dailyPctRemaining as number).toBeGreaterThan(0.4);
       expect(state.dailyPctRemaining as number).toBeLessThan(0.6);
@@ -417,47 +417,47 @@ describe("budget.ts", () => {
     it("monthlyCapExhausted is true when monthlySpendEur >= monthlyCostCapEur", async () => {
       const settingsCol = makeCollection();
       settingsCol.findOne = jest.fn().mockResolvedValue(null); // defaults: monthlyCostCapEur=2.00
-      const balancesCol = makeCollection([{ user: "user1", tokenCredits: 0 }]);
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
       const balanceStateCol = makeCollection([
-        { userId: "user1", monthlySpendEur: 2.00, warnedAt70PctOn: null, activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+        { userId: "000000000000000000000001", monthlySpendEur: 2.00, warnedAt70PctOn: null, activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
       ]);
       const bonusPurchasesCol = makeCollection();
       bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
       const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol, bonus_purchases: bonusPurchasesCol });
 
-      const state = await evaluateChildState("user1", db) as Record<string, unknown>;
+      const state = await evaluateChildState("000000000000000000000001", db) as Record<string, unknown>;
       expect(state.monthlyCapExhausted).toBe(true);
     });
 
     it("hasActiveOffer is true when activeOfferMessageId set and not expired", async () => {
       const settingsCol = makeCollection();
       settingsCol.findOne = jest.fn().mockResolvedValue(null);
-      const balancesCol = makeCollection([{ user: "user1", tokenCredits: 0 }]);
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
       const futureExpiry = new Date(Date.now() + 300_000);
       const balanceStateCol = makeCollection([
-        { userId: "user1", monthlySpendEur: 0, warnedAt70PctOn: null, activeOfferMessageId: "msg_offer_1", activeOfferExpiresAt: futureExpiry, activeOfferConversationId: "conv123", lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+        { userId: "000000000000000000000001", monthlySpendEur: 0, warnedAt70PctOn: null, activeOfferMessageId: "msg_offer_1", activeOfferExpiresAt: futureExpiry, activeOfferConversationId: "conv123", lastDailyReset: new Date(), lastMonthlyReset: new Date() }
       ]);
       const bonusPurchasesCol = makeCollection();
       bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
       const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol, bonus_purchases: bonusPurchasesCol });
 
-      const state = await evaluateChildState("user1", db) as Record<string, unknown>;
+      const state = await evaluateChildState("000000000000000000000001", db) as Record<string, unknown>;
       expect(state.hasActiveOffer).toBe(true);
     });
 
     it("hasActiveOffer is false when activeOfferExpiresAt is in the past", async () => {
       const settingsCol = makeCollection();
       settingsCol.findOne = jest.fn().mockResolvedValue(null);
-      const balancesCol = makeCollection([{ user: "user1", tokenCredits: 0 }]);
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
       const pastExpiry = new Date(Date.now() - 60_000); // expired 1 min ago
       const balanceStateCol = makeCollection([
-        { userId: "user1", monthlySpendEur: 0, warnedAt70PctOn: null, activeOfferMessageId: "msg_offer_1", activeOfferExpiresAt: pastExpiry, activeOfferConversationId: "conv123", lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+        { userId: "000000000000000000000001", monthlySpendEur: 0, warnedAt70PctOn: null, activeOfferMessageId: "msg_offer_1", activeOfferExpiresAt: pastExpiry, activeOfferConversationId: "conv123", lastDailyReset: new Date(), lastMonthlyReset: new Date() }
       ]);
       const bonusPurchasesCol = makeCollection();
       bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
       const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol, bonus_purchases: bonusPurchasesCol });
 
-      const state = await evaluateChildState("user1", db) as Record<string, unknown>;
+      const state = await evaluateChildState("000000000000000000000001", db) as Record<string, unknown>;
       expect(state.hasActiveOffer).toBe(false);
     });
   });

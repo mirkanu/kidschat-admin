@@ -107,7 +107,7 @@ describe("change-stream-listener.ts processMessageEvent", () => {
     const todayIso = new Date().toISOString().split("T")[0];
     // Already warned today
     const balanceStateDoc = {
-      userId: "user1",
+      userId: "000000000000000000000001",
       monthlySpendEur: 0.50,
       warnedAt70PctOn: todayIso, // already warned today
       activeOfferMessageId: null,
@@ -122,12 +122,12 @@ describe("change-stream-listener.ts processMessageEvent", () => {
     balanceStateCol.findOne = jest.fn().mockResolvedValue(balanceStateDoc);
 
     const settingsCol = makeSettingsCol();
-    const balancesCol = makeCollection([{ user: "user1", tokenCredits: 25000 }]); // ~25% remaining of 0.10 = below 30%
+    const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 25000 }]); // ~25% remaining of 0.10 = below 30%
     const messagesCol = makeCollection();
     const bonusPurchasesCol = makeCollection();
     bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
-    const conversationsCol = makeCollection([{ conversationId: "conv1", user: "user1", updatedAt: new Date() }]);
-    conversationsCol.findOne = jest.fn().mockResolvedValue({ conversationId: "conv1", user: "user1" });
+    const conversationsCol = makeCollection([{ conversationId: "conv1", user: "000000000000000000000001", updatedAt: new Date() }]);
+    conversationsCol.findOne = jest.fn().mockResolvedValue({ conversationId: "conv1", user: "000000000000000000000001" });
 
     const db = makeMockDb({
       settings: settingsCol,
@@ -139,7 +139,7 @@ describe("change-stream-listener.ts processMessageEvent", () => {
     });
 
     const event = {
-      userId: "user1",
+      userId: "000000000000000000000001",
       text: "Hello!",
       conversationId: "conv1",
       messageId: "msg_1",
@@ -162,7 +162,7 @@ describe("change-stream-listener.ts processMessageEvent", () => {
 
     // Simulate mutable state: the balance_state is updated by applyBonusCredit
     const mutableState = {
-      userId: "user2",
+      userId: "000000000000000000000002",
       monthlySpendEur: 2.00, // monthly cap exhausted — prevents new offer being triggered
       warnedAt70PctOn: null,
       activeOfferMessageId: "offer_msg_abc",
@@ -189,7 +189,7 @@ describe("change-stream-listener.ts processMessageEvent", () => {
     });
 
     const settingsCol = makeSettingsCol();
-    const balancesCol = makeCollection([{ user: "user2", tokenCredits: 0 }]);
+    const balancesCol = makeCollection([{ user: "000000000000000000000002", tokenCredits: 0 }]);
     // Simulate $inc on balances
     balancesCol.updateOne = jest.fn().mockResolvedValue({ modifiedCount: 1 });
 
@@ -205,7 +205,7 @@ describe("change-stream-listener.ts processMessageEvent", () => {
     });
 
     const yesEvent = {
-      userId: "user2",
+      userId: "000000000000000000000002",
       text: "YES",
       conversationId: "conv2",
       messageId: "msg_yes_2",
@@ -231,7 +231,7 @@ describe("change-stream-listener.ts processMessageEvent", () => {
     const pastExpiry = new Date(now.getTime() - 10 * 60_000);
 
     const balanceStateDoc = {
-      userId: "user3",
+      userId: "000000000000000000000003",
       monthlySpendEur: 0,
       warnedAt70PctOn: null,
       activeOfferMessageId: "offer_expired",
@@ -246,11 +246,11 @@ describe("change-stream-listener.ts processMessageEvent", () => {
 
     const settingsCol = makeSettingsCol();
     // Some tokens remaining so evaluateChildState doesn't fire a new offer
-    const balancesCol = makeCollection([{ user: "user3", tokenCredits: 80000 }]); // plenty remaining
+    const balancesCol = makeCollection([{ user: "000000000000000000000003", tokenCredits: 80000 }]); // plenty remaining
     const bonusPurchasesCol = makeCollection();
     bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
     const messagesCol = makeCollection();
-    const conversationsCol = makeCollection([{ conversationId: "conv3", user: "user3", updatedAt: new Date() }]);
+    const conversationsCol = makeCollection([{ conversationId: "conv3", user: "000000000000000000000003", updatedAt: new Date() }]);
 
     const db = makeMockDb({
       settings: settingsCol,
@@ -263,7 +263,7 @@ describe("change-stream-listener.ts processMessageEvent", () => {
 
     // YES message created AFTER expiry
     const yesAfterExpiry = {
-      userId: "user3",
+      userId: "000000000000000000000003",
       text: "YES",
       conversationId: "conv3",
       messageId: "msg_late_yes",
@@ -285,7 +285,7 @@ describe("change-stream-listener.ts processMessageEvent", () => {
     const futureExpiry = new Date(now.getTime() + 4 * 60_000);
 
     const balanceStateDoc = {
-      userId: "user4",
+      userId: "000000000000000000000004",
       monthlySpendEur: 0,
       warnedAt70PctOn: null,
       activeOfferMessageId: "offer_active",
@@ -299,7 +299,7 @@ describe("change-stream-listener.ts processMessageEvent", () => {
     balanceStateCol.findOne = jest.fn().mockResolvedValue(balanceStateDoc);
 
     const settingsCol = makeSettingsCol();
-    const balancesCol = makeCollection([{ user: "user4", tokenCredits: 0 }]);
+    const balancesCol = makeCollection([{ user: "000000000000000000000004", tokenCredits: 0 }]);
     const bonusPurchasesCol = makeCollection();
     bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
     const messagesCol = makeCollection();
@@ -314,7 +314,7 @@ describe("change-stream-listener.ts processMessageEvent", () => {
 
     // YES message created 30 seconds ago (before the future expiry = within window)
     const yesBeforeExpiry = {
-      userId: "user4",
+      userId: "000000000000000000000004",
       text: "YES",
       conversationId: "conv4",
       messageId: "msg_valid_yes",
@@ -327,6 +327,6 @@ describe("change-stream-listener.ts processMessageEvent", () => {
     // Should have inserted a bonus_purchase record
     expect(bonusPurchasesCol.insertOne).toHaveBeenCalled();
     const purchaseDoc = bonusPurchasesCol._inserted[0] as Record<string, unknown>;
-    expect(purchaseDoc.userId).toBe("user4");
+    expect(purchaseDoc.userId).toBe("000000000000000000000004");
   });
 });

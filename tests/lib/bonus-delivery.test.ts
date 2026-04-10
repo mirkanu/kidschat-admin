@@ -84,7 +84,7 @@ describe("bonus-delivery.ts", () => {
       });
 
       const messageId = await sendBonusOfferMessage({
-        userId: "user1",
+        userId: "000000000000000000000001",
         conversationId: "conv123",
         agentId: "agent_wxgt6su7d3pcosiil3",
         template: "You've reached your limit. Type YES to confirm.",
@@ -145,7 +145,7 @@ describe("bonus-delivery.ts", () => {
       const db = makeMockDb({ messages: messagesCol });
 
       const result = await detectBonusConfirmation(
-        "user1",
+        "000000000000000000000001",
         makePendingState({ confirmationOfferedAt: offeredAt }),
         db
       );
@@ -168,7 +168,7 @@ describe("bonus-delivery.ts", () => {
       const db = makeMockDb({ messages: messagesCol });
 
       const result = await detectBonusConfirmation(
-        "user1",
+        "000000000000000000000001",
         makePendingState({ confirmationOfferedAt: offeredAt }),
         db
       );
@@ -191,7 +191,7 @@ describe("bonus-delivery.ts", () => {
       const db = makeMockDb({ messages: messagesCol });
 
       const result = await detectBonusConfirmation(
-        "user1",
+        "000000000000000000000001",
         makePendingState({ confirmationOfferedAt: offeredAt }),
         db
       );
@@ -204,7 +204,7 @@ describe("bonus-delivery.ts", () => {
 
       const db = makeMockDb({ messages: messagesCol });
 
-      const result = await detectBonusConfirmation("user1", makePendingState(), db);
+      const result = await detectBonusConfirmation("000000000000000000000001", makePendingState(), db);
       expect(result).toBe(false);
     });
 
@@ -213,7 +213,7 @@ describe("bonus-delivery.ts", () => {
       messagesCol.findOne = jest.fn().mockResolvedValue(null); // no YES match
       const db = makeMockDb({ messages: messagesCol });
 
-      const result = await detectBonusConfirmation("user1", makePendingState(), db);
+      const result = await detectBonusConfirmation("000000000000000000000001", makePendingState(), db);
       expect(result).toBe(false);
     });
 
@@ -232,7 +232,7 @@ describe("bonus-delivery.ts", () => {
       const db = makeMockDb({ messages: messagesCol });
 
       const result = await detectBonusConfirmation(
-        "user1",
+        "000000000000000000000001",
         makePendingState({ confirmationOfferedAt: expiredOfferedAt }),
         db
       );
@@ -260,7 +260,7 @@ describe("bonus-delivery.ts", () => {
         { _id: "oid4", agentId: "agent_aiv99mzvdzquym6y89k" },
       ];
       const lockedDocs = [
-        { principalId: "user1", resourceId: "oid1", lockReason: "image_cap" },
+        { principalId: "000000000000000000000001", resourceId: "oid1", lockReason: "image_cap" },
       ];
 
       const bonusPurchasesCol = makeCollection();
@@ -289,7 +289,7 @@ describe("bonus-delivery.ts", () => {
       lockedCol.find = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue(lockedDocs) });
 
       const balanceStateCol = makeCollection([{
-        userId: "user1", activeOfferMessageId: "offer1", activeOfferExpiresAt: new Date(Date.now() + 300000),
+        userId: "000000000000000000000001", activeOfferMessageId: "offer1", activeOfferExpiresAt: new Date(Date.now() + 300000),
         activeOfferConversationId: "conv1", monthlySpendEur: 0, warnedAt70PctOn: null, lastDailyReset: new Date(), lastMonthlyReset: new Date(),
       }]);
 
@@ -301,10 +301,10 @@ describe("bonus-delivery.ts", () => {
         locked_acl_entries: lockedCol,
         aclentries: aclCol,
         balance_state: balanceStateCol,
-        balances: makeCollection([{ user: "user1", tokenCredits: 0 }]),
+        balances: makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]),
       });
 
-      await applyBonusCredit("user1", makePendingState("image_cap"), db);
+      await applyBonusCredit("000000000000000000000001", makePendingState("image_cap"), db);
 
       // Should insert a bonus_purchase record
       expect(bonusPurchasesCol.insertOne).toHaveBeenCalled();
@@ -312,7 +312,7 @@ describe("bonus-delivery.ts", () => {
         userId: string;
         packSizeEUR: number;
       };
-      expect(insertedDoc.userId).toBe("user1");
+      expect(insertedDoc.userId).toBe("000000000000000000000001");
       expect(insertedDoc.packSizeEUR).toBe(2.0);
     });
 
@@ -334,9 +334,9 @@ describe("bonus-delivery.ts", () => {
       });
       settingsCol.updateOne = jest.fn().mockResolvedValue({ modifiedCount: 1 });
 
-      const balancesCol = makeCollection([{ user: "user1", tokenCredits: 0 }]);
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
       const balanceStateCol = makeCollection([{
-        userId: "user1", activeOfferMessageId: "offer1", activeOfferExpiresAt: new Date(Date.now() + 300000),
+        userId: "000000000000000000000001", activeOfferMessageId: "offer1", activeOfferExpiresAt: new Date(Date.now() + 300000),
         activeOfferConversationId: "conv1", monthlySpendEur: 0, warnedAt70PctOn: null, lastDailyReset: new Date(), lastMonthlyReset: new Date(),
       }]);
 
@@ -347,7 +347,7 @@ describe("bonus-delivery.ts", () => {
         balance_state: balanceStateCol,
       });
 
-      await applyBonusCredit("user1", makePendingState("monthly_cap"), db);
+      await applyBonusCredit("000000000000000000000001", makePendingState("monthly_cap"), db);
 
       // Should insert bonus_purchase
       expect(bonusPurchasesCol.insertOne).toHaveBeenCalled();
@@ -384,7 +384,7 @@ describe("bonus-delivery.ts", () => {
 
       // Should throw or return early when cap is hit
       await expect(
-        applyBonusCredit("user1", { packSizeEUR: 2, lockType: "image_cap", confirmedViaMessageId: "msg1" }, db)
+        applyBonusCredit("000000000000000000000001", { packSizeEUR: 2, lockType: "image_cap", confirmedViaMessageId: "msg1" }, db)
       ).rejects.toThrow();
     });
   });
