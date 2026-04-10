@@ -82,13 +82,16 @@ Plans:
 Image-prompt safety patterns, parent email alerts, per-child daily image + message + monthly cost limits, bonus "Extra Usage" purchase flow via in-chat YES confirmation, admin settings page
 
 **Goal:** Image prompt abuse detected + parents notified; runaway costs prevented via configurable per-child daily/monthly limits with admin UI; children can buy bonus "Extra Usage" packs.
-**Plans:** 3/3 plans complete
+**Plans:** 3/6 plans complete (15-03..15-05 are gap-closure rewrite: cost-cap schema + native balance + change streams)
 **Requirements:** [IMG-SAFETY-01, IMG-SAFETY-02, IMG-SAFETY-03, IMG-SAFETY-04, IMG-LIMITS-01, IMG-LIMITS-02, IMG-LIMITS-03, IMG-LIMITS-04, IMG-ENFORCE-01, IMG-ENFORCE-02, IMG-ENFORCE-03, IMG-BONUS-01, IMG-BONUS-02, IMG-ADMIN-01]
 
 Plans:
-- [ ] 15-00-PLAN.md — Wave 0: Jest harness + live MongoDB field inspection + synthetic message probe (human checkpoint)
-- [ ] 15-01-PLAN.md — Wave 1: Safety patterns + settings/cost-ledger/bonus-purchases libs + librechat.yaml balance.enabled deploy
-- [ ] 15-02-PLAN.md — Wave 2: Enforcement + bonus flow + 5 Railway crons + admin settings UI + weekly digest extension
+- [x] 15-00-PLAN.md — Wave 0: Jest harness + live MongoDB field inspection + synthetic message probe
+- [x] 15-01-PLAN.md — Wave 1: Safety patterns + settings/cost-ledger/bonus-purchases libs + librechat.yaml balance.enabled deploy
+- [x] 15-02-PLAN.md — Wave 2: Enforcement + bonus flow + 5 Railway crons + admin settings UI + weekly digest extension
+- [ ] 15-03-PLAN.md — Gap closure: Risk-kill change stream + instrumentation.ts + native balance UI assumptions before 15-04
+- [ ] 15-04-PLAN.md — Gap closure: budget.ts rewrite, delete legacy cost_ledger/enforcement, railway.toml crons, migration
+- [ ] 15-05-PLAN.md — Gap closure: admin UI rewrite (new schema), dashboard spend overview, per-child override fix, human verify
 
 </details>
 
@@ -110,4 +113,4 @@ Plans:
 | 12. Prompt Editor | v2.2 | 2/2 | Complete | 2026-04-05 |
 | 13. Parent Email Notifications | v2.3 | 3/3 | Complete | 2026-04-05 |
 | 14. Enable & Safeguard Image Generation | 1/1 | Complete    | 2026-04-10 | — |
-| 15. Safety Alert Extension & Rate Limiting | 3/3 | Complete    | 2026-04-10 | — |
+| 15. Safety Alert Extension & Rate Limiting | v2.4 | 3/6 | In progress (15.1 gap closure) | — |
