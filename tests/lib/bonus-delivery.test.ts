@@ -102,13 +102,17 @@ describe("bonus-delivery.ts", () => {
         endpoint: string;
         model: string;
         text: string;
+        content: Array<{ type: string; text: string }>;
         conversationId: string;
       };
       expect(insertedDoc.isCreatedByUser).toBe(false);
       expect(insertedDoc.endpoint).toBe("agents");
       // LibreChat's agent endpoint stores the agent ID in model, not agent_id
       expect(insertedDoc.model).toBe("agent_wxgt6su7d3pcosiil3");
-      expect(insertedDoc.text).toContain("Type YES to confirm.");
+      // LibreChat renders agent messages from content[], not text
+      expect(insertedDoc.content[0].type).toBe("text");
+      expect(insertedDoc.content[0].text).toContain("Type YES to confirm.");
+      expect(insertedDoc.text).toBe("");
       expect(insertedDoc.conversationId).toBe("conv123");
 
       // Should update conversations.updatedAt (Pitfall 6)

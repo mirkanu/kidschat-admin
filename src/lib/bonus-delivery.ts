@@ -65,22 +65,30 @@ export async function sendBonusOfferMessage(args: {
   const parentMessageId =
     parentDoc?.messageId ?? "00000000-0000-0000-0000-000000000000";
 
-  // IMPORTANT: LibreChat's agent endpoint stores the agent ID in the `model`
-  // field, NOT in `agent_id`. If we get this wrong, LibreChat's frontend
-  // filters/hides the message as "not from the current agent". Match the
-  // exact schema LibreChat's own messages use.
+  // CRITICAL: LibreChat's agent endpoint renders messages from the typed
+  // content[] array, NOT from the plain `text` field. Real agent messages
+  // have `text: ""` and content like [{type:"text", text:"..."}]. If we only
+  // set `text`, LibreChat renders an empty message and the kid sees nothing.
+  //
+  // Also: `model` must be the agent ID (not "agents"), `sender` should match
+  // the agent's display name (LibreChat uses the friendly name from the
+  // agent's config — we hardcode the known drawing agents' name here).
   const messageDoc = {
     messageId,
     parentMessageId,
     user: userId,
     conversationId,
     isCreatedByUser: false,
-    text: template,
+    text: "",
+    content: [{ type: "text", text: template }],
+    attachments: [],
     endpoint: "agents",
     model: agentId,
-    sender: "Assistant",
+    sender: "KidsChat Friendly Tutor",
     error: false,
     unfinished: false,
+    expiredAt: null,
+    tokenCount: 0,
     createdAt: now,
     updatedAt: now,
   };
