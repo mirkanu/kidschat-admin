@@ -79,6 +79,27 @@ export async function processMessageEvent(event: MessageEvent): Promise<void> {
           amountEur: budget.bonusPackEur,
           confirmationMessageId: messageId,
         });
+
+        // Insert a confirmation message so the kid sees what happened.
+        // The AI agent will likely also reply to "YES" with a (correct) refusal
+        // because it doesn't know about system-level transactions — our
+        // confirmation follows that refusal and clarifies the real outcome.
+        try {
+          const packEur = budget.bonusPackEur.toFixed(2);
+          const confirmationText = `📱 System message (not from your AI): ✓ Bonus applied. You have €${packEur} more to spend. Keep chatting!`;
+          await sendBonusOfferMessage({
+            userId,
+            conversationId,
+            agentId: SYNTHETIC_AGENT_ID,
+            template: confirmationText,
+            db,
+          });
+        } catch (err) {
+          console.error(
+            `[change-stream-listener] bonus confirmation insertion failed for ${userId}:`,
+            err
+          );
+        }
         return;
       }
       // Expired offer — fall through to normal evaluation
@@ -97,7 +118,8 @@ export async function processMessageEvent(event: MessageEvent): Promise<void> {
       // Find the child's most recent conversation for message injection
       const targetConvId = conversationId;
 
-      const warningTemplate = "You've used 70% of your daily budget — keep going, you have 30% left!";
+      const warningTemplate =
+        "📱 System message (not from your AI): You've used 70% of your daily chat budget. You have about 30% left before reaching your limit for today.";
       await sendBonusOfferMessage({
         userId,
         conversationId: targetConvId,
