@@ -95,6 +95,18 @@ Plans:
 
 </details>
 
+### Phase 15.2: Synthetic Message Rendering in LibreChat
+Research-backed fix for the "invisible synthetic messages" bug — our direct-insert pattern into the messages collection writes docs that LibreChat's agent endpoint does not render in the UI. Multiple ad-hoc schema fixes (model field, content[] array, sender name) have failed. Needs deep research into LibreChat's message rendering pipeline.
+
+**Goal:** Synthetic messages inserted by our backend (70% warning, bonus offer, bonus confirmation) actually appear in the kid's LibreChat conversation view, chained into the main thread, without branches.
+**Plans:** 0/1 plans executed
+**Requirements:** [SYNTH-RENDER-01]
+
+Plans:
+- [ ] 15.2-01-PLAN.md — Research LibreChat message rendering + fix + test in live UI
+
+</details>
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
