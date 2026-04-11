@@ -12,7 +12,7 @@ import { notifySafetyAlert } from "@/lib/notify-safety-alert";
  * Body:
  * {
  *   childName: string,
- *   alertType: "safety_redirect" | "jailbreak_attempt",
+ *   alertType: "safety_redirect" | "jailbreak_attempt" | "image_prompt",
  *   matchedPattern: string,
  *   messageExcerpt: string,
  *   detectedAt: string (ISO),
@@ -47,17 +47,21 @@ export async function POST(req: Request) {
     );
   }
 
-  if (alertType !== "safety_redirect" && alertType !== "jailbreak_attempt") {
+  const VALID_ALERT_TYPES = ["safety_redirect", "jailbreak_attempt", "image_prompt"] as const;
+  if (!VALID_ALERT_TYPES.includes(alertType as typeof VALID_ALERT_TYPES[number])) {
     return NextResponse.json(
-      { error: "alertType must be 'safety_redirect' or 'jailbreak_attempt'" },
+      { error: `alertType must be one of: ${VALID_ALERT_TYPES.join(", ")}` },
       { status: 400 }
     );
   }
 
+  // Safe cast: alertType is validated against VALID_ALERT_TYPES above
+  const validatedAlertType = alertType as typeof VALID_ALERT_TYPES[number];
+
   try {
     const result = await notifySafetyAlert({
       childName,
-      alertType,
+      alertType: validatedAlertType,
       matchedPattern,
       messageExcerpt,
       detectedAt,

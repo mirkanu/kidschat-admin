@@ -32,7 +32,7 @@ export async function UsageBars({ userId }: UsageBarsProps) {
     state.monthlyCapEur > 0
       ? Math.min(
           100,
-          Math.round((state.monthlySpendEur / state.monthlyCapEur) * 100)
+          Math.round((state.displayedMonthlySpendEur / state.monthlyCapEur) * 100)
         )
       : 0;
 
@@ -77,7 +77,7 @@ export async function UsageBars({ userId }: UsageBarsProps) {
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">This month</span>
             <span className="font-medium tabular-nums">
-              €{state.monthlySpendEur.toFixed(2)}{" "}
+              €{state.displayedMonthlySpendEur.toFixed(2)}{" "}
               <span className="text-muted-foreground">/ €{state.monthlyCapEur.toFixed(2)}</span>
             </span>
           </div>
