@@ -348,16 +348,108 @@ describe("budget.ts", () => {
 
       const state = await evaluateChildState("000000000000000000000001", db) as Record<string, unknown>;
       const keys = Object.keys(state);
-      // Must have exactly these 7 fields — no bonus-related fields
+      // Must have exactly these 8 fields — no bonus-related fields
       expect(keys.sort()).toEqual([
         "dailyCapEur",
         "dailyPctRemaining",
+        "displayedMonthlySpendEur",
         "monthlyCapEur",
         "monthlyCapExhausted",
         "monthlySpendEur",
         "remainingEur",
         "userId",
       ].sort());
+    });
+
+    it("computes displayedMonthlySpendEur = monthlySpendEur + max(0, dailyCap - remainingEur)", async () => {
+      const settingsCol = makeCollection();
+      settingsCol.findOne = jest.fn().mockResolvedValue(null); // defaults: dailyCostCapEur=0.10
+      // remaining = 0.03 EUR → tokenCredits = eurToTokens(0.03)
+      const remainingTokens = eurToTokens(0.03);
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: remainingTokens }]);
+      const balanceStateCol = makeCollection([
+        { userId: "000000000000000000000001", monthlySpendEur: 0.50, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+      ]);
+      const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol });
+
+      const state = await evaluateChildState("000000000000000000000001", db) as Record<string, unknown>;
+      // displayedMonthlySpendEur = 0.50 + max(0, 0.10 - 0.03) = 0.50 + 0.07 = 0.57
+      expect(state.displayedMonthlySpendEur as number).toBeGreaterThan(0.56);
+      expect(state.displayedMonthlySpendEur as number).toBeLessThan(0.58);
+    });
+
+    it("clamps displayedMonthlySpendEur when remainingEur > dailyCap (parent top-up case)", async () => {
+      const settingsCol = makeCollection();
+      settingsCol.findOne = jest.fn().mockResolvedValue(null); // defaults: dailyCostCapEur=0.10
+      // remaining = 0.20 EUR (parent topped up above daily cap)
+      const remainingTokens = eurToTokens(0.20);
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: remainingTokens }]);
+      const balanceStateCol = makeCollection([
+        { userId: "000000000000000000000001", monthlySpendEur: 0.50, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+      ]);
+      const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol });
+
+      const state = await evaluateChildState("000000000000000000000001", db) as Record<string, unknown>;
+      // displayedMonthlySpendEur = 0.50 + max(0, 0.10 - 0.20) = 0.50 + 0 = 0.50 (no negative contribution)
+      expect(state.displayedMonthlySpendEur as number).toBeCloseTo(0.50, 3);
+    });
+
+    it("sets monthlyCapExhausted using displayedMonthlySpendEur when it reaches the cap", async () => {
+      const settingsCol = makeCollection();
+      settingsCol.findOne = jest.fn().mockResolvedValue(null); // defaults: monthlyCostCapEur=2.00, dailyCostCapEur=0.10
+      // remainingEur = 0 (all of today spent), monthlySpendEur = 1.95 → displayed = 1.95 + 0.10 = 2.05 >= 2.00
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
+      const balanceStateCol = makeCollection([
+        { userId: "000000000000000000000001", monthlySpendEur: 1.95, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+      ]);
+      const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol });
+
+      const state = await evaluateChildState("000000000000000000000001", db) as Record<string, unknown>;
+      expect(state.monthlyCapExhausted).toBe(true);
+    });
+  });
+
+  // ---- New topUpDailyBudget tests: $max + monthly-cap gate ----
+
+  describe("topUpDailyBudget — $max and monthly-cap gate", () => {
+    it("uses $max operator (not $set) to preserve balances above dailyCap", async () => {
+      const settingsCol = makeCollection();
+      settingsCol.findOne = jest.fn().mockResolvedValue(null); // defaults: dailyCostCapEur=0.10, monthlyCostCapEur=2.00
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
+      const balanceStateCol = makeCollection([
+        { userId: "000000000000000000000001", monthlySpendEur: 0, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+      ]);
+      const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol });
+
+      await topUpDailyBudget("000000000000000000000001", db);
+
+      // The update must use $max, not $set
+      const updateCall = balancesCol._updated[0] as Record<string, unknown>;
+      expect(updateCall).toBeDefined();
+      const updateOp = updateCall.update as Record<string, unknown>;
+      expect(updateOp).toHaveProperty("$max");
+      const maxOp = updateOp["$max"] as Record<string, unknown>;
+      expect(maxOp).toHaveProperty("tokenCredits");
+      // Should equal eurToTokens(0.10)
+      expect(maxOp.tokenCredits).toBeCloseTo(eurToTokens(0.10), -2);
+    });
+
+    it("is a no-op refill (no balances write) when monthly cap is exhausted via displayedMonthlySpendEur", async () => {
+      const settingsCol = makeCollection();
+      settingsCol.findOne = jest.fn().mockResolvedValue(null); // defaults: dailyCostCapEur=0.10, monthlyCostCapEur=2.00
+      // monthlySpendEur=2.00 and tokenCredits=0 → displayedMonthlySpendEur = 2.00 + 0.10 = 2.10 >= 2.00 → skip refill
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
+      const balanceStateCol = makeCollection([
+        { userId: "000000000000000000000001", monthlySpendEur: 2.00, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+      ]);
+      const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol });
+
+      await topUpDailyBudget("000000000000000000000001", db);
+
+      // balances must NOT have been updated (no token refill when monthly cap exhausted)
+      expect(balancesCol._updated.length).toBe(0);
+      // balance_state MUST still be updated (lastDailyReset advances)
+      expect(balanceStateCol._updated.length).toBeGreaterThan(0);
     });
   });
 });
