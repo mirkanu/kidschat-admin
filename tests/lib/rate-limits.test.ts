@@ -1,18 +1,13 @@
 /**
- * Tests for settings.ts (Plan 15-04 schema update)
+ * Tests for settings.ts (Phase 15.3 — bonus fields removed)
  *
  * Tests cover:
- * - getEffectiveLimits (legacy shim that delegates to getEffectiveBudget)
- * - ensureDefaultSettings (new schema)
- * - HARDCODED_DEFAULTS (new schema fields)
- *
- * Note: HARDCODED_DEFAULTS now uses new field names (dailyCostCapEur, not dailyImageLimit).
- * getEffectiveLimits is a legacy shim that maps to new schema — returned dailyImageLimit
- * is a hardcoded placeholder (10) and dailyMessageLimit is (50), since those fields are
- * no longer stored in MongoDB.
+ * - ensureDefaultSettings (new schema, no bonus fields)
+ * - HARDCODED_DEFAULTS (simplified schema: dailyCostCapEur + monthlyCostCapEur only)
+ * - getEffectiveBudget (re-exported from budget.ts)
  */
 
-import { getEffectiveLimits, ensureDefaultSettings, HARDCODED_DEFAULTS } from "@/lib/settings";
+import { ensureDefaultSettings, HARDCODED_DEFAULTS, getEffectiveBudget } from "@/lib/settings";
 import type { Db, Collection } from "mongodb";
 
 // ---------------------------------------------------------------------------
@@ -41,25 +36,35 @@ function makeMockDb(docs: Record<string, Record<string, unknown>[]>): Db {
 }
 
 // ---------------------------------------------------------------------------
-// getEffectiveLimits (legacy shim — delegates to getEffectiveBudget in budget.ts)
+// HARDCODED_DEFAULTS
 // ---------------------------------------------------------------------------
 
-describe("getEffectiveLimits", () => {
+describe("HARDCODED_DEFAULTS", () => {
+  it("has dailyCostCapEur and monthlyCostCapEur — no bonus fields", () => {
+    expect(typeof HARDCODED_DEFAULTS.dailyCostCapEur).toBe("number");
+    expect(typeof HARDCODED_DEFAULTS.monthlyCostCapEur).toBe("number");
+    expect(HARDCODED_DEFAULTS.dailyCostCapEur).toBe(0.10);
+    expect(HARDCODED_DEFAULTS.monthlyCostCapEur).toBe(2.00);
+    // Must have exactly 3 fields — bonus fields removed in Phase 15.3
+    const keys = Object.keys(HARDCODED_DEFAULTS);
+    expect(keys.sort()).toEqual(["dailyCostCapEur", "key", "monthlyCostCapEur"].sort());
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getEffectiveBudget (re-exported from budget.ts)
+// ---------------------------------------------------------------------------
+
+describe("getEffectiveBudget", () => {
   it("returns hardcoded defaults when no settings docs exist", async () => {
     const db = makeMockDb({ settings: [] });
-    const limits = await getEffectiveLimits("user_abc", db);
+    const budget = await getEffectiveBudget("user_abc", db);
 
-    // Legacy shim returns fixed 10/50 for image/message limits
-    expect(limits.dailyImageLimit).toBe(10);
-    expect(limits.dailyMessageLimit).toBe(50);
-    // monthlyCostCapEUR maps from budget.ts HARDCODED_DEFAULTS.monthlyCostCapEur
-    expect(limits.monthlyCostCapEUR).toBe(HARDCODED_DEFAULTS.monthlyCostCapEur);
-    // weeklyBonusCap maps from budget.ts HARDCODED_DEFAULTS.weeklyBonusCapEur
-    expect(limits.weeklyBonusCap).toBe(HARDCODED_DEFAULTS.weeklyBonusCapEur);
-    // bonusPackSize maps from budget.ts HARDCODED_DEFAULTS.bonusPackEur
-    expect(limits.bonusPackSize).toBe(HARDCODED_DEFAULTS.bonusPackEur);
-    expect(typeof limits.bonusMessageTemplate).toBe("string");
-    expect(limits.bonusMessageTemplate.length).toBeGreaterThan(0);
+    expect(budget.dailyCostCapEur).toBe(HARDCODED_DEFAULTS.dailyCostCapEur);
+    expect(budget.monthlyCostCapEur).toBe(HARDCODED_DEFAULTS.monthlyCostCapEur);
+    // Budget must have exactly these 2 fields (bonus fields removed in Phase 15.3)
+    const keys = Object.keys(budget);
+    expect(keys.sort()).toEqual(["dailyCostCapEur", "monthlyCostCapEur"].sort());
   });
 
   it("returns global_defaults values when global doc exists (new schema)", async () => {
@@ -70,18 +75,13 @@ describe("getEffectiveLimits", () => {
           key: "global_defaults",
           dailyCostCapEur: 0.20,
           monthlyCostCapEur: 5.0,
-          bonusPackEur: 3.0,
-          weeklyBonusCapEur: 6.0,
-          bonusMessageTemplate: "Custom message here.",
         },
       ],
     });
-    const limits = await getEffectiveLimits("user_abc", db);
+    const budget = await getEffectiveBudget("user_abc", db);
 
-    expect(limits.monthlyCostCapEUR).toBe(5.0);
-    expect(limits.weeklyBonusCap).toBe(6.0);
-    expect(limits.bonusPackSize).toBe(3.0);
-    expect(limits.bonusMessageTemplate).toBe("Custom message here.");
+    expect(budget.monthlyCostCapEur).toBe(5.0);
+    expect(budget.dailyCostCapEur).toBe(0.20);
   });
 
   it("merges per-child override: overridden monthlyCostCapEur wins, globals used elsewhere", async () => {
@@ -92,9 +92,6 @@ describe("getEffectiveLimits", () => {
           key: "global_defaults",
           dailyCostCapEur: 0.10,
           monthlyCostCapEur: 2.00,
-          bonusPackEur: 0.20,
-          weeklyBonusCapEur: 0.50,
-          bonusMessageTemplate: "Default message.",
         },
         {
           _id: "override_user_abc",
@@ -104,11 +101,10 @@ describe("getEffectiveLimits", () => {
         },
       ],
     });
-    const limits = await getEffectiveLimits("user_abc", db);
+    const budget = await getEffectiveBudget("user_abc", db);
 
-    expect(limits.monthlyCostCapEUR).toBe(5.0); // override wins
-    expect(limits.weeklyBonusCap).toBe(0.50); // from global
-    expect(limits.bonusMessageTemplate).toBe("Default message."); // from global
+    expect(budget.monthlyCostCapEur).toBe(5.0); // override wins
+    expect(budget.dailyCostCapEur).toBe(0.10); // from global
   });
 });
 
@@ -117,7 +113,7 @@ describe("getEffectiveLimits", () => {
 // ---------------------------------------------------------------------------
 
 describe("ensureDefaultSettings", () => {
-  it("inserts global_defaults doc when missing", async () => {
+  it("inserts global_defaults doc when missing — no bonus fields", async () => {
     const insertedDocs: Record<string, unknown>[] = [];
     const db = {
       collection: () => ({
@@ -137,8 +133,9 @@ describe("ensureDefaultSettings", () => {
     // New schema fields
     expect(typeof insertedDocs[0].dailyCostCapEur).toBe("number");
     expect(typeof insertedDocs[0].monthlyCostCapEur).toBe("number");
-    expect(typeof insertedDocs[0].bonusPackEur).toBe("number");
-    expect(typeof insertedDocs[0].weeklyBonusCapEur).toBe("number");
+    // Must have exactly these fields — no bonus fields (removed in Phase 15.3)
+    const docKeys = Object.keys(insertedDocs[0]).sort();
+    expect(docKeys).toEqual(["_id", "dailyCostCapEur", "key", "monthlyCostCapEur"].sort());
   });
 
   it("is a no-op when global_defaults already exists", async () => {

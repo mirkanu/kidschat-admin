@@ -1,8 +1,6 @@
 import getMongoClient from "@/lib/mongodb";
 import { evaluateChildState } from "@/lib/budget";
-import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Coins } from "lucide-react";
 
 interface UsageBarsProps {
   userId: string;
@@ -17,7 +15,7 @@ interface UsageBarsProps {
  *   2. Monthly spend: €X / €monthlyCap
  *
  * Driven exclusively by evaluateChildState (budget.ts).
- * No legacy cost-ledger imports.
+ * No legacy cost-ledger imports, no bonus offer state.
  */
 export async function UsageBars({ userId }: UsageBarsProps) {
   const client = await getMongoClient();
@@ -45,7 +43,7 @@ export async function UsageBars({ userId }: UsageBarsProps) {
     return "bg-green-500";
   }
 
-  const dailyColor = state.hasActiveOffer ? "bg-red-500" : barColor(dailyPercent);
+  const dailyColor = barColor(dailyPercent);
   const monthlyColor = barColor(monthlyPercent);
 
   return (
@@ -93,26 +91,6 @@ export async function UsageBars({ userId }: UsageBarsProps) {
             {monthlyPercent}% of monthly cap used
           </p>
         </div>
-
-        {/* Active bonus credit (only if active offer pending) */}
-        {state.hasActiveOffer && (
-          <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 px-3 py-2 text-sm">
-            <Coins className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
-            <span className="text-amber-800 dark:text-amber-300">
-              Bonus offer pending — awaiting YES confirmation
-            </span>
-          </div>
-        )}
-
-        {/* Weekly bonus spend */}
-        {state.weeklyBonusSpentEur > 0 && (
-          <p className="text-xs text-muted-foreground">
-            Bonus purchases this week: €{state.weeklyBonusSpentEur.toFixed(2)}
-            {state.weeklyBonusCapExhausted && (
-              <span className="ml-1 text-red-600 dark:text-red-400">(weekly cap reached)</span>
-            )}
-          </p>
-        )}
       </CardContent>
     </Card>
   );

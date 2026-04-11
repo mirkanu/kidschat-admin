@@ -1,5 +1,5 @@
 /**
- * Unit tests for budget.ts (Plan 15-04)
+ * Unit tests for budget.ts (Phase 15.3 — bonus system removed)
  * Uses in-memory mock Db pattern — NO real MongoDB connection.
  *
  * Tests cover:
@@ -7,9 +7,8 @@
  * - getEffectiveBudget (global defaults, child override, no docs)
  * - ensureBalanceState (create vs no-op)
  * - getRemainingEur (tokenCredits → EUR, missing doc, clamp)
- * - topUpDailyBudget (sets credits, clears warning, clears expired offer)
+ * - topUpDailyBudget (sets credits, updates lastDailyReset)
  * - topUpMonthlyBudget (resets monthly spend, calls topUpDailyBudget)
- * - applyBonusCredit (inserts purchase, $inc credits, clears offer, cap guard)
  * - evaluateChildState (computed fields)
  */
 
@@ -79,7 +78,6 @@ describe("budget.ts", () => {
   let getRemainingEur: (userId: string, db: unknown) => Promise<number>;
   let topUpDailyBudget: (userId: string, db: unknown) => Promise<void>;
   let topUpMonthlyBudget: (userId: string, db: unknown) => Promise<void>;
-  let applyBonusCredit: (args: { userId: string; db: unknown; amountEur: number; confirmationMessageId: string }) => Promise<void>;
   let evaluateChildState: (userId: string, db: unknown) => Promise<unknown>;
 
   beforeEach(async () => {
@@ -92,7 +90,6 @@ describe("budget.ts", () => {
     getRemainingEur = mod.getRemainingEur;
     topUpDailyBudget = mod.topUpDailyBudget;
     topUpMonthlyBudget = mod.topUpMonthlyBudget;
-    applyBonusCredit = mod.applyBonusCredit;
     evaluateChildState = mod.evaluateChildState;
   });
 
@@ -139,12 +136,10 @@ describe("budget.ts", () => {
       const budget = await getEffectiveBudget("000000000000000000000001", db) as Record<string, unknown>;
       expect(budget.dailyCostCapEur).toBe(0.10);
       expect(budget.monthlyCostCapEur).toBe(2.00);
-      expect(budget.bonusPackEur).toBe(0.20);
-      expect(budget.weeklyBonusCapEur).toBe(0.50);
     });
 
     it("only global_defaults doc → returns those values", async () => {
-      const globalDoc = { _id: "global_defaults", key: "global_defaults", dailyCostCapEur: 0.20, monthlyCostCapEur: 3.00, bonusPackEur: 0.30, weeklyBonusCapEur: 1.00, bonusMessageTemplate: "custom" };
+      const globalDoc = { _id: "global_defaults", key: "global_defaults", dailyCostCapEur: 0.20, monthlyCostCapEur: 3.00 };
       const settingsCol = makeCollection();
       settingsCol.findOne = jest.fn().mockImplementation(async (query: unknown) => {
         const q = query as Record<string, unknown>;
@@ -162,7 +157,7 @@ describe("budget.ts", () => {
       settingsCol.findOne = jest.fn().mockImplementation(async (query: unknown) => {
         const q = query as Record<string, unknown>;
         if (q.key === "global_defaults" || q._id === "global_defaults") {
-          return { key: "global_defaults", dailyCostCapEur: 0.10, monthlyCostCapEur: 2.00, bonusPackEur: 0.20, weeklyBonusCapEur: 0.50, bonusMessageTemplate: "default" };
+          return { key: "global_defaults", dailyCostCapEur: 0.10, monthlyCostCapEur: 2.00 };
         }
         if ((q.key === "child_override" || (q._id as string)?.startsWith?.("override_")) && (q.userId === "000000000000000000000001" || (q._id as string) === "override_000000000000000000000001")) {
           return { key: "child_override", userId: "000000000000000000000001", dailyCostCapEur: 0.50 };
@@ -180,7 +175,7 @@ describe("budget.ts", () => {
       settingsCol.findOne = jest.fn().mockImplementation(async (query: unknown) => {
         const q = query as Record<string, unknown>;
         if (q.key === "global_defaults" || q._id === "global_defaults") {
-          return { key: "global_defaults", dailyCostCapEur: 0.10, monthlyCostCapEur: 2.00, bonusPackEur: 0.20, weeklyBonusCapEur: 0.50, bonusMessageTemplate: "default" };
+          return { key: "global_defaults", dailyCostCapEur: 0.10, monthlyCostCapEur: 2.00 };
         }
         // Return null for any override lookup (different userId)
         return null;
@@ -194,7 +189,7 @@ describe("budget.ts", () => {
   // ---- ensureBalanceState ----
 
   describe("ensureBalanceState", () => {
-    it("no existing doc → inserts with monthlySpendEur=0 and all nulls", async () => {
+    it("no existing doc → inserts with monthlySpendEur=0", async () => {
       const balanceStateCol = makeCollection([]);
       const db = makeMockDb({ balance_state: balanceStateCol });
 
@@ -204,14 +199,10 @@ describe("budget.ts", () => {
       const insertedDoc = balanceStateCol._inserted[0] as Record<string, unknown>;
       expect(insertedDoc.userId).toBe("000000000000000000000001");
       expect(insertedDoc.monthlySpendEur).toBe(0);
-      expect(insertedDoc.warnedAt70PctOn).toBeNull();
-      expect(insertedDoc.activeOfferMessageId).toBeNull();
-      expect(insertedDoc.activeOfferExpiresAt).toBeNull();
-      expect(insertedDoc.activeOfferConversationId).toBeNull();
     });
 
     it("existing doc → no-op (insertOne not called)", async () => {
-      const existingDoc = { userId: "000000000000000000000001", monthlySpendEur: 0.5, warnedAt70PctOn: null, activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() };
+      const existingDoc = { userId: "000000000000000000000001", monthlySpendEur: 0.5, lastDailyReset: new Date(), lastMonthlyReset: new Date() };
       const balanceStateCol = makeCollection([existingDoc]);
       const db = makeMockDb({ balance_state: balanceStateCol });
 
@@ -258,7 +249,7 @@ describe("budget.ts", () => {
       settingsCol.findOne = jest.fn().mockResolvedValue(null); // use defaults
       const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
       const balanceStateCol = makeCollection([
-        { userId: "000000000000000000000001", monthlySpendEur: 0, warnedAt70PctOn: "2026-04-09", activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+        { userId: "000000000000000000000001", monthlySpendEur: 0, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
       ]);
       const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol });
 
@@ -266,29 +257,26 @@ describe("budget.ts", () => {
 
       // balances.tokenCredits should be updated
       expect(balancesCol.updateOne).toHaveBeenCalled();
-      const updateCall = balancesCol._updated[0] as { update: Record<string, unknown> } | Record<string, unknown>;
-      // Just verify updateOne was called with $set or $set on tokenCredits
       const updateArg = balancesCol._updated[0] as Record<string, unknown>;
       expect(updateArg).toBeDefined();
     });
 
-    it("clears balance_state.warnedAt70PctOn to null", async () => {
+    it("updates balance_state.lastDailyReset", async () => {
       const settingsCol = makeCollection();
       settingsCol.findOne = jest.fn().mockResolvedValue(null);
       const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
-      const balanceStateDoc = { userId: "000000000000000000000001", monthlySpendEur: 0, warnedAt70PctOn: "2026-04-09", activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() };
-      const balanceStateCol = makeCollection([balanceStateDoc]);
+      const balanceStateCol = makeCollection([
+        { userId: "000000000000000000000001", monthlySpendEur: 0, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+      ]);
       const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol });
 
       await topUpDailyBudget("000000000000000000000001", db);
 
-      // balance_state should be updated (warnedAt70PctOn cleared)
+      // balance_state should be updated (lastDailyReset)
       expect(balanceStateCol.updateOne).toHaveBeenCalled();
       const stateUpdate = balanceStateCol._updated[0] as Record<string, unknown>;
-      const setOp = (stateUpdate as { update?: { $set?: Record<string, unknown> } })?.update?.$set ?? stateUpdate;
-      // The update should include warnedAt70PctOn: null
       const updateStr = JSON.stringify(stateUpdate);
-      expect(updateStr).toContain("warnedAt70Pct");
+      expect(updateStr).toContain("lastDailyReset");
     });
   });
 
@@ -300,7 +288,7 @@ describe("budget.ts", () => {
       settingsCol.findOne = jest.fn().mockResolvedValue(null);
       const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
       const balanceStateCol = makeCollection([
-        { userId: "000000000000000000000001", monthlySpendEur: 1.50, warnedAt70PctOn: null, activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+        { userId: "000000000000000000000001", monthlySpendEur: 1.50, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
       ]);
       const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol });
 
@@ -315,82 +303,6 @@ describe("budget.ts", () => {
     });
   });
 
-  // ---- applyBonusCredit ----
-
-  describe("applyBonusCredit", () => {
-    const baseBalanceStateDoc = {
-      userId: "000000000000000000000001",
-      monthlySpendEur: 0,
-      warnedAt70PctOn: null,
-      activeOfferMessageId: "offer_msg_123",
-      activeOfferExpiresAt: new Date(Date.now() + 300_000), // 5 min from now
-      activeOfferConversationId: "conv123",
-      lastDailyReset: new Date(),
-      lastMonthlyReset: new Date(),
-    };
-
-    it("inserts bonus_purchases row and $inc balances.tokenCredits", async () => {
-      const settingsCol = makeCollection();
-      settingsCol.findOne = jest.fn().mockResolvedValue(null); // defaults
-      const bonusPurchasesCol = makeCollection();
-      bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
-      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
-      const balanceStateCol = makeCollection([baseBalanceStateDoc]);
-      const db = makeMockDb({ settings: settingsCol, bonus_purchases: bonusPurchasesCol, balances: balancesCol, balance_state: balanceStateCol });
-
-      await applyBonusCredit({ userId: "000000000000000000000001", db, amountEur: 0.20, confirmationMessageId: "msg_yes_1" });
-
-      expect(bonusPurchasesCol.insertOne).toHaveBeenCalled();
-      const purchaseDoc = bonusPurchasesCol._inserted[0] as Record<string, unknown>;
-      expect(purchaseDoc.userId).toBe("000000000000000000000001");
-      expect(purchaseDoc.packSizeEUR).toBe(0.20);
-
-      expect(balancesCol.updateOne).toHaveBeenCalled();
-      const balanceUpdate = balancesCol._updated[0] as Record<string, unknown>;
-      const updateStr = JSON.stringify(balanceUpdate);
-      expect(updateStr).toContain("tokenCredits");
-    });
-
-    it("clears balance_state.activeOfferMessageId and activeOfferExpiresAt after applying credit", async () => {
-      const settingsCol = makeCollection();
-      settingsCol.findOne = jest.fn().mockResolvedValue(null);
-      const bonusPurchasesCol = makeCollection();
-      bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
-      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
-      const balanceStateCol = makeCollection([baseBalanceStateDoc]);
-      const db = makeMockDb({ settings: settingsCol, bonus_purchases: bonusPurchasesCol, balances: balancesCol, balance_state: balanceStateCol });
-
-      await applyBonusCredit({ userId: "000000000000000000000001", db, amountEur: 0.20, confirmationMessageId: "msg_yes_1" });
-
-      // balance_state should be updated to clear the offer
-      expect(balanceStateCol.updateOne).toHaveBeenCalled();
-      const stateUpdateStr = JSON.stringify(balanceStateCol._updated);
-      expect(stateUpdateStr).toContain("activeOfferMessageId");
-    });
-
-    it("throws if amountEur <= 0", async () => {
-      const db = makeMockDb({});
-      await expect(
-        applyBonusCredit({ userId: "000000000000000000000001", db, amountEur: 0, confirmationMessageId: "msg1" })
-      ).rejects.toThrow();
-    });
-
-    it("throws if weekly bonus cap would be exceeded", async () => {
-      const settingsCol = makeCollection();
-      settingsCol.findOne = jest.fn().mockResolvedValue({ key: "global_defaults", dailyCostCapEur: 0.10, monthlyCostCapEur: 2.00, bonusPackEur: 0.20, weeklyBonusCapEur: 0.50 });
-      const bonusPurchasesCol = makeCollection();
-      // Already spent 0.50 this week (at cap)
-      bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({
-        toArray: jest.fn().mockResolvedValue([{ totalSpend: 0.50 }])
-      });
-      const db = makeMockDb({ settings: settingsCol, bonus_purchases: bonusPurchasesCol });
-
-      await expect(
-        applyBonusCredit({ userId: "000000000000000000000001", db, amountEur: 0.20, confirmationMessageId: "msg1" })
-      ).rejects.toThrow();
-    });
-  });
-
   // ---- evaluateChildState ----
 
   describe("evaluateChildState", () => {
@@ -401,11 +313,9 @@ describe("budget.ts", () => {
       const halfTokens = eurToTokens(0.05);
       const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: halfTokens }]);
       const balanceStateCol = makeCollection([
-        { userId: "000000000000000000000001", monthlySpendEur: 0.50, warnedAt70PctOn: null, activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+        { userId: "000000000000000000000001", monthlySpendEur: 0.50, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
       ]);
-      const bonusPurchasesCol = makeCollection();
-      bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
-      const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol, bonus_purchases: bonusPurchasesCol });
+      const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol });
 
       const state = await evaluateChildState("000000000000000000000001", db) as Record<string, unknown>;
       expect(state.userId).toBe("000000000000000000000001");
@@ -419,46 +329,35 @@ describe("budget.ts", () => {
       settingsCol.findOne = jest.fn().mockResolvedValue(null); // defaults: monthlyCostCapEur=2.00
       const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
       const balanceStateCol = makeCollection([
-        { userId: "000000000000000000000001", monthlySpendEur: 2.00, warnedAt70PctOn: null, activeOfferMessageId: null, activeOfferExpiresAt: null, activeOfferConversationId: null, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+        { userId: "000000000000000000000001", monthlySpendEur: 2.00, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
       ]);
-      const bonusPurchasesCol = makeCollection();
-      bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
-      const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol, bonus_purchases: bonusPurchasesCol });
+      const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol });
 
       const state = await evaluateChildState("000000000000000000000001", db) as Record<string, unknown>;
       expect(state.monthlyCapExhausted).toBe(true);
     });
 
-    it("hasActiveOffer is true when activeOfferMessageId set and not expired", async () => {
+    it("ChildState has exactly the expected fields — no bonus fields", async () => {
       const settingsCol = makeCollection();
       settingsCol.findOne = jest.fn().mockResolvedValue(null);
       const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
-      const futureExpiry = new Date(Date.now() + 300_000);
       const balanceStateCol = makeCollection([
-        { userId: "000000000000000000000001", monthlySpendEur: 0, warnedAt70PctOn: null, activeOfferMessageId: "msg_offer_1", activeOfferExpiresAt: futureExpiry, activeOfferConversationId: "conv123", lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+        { userId: "000000000000000000000001", monthlySpendEur: 0, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
       ]);
-      const bonusPurchasesCol = makeCollection();
-      bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
-      const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol, bonus_purchases: bonusPurchasesCol });
+      const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol });
 
       const state = await evaluateChildState("000000000000000000000001", db) as Record<string, unknown>;
-      expect(state.hasActiveOffer).toBe(true);
-    });
-
-    it("hasActiveOffer is false when activeOfferExpiresAt is in the past", async () => {
-      const settingsCol = makeCollection();
-      settingsCol.findOne = jest.fn().mockResolvedValue(null);
-      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: 0 }]);
-      const pastExpiry = new Date(Date.now() - 60_000); // expired 1 min ago
-      const balanceStateCol = makeCollection([
-        { userId: "000000000000000000000001", monthlySpendEur: 0, warnedAt70PctOn: null, activeOfferMessageId: "msg_offer_1", activeOfferExpiresAt: pastExpiry, activeOfferConversationId: "conv123", lastDailyReset: new Date(), lastMonthlyReset: new Date() }
-      ]);
-      const bonusPurchasesCol = makeCollection();
-      bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
-      const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol, bonus_purchases: bonusPurchasesCol });
-
-      const state = await evaluateChildState("000000000000000000000001", db) as Record<string, unknown>;
-      expect(state.hasActiveOffer).toBe(false);
+      const keys = Object.keys(state);
+      // Must have exactly these 7 fields — no bonus-related fields
+      expect(keys.sort()).toEqual([
+        "dailyCapEur",
+        "dailyPctRemaining",
+        "monthlyCapEur",
+        "monthlyCapExhausted",
+        "monthlySpendEur",
+        "remainingEur",
+        "userId",
+      ].sort());
     });
   });
 });

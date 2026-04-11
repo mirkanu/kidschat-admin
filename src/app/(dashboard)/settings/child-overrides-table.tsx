@@ -13,7 +13,7 @@ interface ChildOverridesTableProps {
   users: ChildOverrideRow[];
   globals: Pick<
     GlobalDefaults,
-    "dailyCostCapEur" | "monthlyCostCapEur" | "bonusPackEur" | "weeklyBonusCapEur"
+    "dailyCostCapEur" | "monthlyCostCapEur"
   >;
 }
 
@@ -49,16 +49,6 @@ function OverrideRow({
       ? String(user.override.monthlyCostCapEur)
       : ""
   );
-  const [bonusPack, setBonusPack] = useState(
-    user.override?.bonusPackEur != null
-      ? String(user.override.bonusPackEur)
-      : ""
-  );
-  const [weeklyBonusCap, setWeeklyBonusCap] = useState(
-    user.override?.weeklyBonusCapEur != null
-      ? String(user.override.weeklyBonusCapEur)
-      : ""
-  );
 
   const boundSaveAction = saveChildOverride.bind(null, user.userId);
 
@@ -79,8 +69,6 @@ function OverrideRow({
       if (result.ok) {
         setDailyCap("");
         setMonthlyCap("");
-        setBonusPack("");
-        setWeeklyBonusCap("");
         toast.success(
           `Override deleted for ${user.childName} — using global defaults`
         );
@@ -92,14 +80,12 @@ function OverrideRow({
 
   const hasOverride =
     dailyCap !== "" ||
-    monthlyCap !== "" ||
-    bonusPack !== "" ||
-    weeklyBonusCap !== "";
+    monthlyCap !== "";
 
   return (
     <form
       action={handleSave}
-      className="grid grid-cols-[9rem_1fr_1fr_1fr_1fr_7rem] items-center gap-2 border-t px-3 py-2 first:border-t-0"
+      className="grid grid-cols-[9rem_1fr_1fr_7rem] items-center gap-2 border-t px-3 py-2 first:border-t-0"
     >
       <div className="text-sm font-medium truncate">{user.childName}</div>
       <div>
@@ -124,32 +110,6 @@ function OverrideRow({
           value={monthlyCap}
           onChange={(e) => setMonthlyCap(e.target.value)}
           placeholder={String(globals.monthlyCostCapEur)}
-          className="h-8 text-sm"
-          disabled={isPending}
-        />
-      </div>
-      <div>
-        <Input
-          name="bonusPackEur"
-          type="number"
-          step="0.01"
-          min="0"
-          value={bonusPack}
-          onChange={(e) => setBonusPack(e.target.value)}
-          placeholder={String(globals.bonusPackEur)}
-          className="h-8 text-sm"
-          disabled={isPending}
-        />
-      </div>
-      <div>
-        <Input
-          name="weeklyBonusCapEur"
-          type="number"
-          step="0.01"
-          min="0"
-          value={weeklyBonusCap}
-          onChange={(e) => setWeeklyBonusCap(e.target.value)}
-          placeholder={String(globals.weeklyBonusCapEur)}
           className="h-8 text-sm"
           disabled={isPending}
         />
@@ -210,12 +170,10 @@ export function ChildOverridesTable({
       </p>
       <div className="rounded-md border">
         {/* Header row — matches the form grid template */}
-        <div className="grid grid-cols-[9rem_1fr_1fr_1fr_1fr_7rem] items-center gap-2 px-3 py-2 bg-muted/50 text-xs font-medium text-muted-foreground">
+        <div className="grid grid-cols-[9rem_1fr_1fr_7rem] items-center gap-2 px-3 py-2 bg-muted/50 text-xs font-medium text-muted-foreground">
           <div>Child</div>
           <div>Daily cap (€)</div>
           <div>Monthly cap (€)</div>
-          <div>Bonus pack (€)</div>
-          <div>Weekly bonus cap (€)</div>
           <div className="text-right">Actions</div>
         </div>
         {users.map((user) => (

@@ -33,26 +33,12 @@ export async function saveGlobalDefaults(
     const monthlyCostCapEur = parseOptionalFloat(
       formData.get("monthlyCostCapEur")
     );
-    const bonusPackEur = parseOptionalFloat(formData.get("bonusPackEur"));
-    const weeklyBonusCapEur = parseOptionalFloat(
-      formData.get("weeklyBonusCapEur")
-    );
-    const bonusMessageTemplateRaw = formData.get("bonusMessageTemplate");
-    const bonusMessageTemplate =
-      typeof bonusMessageTemplateRaw === "string"
-        ? bonusMessageTemplateRaw.trim().slice(0, 500)
-        : undefined;
 
     // Build update — only include fields that were provided
     const setFields: Partial<Omit<GlobalDefaults, "key">> = {};
     if (dailyCostCapEur !== undefined) setFields.dailyCostCapEur = dailyCostCapEur;
     if (monthlyCostCapEur !== undefined)
       setFields.monthlyCostCapEur = monthlyCostCapEur;
-    if (bonusPackEur !== undefined) setFields.bonusPackEur = bonusPackEur;
-    if (weeklyBonusCapEur !== undefined)
-      setFields.weeklyBonusCapEur = weeklyBonusCapEur;
-    if (bonusMessageTemplate !== undefined && bonusMessageTemplate.length > 0)
-      setFields.bonusMessageTemplate = bonusMessageTemplate;
 
     if (Object.keys(setFields).length === 0) {
       return { ok: false, error: "No changes to save" };
@@ -103,13 +89,9 @@ export async function saveChildOverride(
     const monthlyCostCapEur = parseOptionalFloat(
       formData.get("monthlyCostCapEur")
     );
-    const bonusPackEur = parseOptionalFloat(formData.get("bonusPackEur"));
-    const weeklyBonusCapEur = parseOptionalFloat(
-      formData.get("weeklyBonusCapEur")
-    );
 
     const setFields: Partial<Omit<ChildOverride, "key" | "userId">> = {};
-    const unsetFields: Record<string, ""  > = {};
+    const unsetFields: Record<string, ""> = {};
 
     // Fields with values → set; fields without values → unset (fall back to global)
     if (dailyCostCapEur !== undefined) {
@@ -122,18 +104,6 @@ export async function saveChildOverride(
       setFields.monthlyCostCapEur = monthlyCostCapEur;
     } else {
       unsetFields.monthlyCostCapEur = "";
-    }
-
-    if (bonusPackEur !== undefined) {
-      setFields.bonusPackEur = bonusPackEur;
-    } else {
-      unsetFields.bonusPackEur = "";
-    }
-
-    if (weeklyBonusCapEur !== undefined) {
-      setFields.weeklyBonusCapEur = weeklyBonusCapEur;
-    } else {
-      unsetFields.weeklyBonusCapEur = "";
     }
 
     const update: Record<string, unknown> = {

@@ -42,15 +42,6 @@ async function getSettingsData(): Promise<{
     monthlyCostCapEur:
       (globalDoc?.monthlyCostCapEur as number | undefined) ??
       HARDCODED_DEFAULTS.monthlyCostCapEur,
-    bonusPackEur:
-      (globalDoc?.bonusPackEur as number | undefined) ??
-      HARDCODED_DEFAULTS.bonusPackEur,
-    weeklyBonusCapEur:
-      (globalDoc?.weeklyBonusCapEur as number | undefined) ??
-      HARDCODED_DEFAULTS.weeklyBonusCapEur,
-    bonusMessageTemplate:
-      (globalDoc?.bonusMessageTemplate as string | undefined) ??
-      HARDCODED_DEFAULTS.bonusMessageTemplate,
   };
 
   // Fetch per-child override docs
@@ -66,8 +57,6 @@ async function getSettingsData(): Promise<{
     const entry: Partial<Omit<ChildOverride, "key" | "userId">> = {};
     if (doc.dailyCostCapEur != null) entry.dailyCostCapEur = doc.dailyCostCapEur as number;
     if (doc.monthlyCostCapEur != null) entry.monthlyCostCapEur = doc.monthlyCostCapEur as number;
-    if (doc.bonusPackEur != null) entry.bonusPackEur = doc.bonusPackEur as number;
-    if (doc.weeklyBonusCapEur != null) entry.weeklyBonusCapEur = doc.weeklyBonusCapEur as number;
     overrideMap.set(uid, Object.keys(entry).length > 0 ? entry : null as unknown as typeof entry);
   }
 
@@ -118,11 +107,11 @@ function SettingsFormSkeleton() {
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-px w-full" />
         </div>
-        {Array.from({ length: 4 }).map((_, i) => (
+        {Array.from({ length: 2 }).map((_, i) => (
           <div key={i} className="grid grid-cols-3 items-center gap-4">
             <Skeleton className="h-4 w-32 ml-auto" />
             <div className="col-span-2">
-              <Skeleton className={i === 3 ? "h-20 w-full" : "h-9 w-full"} />
+              <Skeleton className="h-9 w-full" />
             </div>
           </div>
         ))}
@@ -135,8 +124,6 @@ function SettingsFormSkeleton() {
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-8 w-28" />
             <Skeleton className="h-8 w-28" />
-            <Skeleton className="h-8 w-24" />
-            <Skeleton className="h-8 w-24" />
             <Skeleton className="h-7 w-16" />
           </div>
         ))}

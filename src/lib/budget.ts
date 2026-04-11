@@ -14,7 +14,6 @@
  */
 
 import { ObjectId, type Db } from "mongodb";
-import { getWeeklyBonusSpend } from "@/lib/bonus-purchases";
 
 // ---------------------------------------------------------------------------
 // Conversion constants
@@ -52,16 +51,13 @@ export function tokensToEur(tokens: number): number {
 }
 
 // ---------------------------------------------------------------------------
-// Settings types (new schema — Plan 15-04)
+// Settings types (Phase 15.3 simplified schema — bonus fields removed)
 // ---------------------------------------------------------------------------
 
 export interface GlobalDefaults {
   key: "global_defaults";
   dailyCostCapEur: number;       // e.g. 0.10
   monthlyCostCapEur: number;     // e.g. 2.00
-  bonusPackEur: number;          // e.g. 0.20
-  weeklyBonusCapEur: number;     // e.g. 0.50
-  bonusMessageTemplate: string;
 }
 
 export interface ChildOverride {
@@ -69,16 +65,11 @@ export interface ChildOverride {
   userId: string;
   dailyCostCapEur?: number;
   monthlyCostCapEur?: number;
-  bonusPackEur?: number;
-  weeklyBonusCapEur?: number;
 }
 
 export interface EffectiveBudget {
   dailyCostCapEur: number;
   monthlyCostCapEur: number;
-  bonusPackEur: number;
-  weeklyBonusCapEur: number;
-  bonusMessageTemplate: string;
 }
 
 /** Hardcoded fallback values — used when no MongoDB settings docs exist */
@@ -86,35 +77,17 @@ export const HARDCODED_DEFAULTS: GlobalDefaults = {
   key: "global_defaults",
   dailyCostCapEur: 0.10,
   monthlyCostCapEur: 2.00,
-  bonusPackEur: 0.20,
-  weeklyBonusCapEur: 0.50,
-  bonusMessageTemplate:
-    "You've reached your limit. Type YES to unlock extra usage.",
 };
 
 // ---------------------------------------------------------------------------
 // Balance state type
 // ---------------------------------------------------------------------------
 
-export interface PendingWarning {
-  messageTemplate: string;   // the text the agent must deliver verbatim
-  injectedAt: Date;          // used for delivery detection + 10-min TTL
-  agentId: string;           // which agent's instructions were modified
-  agentObjectId?: string;    // MongoDB _id of the agent doc (for diagnostics)
-}
-
 export interface BalanceState {
   userId: string;
   lastDailyReset: Date;
   lastMonthlyReset: Date;
   monthlySpendEur: number;
-  warnedAt70PctOn: string | null;               // ISO date e.g. "2026-04-10"
-  activeOfferMessageId: string | null;
-  activeOfferExpiresAt: Date | null;
-  activeOfferConversationId: string | null;
-  // Phase 15.2-01: Option 7 — agent system prompt injection state
-  pendingWarning?: PendingWarning | null;
-  originalAgentInstructions?: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -129,9 +102,6 @@ export interface ChildState {
   monthlySpendEur: number;
   monthlyCapEur: number;
   monthlyCapExhausted: boolean;
-  weeklyBonusSpentEur: number;
-  weeklyBonusCapExhausted: boolean;
-  hasActiveOffer: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -173,11 +143,8 @@ export async function getEffectiveBudget(userId: string, db: Db): Promise<Effect
   const d = HARDCODED_DEFAULTS;
 
   return {
-    dailyCostCapEur:       (o.dailyCostCapEur       ?? g.dailyCostCapEur       ?? d.dailyCostCapEur),
-    monthlyCostCapEur:     (o.monthlyCostCapEur      ?? g.monthlyCostCapEur     ?? d.monthlyCostCapEur),
-    bonusPackEur:          (o.bonusPackEur           ?? g.bonusPackEur          ?? d.bonusPackEur),
-    weeklyBonusCapEur:     (o.weeklyBonusCapEur      ?? g.weeklyBonusCapEur     ?? d.weeklyBonusCapEur),
-    bonusMessageTemplate:  (g.bonusMessageTemplate   ?? d.bonusMessageTemplate),
+    dailyCostCapEur:   (o.dailyCostCapEur   ?? g.dailyCostCapEur   ?? d.dailyCostCapEur),
+    monthlyCostCapEur: (o.monthlyCostCapEur  ?? g.monthlyCostCapEur ?? d.monthlyCostCapEur),
   };
 }
 
@@ -210,10 +177,6 @@ export async function ensureBalanceState(userId: string, db: Db): Promise<Balanc
     lastDailyReset: startOfUtcDay(now),
     lastMonthlyReset: startOfUtcMonth(now),
     monthlySpendEur: 0,
-    warnedAt70PctOn: null,
-    activeOfferMessageId: null,
-    activeOfferExpiresAt: null,
-    activeOfferConversationId: null,
   };
 
   await col.insertOne(newDoc as Parameters<typeof col.insertOne>[0]);
@@ -244,15 +207,11 @@ export async function getRemainingEur(userId: string, db: Db): Promise<number> {
 /**
  * Tops up a child's daily budget:
  * - Sets balances.tokenCredits to eurToTokens(dailyCostCapEur)
- * - Updates balance_state: lastDailyReset, warnedAt70PctOn=null
- * - Clears expired activeOffer (activeOfferExpiresAt < now → set null)
+ * - Updates balance_state: lastDailyReset
  * - Upserts balances doc if missing
  */
 export async function topUpDailyBudget(userId: string, db: Db): Promise<void> {
-  const [budget, balanceState] = await Promise.all([
-    getEffectiveBudget(userId, db),
-    getBalanceState(userId, db),
-  ]);
+  const budget = await getEffectiveBudget(userId, db);
 
   const now = new Date();
   const credits = eurToTokens(budget.dailyCostCapEur);
@@ -265,22 +224,11 @@ export async function topUpDailyBudget(userId: string, db: Db): Promise<void> {
     { upsert: true }
   );
 
-  // Determine if active offer should be cleared (expired)
-  const isOfferExpired =
-    balanceState?.activeOfferExpiresAt != null &&
-    balanceState.activeOfferExpiresAt < now;
-
   // Update balance_state
   const balanceStateCol = db.collection<BalanceStateDoc>("balance_state");
   const stateUpdate: Partial<BalanceState> = {
     lastDailyReset: startOfUtcDay(now),
-    warnedAt70PctOn: null,
   };
-  if (isOfferExpired) {
-    stateUpdate.activeOfferMessageId = null;
-    stateUpdate.activeOfferExpiresAt = null;
-    stateUpdate.activeOfferConversationId = null;
-  }
 
   await balanceStateCol.updateOne(
     { userId } as Parameters<typeof balanceStateCol.updateOne>[0],
@@ -315,103 +263,21 @@ export async function topUpMonthlyBudget(userId: string, db: Db): Promise<void> 
 }
 
 /**
- * Applies a bonus credit:
- * - Validates amountEur > 0
- * - Checks weekly bonus cap before proceeding
- * - Inserts a bonus_purchases record
- * - $inc balances.tokenCredits by eurToTokens(amountEur)
- * - Clears balance_state.activeOfferMessageId and activeOfferExpiresAt
- *
- * Throws if amountEur <= 0 or weekly cap would be exceeded.
- */
-export async function applyBonusCredit(args: {
-  userId: string;
-  db: Db;
-  amountEur: number;
-  confirmationMessageId: string;
-}): Promise<void> {
-  const { userId, db, amountEur, confirmationMessageId } = args;
-
-  if (amountEur <= 0) {
-    throw new Error(`applyBonusCredit: amountEur must be > 0, got ${amountEur}`);
-  }
-
-  // Check weekly bonus cap
-  const [budget, weeklySpent] = await Promise.all([
-    getEffectiveBudget(userId, db),
-    getWeeklyBonusSpend(userId, db),
-  ]);
-
-  if (weeklySpent + amountEur > budget.weeklyBonusCapEur) {
-    throw new Error(
-      `Weekly bonus cap exceeded: current spend €${weeklySpent} + pack €${amountEur} > cap €${budget.weeklyBonusCapEur}`
-    );
-  }
-
-  const now = new Date();
-  // Import getStartOfWeekUTC lazily to avoid circular dep issues
-  const { getStartOfWeekUTC } = await import("@/lib/bonus-purchases");
-  const weekOf = getStartOfWeekUTC(now).toISOString().split("T")[0];
-
-  // Insert bonus_purchases record
-  await db.collection("bonus_purchases").insertOne({
-    userId,
-    packSizeEUR: amountEur,
-    purchasedAt: now,
-    confirmedViaMessageId: confirmationMessageId,
-    creditRemainingEUR: amountEur,
-    weekOf,
-  });
-
-  // $inc balances.tokenCredits — use ObjectId to match LibreChat's schema
-  const creditsToAdd = eurToTokens(amountEur);
-  const balancesCol = db.collection<BalancesDoc>("balances");
-  await balancesCol.updateOne(
-    { user: new ObjectId(userId) },
-    { $inc: { tokenCredits: creditsToAdd } },
-    { upsert: true }
-  );
-
-  // Clear the active offer from balance_state
-  const balanceStateCol = db.collection<BalanceStateDoc>("balance_state");
-  await balanceStateCol.updateOne(
-    { userId } as Parameters<typeof balanceStateCol.updateOne>[0],
-    {
-      $set: {
-        activeOfferMessageId: null,
-        activeOfferExpiresAt: null,
-        activeOfferConversationId: null,
-      },
-    },
-    { upsert: true }
-  );
-}
-
-/**
  * Evaluates a child's current budget state.
- * Returns a ChildState snapshot that the change-stream listener uses to decide
- * whether to send a 70% warning or a bonus offer.
+ * Returns a ChildState snapshot used for display and enforcement.
  */
 export async function evaluateChildState(userId: string, db: Db): Promise<ChildState> {
-  const [remainingEur, budget, balanceState, weeklyBonusSpentEur] = await Promise.all([
+  const [remainingEur, budget, balanceState] = await Promise.all([
     getRemainingEur(userId, db),
     getEffectiveBudget(userId, db),
     ensureBalanceState(userId, db),
-    getWeeklyBonusSpend(userId, db),
   ]);
 
-  const now = new Date();
   const dailyPctRemaining = budget.dailyCostCapEur > 0
     ? Math.max(0, Math.min(1, remainingEur / budget.dailyCostCapEur))
     : 0;
 
   const monthlyCapExhausted = balanceState.monthlySpendEur >= budget.monthlyCostCapEur;
-  const weeklyBonusCapExhausted = weeklyBonusSpentEur >= budget.weeklyBonusCapEur;
-
-  const hasActiveOffer =
-    balanceState.activeOfferMessageId !== null &&
-    balanceState.activeOfferExpiresAt !== null &&
-    balanceState.activeOfferExpiresAt > now;
 
   return {
     userId,
@@ -421,11 +287,8 @@ export async function evaluateChildState(userId: string, db: Db): Promise<ChildS
     monthlySpendEur: balanceState.monthlySpendEur,
     monthlyCapEur: budget.monthlyCostCapEur,
     monthlyCapExhausted,
-    weeklyBonusSpentEur,
-    weeklyBonusCapExhausted,
-    hasActiveOffer,
   };
 }
 
-// Re-export todayIso helper for use by change-stream-listener
+// Re-export todayIso helper
 export { todayIso };

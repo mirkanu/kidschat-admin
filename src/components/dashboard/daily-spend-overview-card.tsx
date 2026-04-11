@@ -60,7 +60,7 @@ export async function DailySpendOverviewCard() {
 
           // Color coding
           let barColor = "bg-green-500";
-          if (pctUsed >= 100 || state.hasActiveOffer) barColor = "bg-red-500";
+          if (pctUsed >= 100) barColor = "bg-red-500";
           else if (pctUsed >= 70) barColor = "bg-amber-500";
 
           return (

@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Tabs,
   TabsContent,
@@ -124,48 +123,6 @@ export function SettingsForm({ globals, overrides, lastUpdated }: SettingsFormPr
               />
             </div>
 
-            <div className="space-y-1 pt-2">
-              <h3 className="text-sm font-semibold">Bonus Purchase Settings</h3>
-              <p className="text-xs text-muted-foreground">
-                Controls the bonus pack shown to children when they hit their daily cap.
-              </p>
-            </div>
-            <Separator />
-            <div className="space-y-3">
-              <NumberFieldRow
-                label="Bonus pack (€)"
-                name="bonusPackEur"
-                defaultValue={globals.bonusPackEur}
-                step="0.01"
-              />
-              <NumberFieldRow
-                label="Weekly bonus cap (€)"
-                name="weeklyBonusCapEur"
-                defaultValue={globals.weeklyBonusCapEur}
-                step="0.01"
-              />
-              <div className="grid grid-cols-3 items-start gap-4">
-                <Label
-                  htmlFor="bonusMessageTemplate"
-                  className="text-right text-sm text-muted-foreground pt-2"
-                >
-                  Offer message
-                </Label>
-                <div className="col-span-2">
-                  <Textarea
-                    id="bonusMessageTemplate"
-                    name="bonusMessageTemplate"
-                    defaultValue={globals.bonusMessageTemplate}
-                    rows={4}
-                    maxLength={500}
-                    className="text-sm resize-none"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Message shown to child when offering a bonus pack. Type YES to confirm is added automatically.
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
 
           <div className="flex items-center justify-between">

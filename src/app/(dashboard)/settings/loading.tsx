@@ -22,8 +22,8 @@ export default function SettingsLoading() {
           <Skeleton className="h-px w-full" />
         </div>
 
-        {/* 4 number input rows (dailyCostCapEur, monthlyCostCapEur, bonusPackEur, weeklyBonusCapEur) */}
-        {Array.from({ length: 4 }).map((_, i) => (
+        {/* 2 number input rows (dailyCostCapEur, monthlyCostCapEur) */}
+        {Array.from({ length: 2 }).map((_, i) => (
           <div key={i} className="grid grid-cols-3 items-center gap-4">
             <Skeleton className="h-4 w-32 ml-auto" />
             <div className="col-span-2">
@@ -31,14 +31,6 @@ export default function SettingsLoading() {
             </div>
           </div>
         ))}
-
-        {/* Textarea (bonusMessageTemplate) */}
-        <div className="grid grid-cols-3 items-start gap-4">
-          <Skeleton className="h-4 w-28 ml-auto mt-2" />
-          <div className="col-span-2">
-            <Skeleton className="h-20 w-full" />
-          </div>
-        </div>
       </div>
 
       {/* Per-child overrides table skeleton */}
@@ -50,8 +42,6 @@ export default function SettingsLoading() {
             <Skeleton className="h-3 w-20" />
             <Skeleton className="h-3 w-24" />
             <Skeleton className="h-3 w-24" />
-            <Skeleton className="h-3 w-20" />
-            <Skeleton className="h-3 w-28" />
             <Skeleton className="h-3 w-16 ml-auto" />
           </div>
           {/* 2–3 placeholder child rows */}
@@ -63,8 +53,6 @@ export default function SettingsLoading() {
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-8 w-28" />
               <Skeleton className="h-8 w-28" />
-              <Skeleton className="h-8 w-24" />
-              <Skeleton className="h-8 w-24" />
               <Skeleton className="h-7 w-14 ml-auto" />
             </div>
           ))}
