@@ -34,6 +34,12 @@ export interface PendingState {
  * Pattern 8: direct MongoDB insert (confirmed viable by synthetic probe in 15-00).
  * Also updates conversations.updatedAt to trigger UI refresh (Pitfall 6).
  *
+ * **Parent chaining:** LibreChat uses a tree structure where siblings of the same
+ * parentMessageId render as selectable branches (left/right arrows). To avoid
+ * creating branches, we look up the most recent message in the conversation and
+ * use its messageId as parent. This chains the synthetic message into the active
+ * thread instead of creating a parallel branch.
+ *
  * Returns the messageId of the inserted message.
  */
 export async function sendBonusOfferMessage(args: {
@@ -48,8 +54,20 @@ export async function sendBonusOfferMessage(args: {
   const messageId = new ObjectId().toString();
   const now = new Date();
 
+  // Find the most recent message in this conversation to use as parent.
+  // This chains the synthetic message into the main thread rather than creating
+  // a sibling branch. Fallback to the null UUID (root) if no prior messages exist.
+  const messagesCol = db.collection<{ messageId?: string; conversationId?: string; createdAt?: Date }>("messages");
+  const parentDoc = await messagesCol.findOne(
+    { conversationId },
+    { sort: { createdAt: -1 }, projection: { _id: 0, messageId: 1 } }
+  );
+  const parentMessageId =
+    parentDoc?.messageId ?? "00000000-0000-0000-0000-000000000000";
+
   const messageDoc = {
     messageId,
+    parentMessageId,
     user: userId,
     conversationId,
     isCreatedByUser: false,

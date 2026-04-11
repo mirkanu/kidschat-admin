@@ -16,7 +16,7 @@
  * - YES timing: message.createdAt > balance_state.activeOfferExpiresAt → expired, skip
  */
 
-import type { Db } from "mongodb";
+import { ObjectId, type Db } from "mongodb";
 import { evaluateChildState, getBalanceState, ensureBalanceState, applyBonusCredit, todayIso } from "@/lib/budget";
 import { sendBonusOfferMessage } from "@/lib/bonus-delivery";
 
@@ -28,6 +28,14 @@ const SYNTHETIC_AGENT_ID = "agent_wxgt6su7d3pcosiil3";
 
 // 5 minutes offer window in milliseconds
 const OFFER_WINDOW_MS = 5 * 60 * 1000;
+
+// Grace tokens credited alongside a bonus offer so the kid can physically
+// reply "YES". LibreChat's checkBalance rejects requests BEFORE writing the
+// user message to mongo, which means a kid at tokenCredits=0 cannot reply at
+// all — our listener would never see their YES. Granting ~15k tokens (~€0.014)
+// covers context replay + a short reply with headroom. If they ignore the
+// offer, they burn through this grace quickly on any other text.
+const GRACE_TOKEN_CREDIT = 15_000;
 
 export interface MessageEvent {
   userId: string;
@@ -132,6 +140,16 @@ export async function processMessageEvent(event: MessageEvent): Promise<void> {
       });
 
       const expiresAt = new Date(Date.now() + OFFER_WINDOW_MS);
+
+      // Grant grace tokens so the kid can physically reply YES — LibreChat
+      // blocks requests at tokenCredits=0 BEFORE the user message reaches mongo.
+      // Without grace, the listener never sees the YES and the bonus flow stalls.
+      const balancesCol = db.collection("balances");
+      await balancesCol.updateOne(
+        { user: new ObjectId(userId) },
+        { $inc: { tokenCredits: GRACE_TOKEN_CREDIT } },
+        { upsert: true }
+      );
 
       // Record active offer in balance_state
       const balanceStateCol = db.collection("balance_state");
