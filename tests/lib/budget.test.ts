@@ -79,6 +79,7 @@ describe("budget.ts", () => {
   let topUpDailyBudget: (userId: string, db: unknown) => Promise<void>;
   let topUpMonthlyBudget: (userId: string, db: unknown) => Promise<void>;
   let evaluateChildState: (userId: string, db: unknown) => Promise<unknown>;
+  let accumulateYesterdaySpend: (userId: string, db: unknown) => Promise<number>;
 
   beforeEach(async () => {
     jest.resetModules();
@@ -91,6 +92,7 @@ describe("budget.ts", () => {
     topUpDailyBudget = mod.topUpDailyBudget;
     topUpMonthlyBudget = mod.topUpMonthlyBudget;
     evaluateChildState = mod.evaluateChildState;
+    accumulateYesterdaySpend = mod.accumulateYesterdaySpend;
   });
 
   // ---- eurToTokens / tokensToEur ----
@@ -450,6 +452,55 @@ describe("budget.ts", () => {
       expect(balancesCol._updated.length).toBe(0);
       // balance_state MUST still be updated (lastDailyReset advances)
       expect(balanceStateCol._updated.length).toBeGreaterThan(0);
+    });
+  });
+
+  // ---- accumulateYesterdaySpend ----
+
+  describe("accumulateYesterdaySpend", () => {
+    it("increments balance_state.monthlySpendEur with yesterdaySpend when child spent tokens", async () => {
+      const settingsCol = makeCollection();
+      settingsCol.findOne = jest.fn().mockResolvedValue(null); // defaults: dailyCostCapEur=0.10
+      // remaining = 0.03 EUR → spent = 0.10 - 0.03 = 0.07
+      const remainingTokens = eurToTokens(0.03);
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: remainingTokens }]);
+      const balanceStateCol = makeCollection([
+        { userId: "000000000000000000000001", monthlySpendEur: 0.50, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+      ]);
+      const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol });
+
+      const delta = await accumulateYesterdaySpend("000000000000000000000001", db);
+
+      // Delta should be ~0.07 (0.10 - 0.03)
+      expect(delta).toBeGreaterThan(0.06);
+      expect(delta).toBeLessThan(0.08);
+
+      // balance_state should have received a $inc update
+      expect(balanceStateCol._updated.length).toBeGreaterThan(0);
+      const updateOp = balanceStateCol._updated[0] as Record<string, unknown>;
+      const op = updateOp.update as Record<string, unknown>;
+      expect(op).toHaveProperty("$inc");
+      const incOp = op["$inc"] as Record<string, unknown>;
+      expect(incOp).toHaveProperty("monthlySpendEur");
+      expect(incOp.monthlySpendEur as number).toBeGreaterThan(0.06);
+    });
+
+    it("returns 0 and writes no $inc when remainingEur >= dailyCap (nothing spent)", async () => {
+      const settingsCol = makeCollection();
+      settingsCol.findOne = jest.fn().mockResolvedValue(null); // defaults: dailyCostCapEur=0.10
+      // remaining = 0.10 (full balance, nothing spent)
+      const remainingTokens = eurToTokens(0.10);
+      const balancesCol = makeCollection([{ user: "000000000000000000000001", tokenCredits: remainingTokens }]);
+      const balanceStateCol = makeCollection([
+        { userId: "000000000000000000000001", monthlySpendEur: 0.50, lastDailyReset: new Date(), lastMonthlyReset: new Date() }
+      ]);
+      const db = makeMockDb({ settings: settingsCol, balances: balancesCol, balance_state: balanceStateCol });
+
+      const delta = await accumulateYesterdaySpend("000000000000000000000001", db);
+
+      expect(delta).toBe(0);
+      // No $inc should have been written
+      expect(balanceStateCol._updated.length).toBe(0);
     });
   });
 });

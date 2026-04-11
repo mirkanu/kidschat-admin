@@ -206,6 +206,32 @@ export async function getRemainingEur(userId: string, db: Db): Promise<number> {
 }
 
 /**
+ * Accumulates yesterday's spend into balance_state.monthlySpendEur.
+ * Called by daily-reset cron BEFORE topUpDailyBudget runs.
+ * Returns the delta incremented (0 if nothing to accumulate).
+ *
+ * Logic: yesterdaySpend = max(0, dailyCostCapEur - remainingEur)
+ * This is what the child consumed since the last midnight UTC.
+ * Only writes to the DB if yesterdaySpend > 0 (avoids empty $inc writes).
+ */
+export async function accumulateYesterdaySpend(userId: string, db: Db): Promise<number> {
+  const [remainingEur, budget] = await Promise.all([
+    getRemainingEur(userId, db),
+    getEffectiveBudget(userId, db),
+  ]);
+  const yesterdaySpend = Math.max(0, budget.dailyCostCapEur - remainingEur);
+  if (yesterdaySpend <= 0) return 0;
+
+  const col = db.collection<BalanceStateDoc>("balance_state");
+  await col.updateOne(
+    { userId } as Parameters<typeof col.updateOne>[0],
+    { $inc: { monthlySpendEur: yesterdaySpend } },
+    { upsert: true }
+  );
+  return yesterdaySpend;
+}
+
+/**
  * Tops up a child's daily budget:
  * - Uses $max operator to set balances.tokenCredits to eurToTokens(dailyCostCapEur)
  *   (atomic: preserves parent top-ups above the daily cap — no clobbering)

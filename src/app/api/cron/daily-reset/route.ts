@@ -9,7 +9,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import getMongoClient from "@/lib/mongodb";
-import { topUpDailyBudget } from "@/lib/budget";
+import { accumulateYesterdaySpend, topUpDailyBudget } from "@/lib/budget";
 
 export async function POST(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
@@ -28,11 +28,14 @@ export async function POST(req: NextRequest) {
     .toArray();
 
   let reset = 0;
+  let accumulated = 0;
   const errors: string[] = [];
 
   for (const user of users) {
     const userId = user._id.toString();
     try {
+      const delta = await accumulateYesterdaySpend(userId, db);
+      if (delta > 0) accumulated++;
       await topUpDailyBudget(userId, db);
       reset++;
     } catch (err) {
@@ -41,6 +44,6 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  console.log(`[daily-reset] Completed: reset=${reset}, errors=${errors.length}`);
-  return NextResponse.json({ reset, errors });
+  console.log(`[daily-reset] Completed: reset=${reset}, accumulated=${accumulated}, errors=${errors.length}`);
+  return NextResponse.json({ reset, accumulated, errors });
 }
