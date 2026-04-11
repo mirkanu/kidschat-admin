@@ -15,6 +15,6 @@ export const config = {
      * - /api/health (Railway health check — must be unauthenticated)
      * - _next/static, _next/image, favicon.ico (Next.js internals)
      */
-    "/((?!login|api/auth|api/health|api/notify|api/cron|api/admin/reset-manuel|_next/static|_next/image|favicon.ico).*)",
+    "/((?!login|api/auth|api/health|api/notify|api/cron|api/admin|_next/static|_next/image|favicon.ico).*)",
   ],
 };
