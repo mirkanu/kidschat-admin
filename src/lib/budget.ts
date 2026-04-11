@@ -96,6 +96,13 @@ export const HARDCODED_DEFAULTS: GlobalDefaults = {
 // Balance state type
 // ---------------------------------------------------------------------------
 
+export interface PendingWarning {
+  messageTemplate: string;   // the text the agent must deliver verbatim
+  injectedAt: Date;          // used for delivery detection + 10-min TTL
+  agentId: string;           // which agent's instructions were modified
+  agentObjectId?: string;    // MongoDB _id of the agent doc (for diagnostics)
+}
+
 export interface BalanceState {
   userId: string;
   lastDailyReset: Date;
@@ -105,6 +112,9 @@ export interface BalanceState {
   activeOfferMessageId: string | null;
   activeOfferExpiresAt: Date | null;
   activeOfferConversationId: string | null;
+  // Phase 15.2-01: Option 7 — agent system prompt injection state
+  pendingWarning?: PendingWarning | null;
+  originalAgentInstructions?: string | null;
 }
 
 // ---------------------------------------------------------------------------

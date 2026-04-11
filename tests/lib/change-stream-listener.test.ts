@@ -2,10 +2,15 @@
  * Unit tests for change-stream-listener.ts processMessageEvent
  *
  * Required 4 test cases per Plan 15-04:
- * 1. Idempotent 70% warning: double-call with same messageId must NOT double-insert warning
+ * 1. Idempotent 70% warning: double-call with same messageId must NOT double-inject warning
  * 2. Idempotent YES credit: double-call with YES messageId must NOT double-credit
  * 3. YES after expiry rejected: message.createdAt > activeOfferExpiresAt → no credit
  * 4. YES before expiry accepted: message.createdAt < activeOfferExpiresAt → credit applied
+ *
+ * Plan 15.2-01 additions:
+ * 5. Delivery detection: kid message with createdAt > injectedAt+5s AND AI reply present → restores agent
+ * 6. No restore when kid message arrives too soon after injection (< 5s buffer)
+ * 7. No restore when no AI reply found after injection
  */
 
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
@@ -103,7 +108,7 @@ describe("change-stream-listener.ts processMessageEvent", () => {
   });
 
   // ---- Test 1: Idempotent 70% warning ----
-  it("does NOT double-insert 70% warning when called twice with same messageId (warnedAt70PctOn guard)", async () => {
+  it("does NOT double-inject 70% warning when called twice with same messageId (warnedAt70PctOn guard)", async () => {
     const todayIso = new Date().toISOString().split("T")[0];
     // Already warned today
     const balanceStateDoc = {
@@ -113,6 +118,7 @@ describe("change-stream-listener.ts processMessageEvent", () => {
       activeOfferMessageId: null,
       activeOfferExpiresAt: null,
       activeOfferConversationId: null,
+      pendingWarning: null,
       lastDailyReset: new Date(),
       lastMonthlyReset: new Date(),
     };
@@ -129,6 +135,10 @@ describe("change-stream-listener.ts processMessageEvent", () => {
     const conversationsCol = makeCollection([{ conversationId: "conv1", user: "000000000000000000000001", updatedAt: new Date() }]);
     conversationsCol.findOne = jest.fn().mockResolvedValue({ conversationId: "conv1", user: "000000000000000000000001" });
 
+    // agents col needed by sendBonusOfferMessage (should not be called anyway)
+    const agentsCol = makeCollection([{ id: "agent_wxgt6su7d3pcosiil3", instructions: "original" }]);
+    agentsCol.findOne = jest.fn().mockResolvedValue({ id: "agent_wxgt6su7d3pcosiil3", instructions: "original" });
+
     const db = makeMockDb({
       settings: settingsCol,
       balance_state: balanceStateCol,
@@ -136,6 +146,7 @@ describe("change-stream-listener.ts processMessageEvent", () => {
       messages: messagesCol,
       bonus_purchases: bonusPurchasesCol,
       conversations: conversationsCol,
+      agents: agentsCol,
     });
 
     const event = {
@@ -151,8 +162,9 @@ describe("change-stream-listener.ts processMessageEvent", () => {
     await processMessageEvent(event);
     await processMessageEvent(event);
 
-    // Since warnedAt70PctOn is already today, NO warning should be inserted
-    expect(messagesCol.insertOne).not.toHaveBeenCalled();
+    // Since warnedAt70PctOn is already today, no agent injection should occur
+    // (agents.updateOne should NOT be called for injection)
+    expect(agentsCol.updateOne).not.toHaveBeenCalled();
   });
 
   // ---- Test 2: Idempotent YES credit ----
@@ -168,6 +180,7 @@ describe("change-stream-listener.ts processMessageEvent", () => {
       activeOfferMessageId: "offer_msg_abc",
       activeOfferExpiresAt: futureExpiry,
       activeOfferConversationId: "conv2",
+      pendingWarning: null,
       lastDailyReset: new Date(),
       lastMonthlyReset: new Date(),
     };
@@ -196,12 +209,16 @@ describe("change-stream-listener.ts processMessageEvent", () => {
     const bonusPurchasesCol = makeCollection();
     bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
 
+    const agentsCol = makeCollection([{ id: "agent_wxgt6su7d3pcosiil3", instructions: "original" }]);
+    agentsCol.findOne = jest.fn().mockResolvedValue({ id: "agent_wxgt6su7d3pcosiil3", instructions: "original" });
+
     const db = makeMockDb({
       settings: settingsCol,
       balance_state: balanceStateCol,
       balances: balancesCol,
       bonus_purchases: bonusPurchasesCol,
       messages: makeCollection(),
+      agents: agentsCol,
     });
 
     const yesEvent = {
@@ -237,6 +254,7 @@ describe("change-stream-listener.ts processMessageEvent", () => {
       activeOfferMessageId: "offer_expired",
       activeOfferExpiresAt: pastExpiry,
       activeOfferConversationId: "conv3",
+      pendingWarning: null,
       lastDailyReset: new Date(),
       lastMonthlyReset: new Date(),
     };
@@ -291,6 +309,7 @@ describe("change-stream-listener.ts processMessageEvent", () => {
       activeOfferMessageId: "offer_active",
       activeOfferExpiresAt: futureExpiry,
       activeOfferConversationId: "conv4",
+      pendingWarning: null,
       lastDailyReset: new Date(),
       lastMonthlyReset: new Date(),
     };
@@ -304,12 +323,16 @@ describe("change-stream-listener.ts processMessageEvent", () => {
     bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
     const messagesCol = makeCollection();
 
+    const agentsCol = makeCollection([{ id: "agent_wxgt6su7d3pcosiil3", instructions: "original" }]);
+    agentsCol.findOne = jest.fn().mockResolvedValue({ id: "agent_wxgt6su7d3pcosiil3", instructions: "original" });
+
     const db = makeMockDb({
       settings: settingsCol,
       balance_state: balanceStateCol,
       balances: balancesCol,
       bonus_purchases: bonusPurchasesCol,
       messages: messagesCol,
+      agents: agentsCol,
     });
 
     // YES message created 30 seconds ago (before the future expiry = within window)
@@ -328,5 +351,152 @@ describe("change-stream-listener.ts processMessageEvent", () => {
     expect(bonusPurchasesCol.insertOne).toHaveBeenCalled();
     const purchaseDoc = bonusPurchasesCol._inserted[0] as Record<string, unknown>;
     expect(purchaseDoc.userId).toBe("000000000000000000000004");
+  });
+
+  // ---- Test 5: Delivery detection — restores agent when AI reply found ----
+  it("restores agent instructions when kid message arrives >5s after injection AND AI reply is found", async () => {
+    const now = new Date();
+    // Injection happened 30 seconds ago
+    const injectedAt = new Date(now.getTime() - 30_000);
+    // Use valid 24-char hex userId for ObjectId compatibility in budget.ts
+    const DELIVERY_USER_ID = "000000000000000000000005";
+
+    const balanceStateDoc = {
+      userId: DELIVERY_USER_ID,
+      monthlySpendEur: 0,
+      warnedAt70PctOn: new Date().toISOString().split("T")[0], // already warned — prevents re-warning
+      activeOfferMessageId: null,
+      activeOfferExpiresAt: null,
+      activeOfferConversationId: null,
+      pendingWarning: {
+        messageTemplate: "Budget warning text",
+        injectedAt,
+        agentId: "agent_wxgt6su7d3pcosiil3",
+      },
+      originalAgentInstructions: "original instructions",
+      lastDailyReset: new Date(),
+      lastMonthlyReset: new Date(),
+    };
+
+    const balanceStateCol = makeCollection([balanceStateDoc]);
+    balanceStateCol.findOne = jest.fn().mockResolvedValue(balanceStateDoc);
+
+    const settingsCol = makeSettingsCol();
+    // Enough tokens so no new warning/offer fires
+    const balancesCol = makeCollection([{ user: DELIVERY_USER_ID, tokenCredits: 80000 }]);
+    const bonusPurchasesCol = makeCollection();
+    bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
+
+    const AGENT_ID = "agent_wxgt6su7d3pcosiil3";
+    const agentsCol = makeCollection([{ id: AGENT_ID, instructions: "INJECTED PROMPT" }]);
+    agentsCol.findOne = jest.fn().mockResolvedValue({ id: AGENT_ID, instructions: "INJECTED PROMPT" });
+
+    // AI message in the conversation created AFTER injection
+    const aiMessageDoc = {
+      conversationId: "conv_delivery",
+      isCreatedByUser: false,
+      createdAt: new Date(now.getTime() - 5_000), // 5s ago (after injection)
+    };
+    const messagesCol = makeCollection([aiMessageDoc]);
+    messagesCol.findOne = jest.fn().mockResolvedValue(aiMessageDoc);
+
+    const db = makeMockDb({
+      settings: settingsCol,
+      balance_state: balanceStateCol,
+      balances: balancesCol,
+      bonus_purchases: bonusPurchasesCol,
+      messages: messagesCol,
+      agents: agentsCol,
+    });
+
+    // Kid message arrives 10s after injection (> 5s buffer)
+    const event = {
+      userId: DELIVERY_USER_ID,
+      text: "Thanks!",
+      conversationId: "conv_delivery",
+      messageId: "msg_after_injection",
+      createdAt: new Date(now.getTime() - 20_000), // 20s ago = 10s after injection
+      db,
+    };
+
+    await processMessageEvent(event);
+
+    // agents.updateOne should have been called to restore original instructions
+    const agentsUpdateCalls = (agentsCol.updateOne as jest.Mock).mock.calls;
+    expect(agentsUpdateCalls.length).toBeGreaterThan(0);
+    const restoreUpdateDoc = agentsUpdateCalls[0][1] as { $set?: Record<string, unknown> };
+    expect(restoreUpdateDoc.$set?.instructions).toBe("original instructions");
+
+    // balance_state.updateOne should have been called with $unset
+    const bsUpdateCalls = (balanceStateCol.updateOne as jest.Mock).mock.calls;
+    const unsetCall = bsUpdateCalls.find((call) => {
+      const doc = call[1] as { $unset?: Record<string, unknown> };
+      return doc.$unset?.pendingWarning === "";
+    });
+    expect(unsetCall).toBeDefined();
+  });
+
+  // ---- Test 6: No restore when kid message arrives too soon after injection ----
+  it("does NOT attempt delivery detection when kid message is within 5s buffer of injection", async () => {
+    const now = new Date();
+    // Injection happened 3 seconds ago (within 5s buffer)
+    const injectedAt = new Date(now.getTime() - 3_000);
+    // Use valid 24-char hex userId for ObjectId compatibility in budget.ts
+    const TOO_SOON_USER_ID = "000000000000000000000006";
+
+    const balanceStateDoc = {
+      userId: TOO_SOON_USER_ID,
+      monthlySpendEur: 0,
+      warnedAt70PctOn: new Date().toISOString().split("T")[0], // already warned
+      activeOfferMessageId: null,
+      activeOfferExpiresAt: null,
+      pendingWarning: {
+        messageTemplate: "Warning",
+        injectedAt,
+        agentId: "agent_wxgt6su7d3pcosiil3",
+      },
+      originalAgentInstructions: "original",
+      lastDailyReset: new Date(),
+      lastMonthlyReset: new Date(),
+    };
+
+    const balanceStateCol = makeCollection([balanceStateDoc]);
+    balanceStateCol.findOne = jest.fn().mockResolvedValue(balanceStateDoc);
+
+    const settingsCol = makeSettingsCol();
+    const balancesCol = makeCollection([{ user: TOO_SOON_USER_ID, tokenCredits: 80000 }]);
+    const bonusPurchasesCol = makeCollection();
+    bonusPurchasesCol.aggregate = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) });
+
+    const agentsCol = makeCollection([{ id: "agent_wxgt6su7d3pcosiil3", instructions: "INJECTED" }]);
+    agentsCol.findOne = jest.fn().mockResolvedValue({ id: "agent_wxgt6su7d3pcosiil3", instructions: "INJECTED" });
+
+    const messagesCol = makeCollection();
+    messagesCol.findOne = jest.fn().mockResolvedValue(null); // no AI reply found
+
+    const db = makeMockDb({
+      settings: settingsCol,
+      balance_state: balanceStateCol,
+      balances: balancesCol,
+      bonus_purchases: bonusPurchasesCol,
+      messages: messagesCol,
+      agents: agentsCol,
+    });
+
+    // Kid message arrives at exactly now (< 5s after injection at now-3s)
+    const event = {
+      userId: TOO_SOON_USER_ID,
+      text: "Hello",
+      conversationId: "conv_too_soon",
+      messageId: "msg_too_soon",
+      createdAt: now,
+      db,
+    };
+
+    await processMessageEvent(event);
+
+    // agents.updateOne should NOT have been called for restoration
+    // (within 5s buffer — delivery detection skipped)
+    expect(agentsCol.updateOne).not.toHaveBeenCalled();
   });
 });

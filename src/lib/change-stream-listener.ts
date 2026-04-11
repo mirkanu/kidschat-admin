@@ -6,6 +6,14 @@
  * - instrumentation_hook: yes (register() fires at Next.js startup)
  * - approach: 60s setInterval polling in register(), querying messages.createdAt > lastSeenAt
  *
+ * Plan 15.2-01 additions (Option 7 — Agent System Prompt Context Injection):
+ * - After each poll tick, a TTL sweep restores any agent whose instructions were
+ *   modified more than 10 minutes ago (stuck-state safety net).
+ * - In processMessageEvent, after a YES credit or warning injection, we also
+ *   attempt delivery detection: if a pending injection exists and the most recent
+ *   AI message in that conversation was created after pendingWarning.injectedAt,
+ *   we call restoreAgentSystemPrompt to put the original instructions back.
+ *
  * This file exports:
  * - startChangeStreamListener(): polls messages every 60s for new kid messages, calls processMessageEvent
  * - processMessageEvent(): idempotent event handler for a single kid message
@@ -18,7 +26,7 @@
 
 import { ObjectId, type Db } from "mongodb";
 import { evaluateChildState, getBalanceState, ensureBalanceState, applyBonusCredit, todayIso } from "@/lib/budget";
-import { sendBonusOfferMessage } from "@/lib/bonus-delivery";
+import { sendBonusOfferMessage, restoreAgentSystemPrompt } from "@/lib/bonus-delivery";
 
 // YES confirmation regex: matches "yes", "YES", "yes.", "Yes" — strict
 const YES_REGEX = /^\s*yes\.?\s*$/i;
@@ -28,6 +36,10 @@ const SYNTHETIC_AGENT_ID = "agent_wxgt6su7d3pcosiil3";
 
 // 5 minutes offer window in milliseconds
 const OFFER_WINDOW_MS = 5 * 60 * 1000;
+
+// 10-minute TTL for stuck pending warnings (agent instructions left modified
+// when kid goes offline before sending next message)
+const PENDING_WARNING_TTL_MS = 10 * 60 * 1000;
 
 // Grace tokens credited alongside a bonus offer so the kid can physically
 // reply "YES". LibreChat's checkBalance rejects requests BEFORE writing the
@@ -47,6 +59,38 @@ export interface MessageEvent {
 }
 
 /**
+ * Attempts to detect whether the agent has already delivered the pending warning
+ * message. Checks for an AI message in the given conversation created after
+ * pendingWarning.injectedAt. If found, restores the original agent instructions.
+ *
+ * This is called at the end of processMessageEvent when a pendingWarning is active
+ * and the kid's message was created more than 5s after the injection (allowing time
+ * for the AI reply to be written to DB).
+ */
+async function tryDetectDeliveryAndRestore(
+  userId: string,
+  conversationId: string,
+  injectedAt: Date,
+  db: Db
+): Promise<void> {
+  try {
+    // Check for any AI message in this conversation created after injection
+    const aiMessage = await db.collection("messages").findOne({
+      conversationId,
+      isCreatedByUser: false,
+      createdAt: { $gt: injectedAt },
+    });
+
+    if (aiMessage) {
+      await restoreAgentSystemPrompt({ userId, db });
+      console.log(`[change-stream-listener] Delivery detected for ${userId}, agent instructions restored.`);
+    }
+  } catch (err) {
+    console.error(`[change-stream-listener] Delivery detection/restore failed for ${userId}:`, err);
+  }
+}
+
+/**
  * Processes a single kid message event.
  * Checks for:
  * 1. YES confirmation for an active offer (before expiry) → applyBonusCredit
@@ -54,12 +98,31 @@ export interface MessageEvent {
  * 3. Budget exhausted → send bonus offer (once per offer cycle)
  *
  * All checks are idempotent — calling twice with the same message is a no-op.
+ *
+ * Also attempts delivery detection: if a pendingWarning is active and the kid's
+ * message was created sufficiently after the injection, we check for a subsequent
+ * AI reply and restore the agent instructions if delivery is confirmed.
  */
 export async function processMessageEvent(event: MessageEvent): Promise<void> {
   const { userId, text, conversationId, messageId, createdAt, db } = event;
 
   // Load balance state (create if missing)
   const balanceState = await getBalanceState(userId, db) ?? await ensureBalanceState(userId, db);
+
+  // ---- Delivery detection (check before YES handling so we restore cleanly) ----
+  // If a pending warning exists and the kid's message was created > 5s after
+  // injection (buffer to ensure AI reply has landed), look for an AI message
+  // that appeared after the injection. If found, restore agent instructions.
+  if (balanceState.pendingWarning) {
+    const pending = balanceState.pendingWarning as { injectedAt: Date; agentId: string };
+    const injectedAt = pending.injectedAt instanceof Date
+      ? pending.injectedAt
+      : new Date(pending.injectedAt);
+    const DELIVERY_BUFFER_MS = 5_000; // 5-second buffer
+    if (createdAt.getTime() > injectedAt.getTime() + DELIVERY_BUFFER_MS) {
+      await tryDetectDeliveryAndRestore(userId, conversationId, injectedAt, db);
+    }
+  }
 
   // ---- YES detection ----
   if (YES_REGEX.test(text)) {
@@ -80,10 +143,9 @@ export async function processMessageEvent(event: MessageEvent): Promise<void> {
           confirmationMessageId: messageId,
         });
 
-        // Insert a confirmation message so the kid sees what happened.
-        // The AI agent will likely also reply to "YES" with a (correct) refusal
-        // because it doesn't know about system-level transactions — our
-        // confirmation follows that refusal and clarifies the real outcome.
+        // Send confirmation message via agent system prompt injection (Option 7).
+        // This ensures the kid sees the confirmation text as part of the AI's
+        // natural reply in the active session — not as an invisible synthetic row.
         try {
           const packEur = budget.bonusPackEur.toFixed(2);
           const confirmationText = `📱 System message (not from your AI): ✓ Bonus applied. You have €${packEur} more to spend. Keep chatting!`;
@@ -96,7 +158,7 @@ export async function processMessageEvent(event: MessageEvent): Promise<void> {
           });
         } catch (err) {
           console.error(
-            `[change-stream-listener] bonus confirmation insertion failed for ${userId}:`,
+            `[change-stream-listener] bonus confirmation injection failed for ${userId}:`,
             err
           );
         }
@@ -198,6 +260,10 @@ export async function processMessageEvent(event: MessageEvent): Promise<void> {
  *
  * Polls messages where createdAt > cron_state.lastSeenAt AND isCreatedByUser: true.
  * Updates cron_state.lastSeenAt after each batch.
+ *
+ * Also runs a TTL sweep at the start of each tick: any balance_state document
+ * with pendingWarning.injectedAt older than 10 minutes gets its agent instructions
+ * force-restored (handles kids who go offline before replying).
  */
 export async function startChangeStreamListener(): Promise<void> {
   const { getMongoClient } = await import("@/lib/mongodb");
@@ -208,6 +274,28 @@ export async function startChangeStreamListener(): Promise<void> {
     try {
       const client = await getMongoClient();
       const db = client.db("test");
+
+      // ---- TTL safety net: restore stuck pending warnings ----
+      // If a kid went offline after the injection but before replying, the agent's
+      // instructions would remain modified indefinitely. Force-restore any injection
+      // older than PENDING_WARNING_TTL_MS.
+      try {
+        const tenMinAgo = new Date(Date.now() - PENDING_WARNING_TTL_MS);
+        const stuck = await db
+          .collection("balance_state")
+          .find({ "pendingWarning.injectedAt": { $lt: tenMinAgo } })
+          .toArray();
+        for (const s of stuck) {
+          try {
+            await restoreAgentSystemPrompt({ userId: s.userId as string, db });
+            console.log(`[change-stream-listener] TTL restore fired for userId=${s.userId}`);
+          } catch (err) {
+            console.error(`[change-stream-listener] TTL restore failed for userId=${s.userId}:`, err);
+          }
+        }
+      } catch (err) {
+        console.error("[change-stream-listener] TTL sweep error:", err);
+      }
 
       // Load or initialize last seen timestamp
       const cronStateCol = db.collection("cron_state");

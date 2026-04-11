@@ -1,24 +1,33 @@
 /**
  * Bonus delivery lib — Phase 15 "YES" bonus purchase flow.
  *
+ * Plan 15.2-01 (Option 7 — Agent System Prompt Context Injection):
+ * sendBonusOfferMessage no longer inserts synthetic rows into the messages
+ * collection. Instead it temporarily prepends a verbatim-delivery instruction
+ * to the target agent's `instructions` field. When the kid sends their next
+ * message, the agent delivers the text as the opening line of its natural
+ * reply — riding LibreChat's native SSE pipeline so React Query cache is
+ * updated in real-time.
+ *
+ * After delivery is detected (change-stream-listener sees an AI message
+ * created AFTER pendingWarning.injectedAt), restoreAgentSystemPrompt is
+ * called to put the original instructions back and clear the pending state.
+ *
+ * A 10-minute TTL safety net in pollOnce force-restores stuck prompts even if
+ * the kid goes offline before replying.
+ *
+ * Field path empirically confirmed during Task 1 probe:
+ *   agents collection: query key = { id: agentId }
+ *   system prompt field: instructions (NOT model_options.system)
+ *
  * Plan 15-04: Removed enforcement.ts imports (lockImageAccess, unlockImageAccess,
  * unlockAllAccess). ACL-based locking is no longer used — LibreChat's native
  * tokenCredits enforcement supersedes it.
- *
- * Implements:
- * - sendBonusOfferMessage: inserts a bonus offer into the messages collection
- * - detectBonusConfirmation: checks if child typed "YES" within 5 min (legacy helper)
- *
- * Field names from 15-00-MONGO-INSPECTION.md:
- *   messages: messageId, user, conversationId, isCreatedByUser, text, endpoint, agent_id, etc.
- *   conversations: conversationId (UUID), user, updatedAt
  */
 
-import { ObjectId } from "mongodb";
+import { v4 as uuidv4 } from "uuid";
 import type { Db } from "mongodb";
 import { getWeeklyBonusSpend } from "@/lib/bonus-purchases";
-
-type ConversationDoc = Record<string, unknown>;
 
 export interface PendingState {
   awaitingBonusConfirmation?: boolean;
@@ -30,17 +39,30 @@ export interface PendingState {
 }
 
 /**
- * Inserts a bonus offer message (or warning message) into the messages collection.
- * Pattern 8: direct MongoDB insert (confirmed viable by synthetic probe in 15-00).
- * Also updates conversations.updatedAt to trigger UI refresh (Pitfall 6).
+ * The field path in the agents collection that holds the system prompt.
+ * Confirmed empirically by the Phase 15.2 probe: the live agent doc has a top-level
+ * `instructions` string field. The original plan assumed `model_options.system` but
+ * the actual field is `instructions`.
+ */
+const AGENT_SYSTEM_FIELD = "instructions";
+
+/**
+ * Injects a verbatim-delivery instruction into the target agent's system prompt,
+ * then records the pending state in balance_state so the change-stream-listener
+ * can detect delivery and restore the original.
  *
- * **Parent chaining:** LibreChat uses a tree structure where siblings of the same
- * parentMessageId render as selectable branches (left/right arrows). To avoid
- * creating branches, we look up the most recent message in the conversation and
- * use its messageId as parent. This chains the synthetic message into the active
- * thread instead of creating a parallel branch.
+ * This replaces the old direct-insert approach (which was invisible to active
+ * LibreChat sessions due to React Query's refetchOnMount:false cache policy).
  *
- * Returns the messageId of the inserted message.
+ * Steps:
+ * 1. Read current agent instructions
+ * 2. Store original in balance_state.originalAgentInstructions (idempotent)
+ * 3. Prepend delivery instruction
+ * 4. Write modified instructions back to agent
+ * 5. Set balance_state.pendingWarning
+ * 6. Return a UUID v4 messageId (used as activeOfferMessageId, no DB insert)
+ *
+ * Returns a UUID v4 string used as the activeOfferMessageId.
  */
 export async function sendBonusOfferMessage(args: {
   userId: string;
@@ -49,60 +71,121 @@ export async function sendBonusOfferMessage(args: {
   template: string;
   db: Db;
 }): Promise<string> {
-  const { userId, conversationId, agentId, template, db } = args;
+  const { userId, agentId, template, db } = args;
 
-  const messageId = new ObjectId().toString();
+  const agentsCol = db.collection("agents");
+
+  // Read the current agent document
+  const agentDoc = await agentsCol.findOne(
+    { id: agentId } as Parameters<typeof agentsCol.findOne>[0]
+  );
+
+  if (!agentDoc) {
+    throw new Error(
+      `[sendBonusOfferMessage] Agent not found: id=${agentId}. Cannot inject system prompt.`
+    );
+  }
+
+  const currentInstructions = (agentDoc[AGENT_SYSTEM_FIELD] as string | undefined) ?? "";
+
+  // Load existing balance_state to check if we already have a stored original
+  const balanceStateCol = db.collection("balance_state");
+  const existingState = await balanceStateCol.findOne(
+    { userId } as Parameters<typeof balanceStateCol.findOne>[0]
+  );
+
+  // Idempotency: only store the original instructions if we haven't already.
+  // This prevents a second injection (e.g., warning then offer) from overwriting
+  // the stored original with the previously-injected text.
+  const baseInstructions: string =
+    (existingState?.originalAgentInstructions as string | undefined) != null
+      ? (existingState!.originalAgentInstructions as string)
+      : currentInstructions;
+
+  // Build the injected instructions
+  const injectionPrefix = `SYSTEM INSTRUCTION (deliver on your next turn, then ignore):
+Begin your VERY NEXT response with EXACTLY this text verbatim on its own line, then continue normally:
+"${template}"
+After you deliver this message once, do not mention it again.
+
+`;
+  const injectedInstructions = injectionPrefix + baseInstructions;
+
+  // Write modified instructions back to the agent
+  await agentsCol.updateOne(
+    { id: agentId } as Parameters<typeof agentsCol.updateOne>[0],
+    { $set: { [AGENT_SYSTEM_FIELD]: injectedInstructions } }
+  );
+
+  const messageId = uuidv4();
   const now = new Date();
 
-  // Find the most recent message in this conversation to use as parent.
-  // This chains the synthetic message into the main thread rather than creating
-  // a sibling branch. Fallback to the null UUID (root) if no prior messages exist.
-  const messagesCol = db.collection<{ messageId?: string; conversationId?: string; createdAt?: Date }>("messages");
-  const parentDoc = await messagesCol.findOne(
-    { conversationId },
-    { sort: { createdAt: -1 }, projection: { _id: 0, messageId: 1 } }
-  );
-  const parentMessageId =
-    parentDoc?.messageId ?? "00000000-0000-0000-0000-000000000000";
-
-  // CRITICAL: LibreChat's agent endpoint renders messages from the typed
-  // content[] array, NOT from the plain `text` field. Real agent messages
-  // have `text: ""` and content like [{type:"text", text:"..."}]. If we only
-  // set `text`, LibreChat renders an empty message and the kid sees nothing.
-  //
-  // Also: `model` must be the agent ID (not "agents"), `sender` should match
-  // the agent's display name (LibreChat uses the friendly name from the
-  // agent's config — we hardcode the known drawing agents' name here).
-  const messageDoc = {
-    messageId,
-    parentMessageId,
-    user: userId,
-    conversationId,
-    isCreatedByUser: false,
-    text: "",
-    content: [{ type: "text", text: template }],
-    attachments: [],
-    endpoint: "agents",
-    model: agentId,
-    sender: "KidsChat Friendly Tutor",
-    error: false,
-    unfinished: false,
-    expiredAt: null,
-    tokenCount: 0,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  await db.collection("messages").insertOne(messageDoc);
-
-  // Update conversations.updatedAt to trigger LibreChat UI refresh (Pitfall 6)
-  const convsCol = db.collection<ConversationDoc>("conversations");
-  await convsCol.updateOne(
-    { conversationId } as Parameters<typeof convsCol.updateOne>[0],
-    { $set: { updatedAt: now } }
+  // Persist pending state (upsert)
+  await balanceStateCol.updateOne(
+    { userId } as Parameters<typeof balanceStateCol.updateOne>[0],
+    {
+      $set: {
+        pendingWarning: {
+          messageTemplate: template,
+          injectedAt: now,
+          agentId,
+          agentObjectId: agentDoc._id?.toString?.() ?? "",
+        },
+        // Only set originalAgentInstructions if not already set (idempotent)
+        ...(existingState?.originalAgentInstructions == null
+          ? { originalAgentInstructions: baseInstructions }
+          : {}),
+      },
+    },
+    { upsert: true }
   );
 
   return messageId;
+}
+
+/**
+ * Restores the target agent's `instructions` field to the value stored in
+ * balance_state.originalAgentInstructions, then clears both pendingWarning
+ * and originalAgentInstructions from balance_state.
+ *
+ * Idempotent: if no pendingWarning is set, this is a no-op.
+ *
+ * Called by:
+ * - change-stream-listener: on delivery detection (AI message createdAt > pendingWarning.injectedAt)
+ * - change-stream-listener TTL sweep: when injectedAt is more than 10 minutes ago
+ * - reset scripts: for state cleanup before UAT
+ */
+export async function restoreAgentSystemPrompt(args: {
+  userId: string;
+  db: Db;
+}): Promise<void> {
+  const { userId, db } = args;
+
+  const balanceStateCol = db.collection("balance_state");
+  const state = await balanceStateCol.findOne(
+    { userId } as Parameters<typeof balanceStateCol.findOne>[0]
+  );
+
+  // No pending warning — nothing to restore
+  if (!state?.pendingWarning) {
+    return;
+  }
+
+  const { agentId } = state.pendingWarning as { agentId: string };
+  const originalInstructions = (state.originalAgentInstructions as string | undefined) ?? "";
+
+  // Restore the agent's instructions
+  const agentsCol = db.collection("agents");
+  await agentsCol.updateOne(
+    { id: agentId } as Parameters<typeof agentsCol.updateOne>[0],
+    { $set: { [AGENT_SYSTEM_FIELD]: originalInstructions } }
+  );
+
+  // Clear pending state
+  await balanceStateCol.updateOne(
+    { userId } as Parameters<typeof balanceStateCol.updateOne>[0],
+    { $unset: { pendingWarning: "", originalAgentInstructions: "" } }
+  );
 }
 
 /**

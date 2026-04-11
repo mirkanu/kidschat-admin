@@ -1,6 +1,10 @@
 /**
  * Unit tests for bonus-delivery.ts
  * Uses in-memory mock Db pattern (jest.fn()) — NO real MongoDB connection.
+ *
+ * Plan 15.2-01: Updated for Option 7 (Agent System Prompt Context Injection).
+ * sendBonusOfferMessage now injects into agents.instructions instead of
+ * inserting into messages collection.
  */
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 
@@ -53,6 +57,9 @@ function makeMockDb(collections: Record<string, ReturnType<typeof makeCollection
   };
 }
 
+// ---- UUID v4 regex ----
+const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 // ---- Tests ----
 
 describe("bonus-delivery.ts", () => {
@@ -63,6 +70,7 @@ describe("bonus-delivery.ts", () => {
     template: string;
     db: unknown;
   }) => Promise<string>;
+  let restoreAgentSystemPrompt: (args: { userId: string; db: unknown }) => Promise<void>;
   let detectBonusConfirmation: (userId: string, pending: unknown, db: unknown) => Promise<boolean>;
   let applyBonusCredit: (userId: string, pending: unknown, db: unknown) => Promise<void>;
 
@@ -70,53 +78,287 @@ describe("bonus-delivery.ts", () => {
     jest.resetModules();
     const mod = await import("@/lib/bonus-delivery");
     sendBonusOfferMessage = mod.sendBonusOfferMessage;
+    restoreAgentSystemPrompt = mod.restoreAgentSystemPrompt;
     detectBonusConfirmation = mod.detectBonusConfirmation;
     applyBonusCredit = mod.applyBonusCredit;
   });
 
-  describe("sendBonusOfferMessage", () => {
-    it("inserts a doc into messages with correct fields and updates conversations.updatedAt", async () => {
-      const messagesCol = makeCollection();
-      const conversationsCol = makeCollection();
-      const db = makeMockDb({
-        messages: messagesCol,
-        conversations: conversationsCol,
-      });
+  describe("sendBonusOfferMessage (Option 7 — Agent System Prompt Injection)", () => {
+    const AGENT_ID = "agent_wxgt6su7d3pcosiil3";
+    const ORIGINAL_INSTRUCTIONS = "You are a helpful assistant for kids.";
+
+    function makeAgentCol(originalInstructions = ORIGINAL_INSTRUCTIONS) {
+      const col = makeCollection([{ id: AGENT_ID, instructions: originalInstructions, _id: "mock_agent_oid" }]);
+      col.findOne = jest.fn().mockResolvedValue({ id: AGENT_ID, instructions: originalInstructions, _id: "mock_agent_oid" });
+      return col;
+    }
+
+    it("returns a UUID v4 string (not a 24-char hex ObjectId)", async () => {
+      const agentsCol = makeAgentCol();
+      const balanceStateCol = makeCollection([]);
+      balanceStateCol.findOne = jest.fn().mockResolvedValue(null);
+      const db = makeMockDb({ agents: agentsCol, balance_state: balanceStateCol });
 
       const messageId = await sendBonusOfferMessage({
-        userId: "000000000000000000000001",
-        conversationId: "conv123",
-        agentId: "agent_wxgt6su7d3pcosiil3",
+        userId: "user1",
+        conversationId: "conv1",
+        agentId: AGENT_ID,
         template: "You've reached your limit. Type YES to confirm.",
         db,
       });
 
-      // Should return a non-empty messageId
-      expect(typeof messageId).toBe("string");
-      expect(messageId.length).toBeGreaterThan(0);
+      expect(UUID_V4_REGEX.test(messageId)).toBe(true);
+      // Not a 24-char hex
+      expect(messageId).not.toMatch(/^[0-9a-f]{24}$/);
+    });
 
-      // Should insert into messages
-      expect(messagesCol.insertOne).toHaveBeenCalled();
-      const insertedDoc = (messagesCol.insertOne as jest.Mock).mock.calls[0][0] as {
-        isCreatedByUser: boolean;
-        endpoint: string;
-        model: string;
-        text: string;
-        content: Array<{ type: string; text: string }>;
-        conversationId: string;
+    it("generates 100 unique messageIds (no collisions)", async () => {
+      const ids = new Set<string>();
+      for (let i = 0; i < 100; i++) {
+        const agentsCol = makeAgentCol();
+        const balanceStateCol = makeCollection([]);
+        balanceStateCol.findOne = jest.fn().mockResolvedValue(null);
+        const db = makeMockDb({ agents: agentsCol, balance_state: balanceStateCol });
+        const id = await sendBonusOfferMessage({
+          userId: `user${i}`,
+          conversationId: "conv1",
+          agentId: AGENT_ID,
+          template: "test",
+          db,
+        });
+        ids.add(id);
+      }
+      expect(ids.size).toBe(100);
+    });
+
+    it("stores originalAgentInstructions in balance_state on first call (idempotent)", async () => {
+      const agentsCol = makeAgentCol();
+      const balanceStateCol = makeCollection([]);
+      balanceStateCol.findOne = jest.fn().mockResolvedValue(null); // no prior state
+
+      const db = makeMockDb({ agents: agentsCol, balance_state: balanceStateCol });
+
+      await sendBonusOfferMessage({
+        userId: "user1",
+        conversationId: "conv1",
+        agentId: AGENT_ID,
+        template: "Budget warning!",
+        db,
+      });
+
+      // balance_state.updateOne should have been called with $set containing originalAgentInstructions
+      const balanceStateUpdateCalls = (balanceStateCol.updateOne as jest.Mock).mock.calls;
+      expect(balanceStateUpdateCalls.length).toBeGreaterThan(0);
+      const lastCall = balanceStateUpdateCalls[balanceStateUpdateCalls.length - 1];
+      const updateDoc = lastCall[1] as { $set?: Record<string, unknown> };
+      expect(updateDoc.$set?.originalAgentInstructions).toBe(ORIGINAL_INSTRUCTIONS);
+    });
+
+    it("does NOT overwrite originalAgentInstructions on second call (idempotent)", async () => {
+      const agentsCol = makeAgentCol("MODIFIED INSTRUCTIONS (already injected)");
+      const balanceStateCol = makeCollection([]);
+      // Simulate already having originalAgentInstructions stored
+      balanceStateCol.findOne = jest.fn().mockResolvedValue({
+        userId: "user1",
+        originalAgentInstructions: ORIGINAL_INSTRUCTIONS,
+        pendingWarning: null,
+      });
+
+      const db = makeMockDb({ agents: agentsCol, balance_state: balanceStateCol });
+
+      await sendBonusOfferMessage({
+        userId: "user1",
+        conversationId: "conv1",
+        agentId: AGENT_ID,
+        template: "Budget warning!",
+        db,
+      });
+
+      // balance_state.updateOne should NOT include originalAgentInstructions in $set
+      const balanceStateUpdateCalls = (balanceStateCol.updateOne as jest.Mock).mock.calls;
+      const lastCall = balanceStateUpdateCalls[balanceStateUpdateCalls.length - 1];
+      const updateDoc = lastCall[1] as { $set?: Record<string, unknown> };
+      // originalAgentInstructions should be absent from $set (not overwritten)
+      expect(updateDoc.$set?.originalAgentInstructions).toBeUndefined();
+    });
+
+    it("updates agent instructions to include the verbatim-delivery instruction prefix", async () => {
+      const agentsCol = makeAgentCol();
+      const balanceStateCol = makeCollection([]);
+      balanceStateCol.findOne = jest.fn().mockResolvedValue(null);
+
+      const db = makeMockDb({ agents: agentsCol, balance_state: balanceStateCol });
+
+      const template = "Budget warning — you have 30% left!";
+      await sendBonusOfferMessage({
+        userId: "user1",
+        conversationId: "conv1",
+        agentId: AGENT_ID,
+        template,
+        db,
+      });
+
+      // agents.updateOne should have been called with an injected instructions string
+      const agentsUpdateCalls = (agentsCol.updateOne as jest.Mock).mock.calls;
+      expect(agentsUpdateCalls.length).toBe(1);
+      const updateDoc = agentsUpdateCalls[0][1] as { $set?: Record<string, unknown> };
+      const newInstructions = updateDoc.$set?.instructions as string;
+      expect(typeof newInstructions).toBe("string");
+      // Should start with the delivery instruction
+      expect(newInstructions).toMatch(/SYSTEM INSTRUCTION/);
+      expect(newInstructions).toContain(template);
+      // Should include the original instructions after the prefix
+      expect(newInstructions).toContain(ORIGINAL_INSTRUCTIONS);
+    });
+
+    it("sets balance_state.pendingWarning with messageTemplate, injectedAt, agentId", async () => {
+      const agentsCol = makeAgentCol();
+      const balanceStateCol = makeCollection([]);
+      balanceStateCol.findOne = jest.fn().mockResolvedValue(null);
+
+      const db = makeMockDb({ agents: agentsCol, balance_state: balanceStateCol });
+
+      const beforeCall = new Date();
+      await sendBonusOfferMessage({
+        userId: "user1",
+        conversationId: "conv1",
+        agentId: AGENT_ID,
+        template: "Test template",
+        db,
+      });
+      const afterCall = new Date();
+
+      const balanceStateUpdateCalls = (balanceStateCol.updateOne as jest.Mock).mock.calls;
+      const lastCall = balanceStateUpdateCalls[balanceStateUpdateCalls.length - 1];
+      const updateDoc = lastCall[1] as { $set?: Record<string, unknown> };
+      const pendingWarning = updateDoc.$set?.pendingWarning as {
+        messageTemplate: string;
+        injectedAt: Date;
+        agentId: string;
       };
-      expect(insertedDoc.isCreatedByUser).toBe(false);
-      expect(insertedDoc.endpoint).toBe("agents");
-      // LibreChat's agent endpoint stores the agent ID in model, not agent_id
-      expect(insertedDoc.model).toBe("agent_wxgt6su7d3pcosiil3");
-      // LibreChat renders agent messages from content[], not text
-      expect(insertedDoc.content[0].type).toBe("text");
-      expect(insertedDoc.content[0].text).toContain("Type YES to confirm.");
-      expect(insertedDoc.text).toBe("");
-      expect(insertedDoc.conversationId).toBe("conv123");
 
-      // Should update conversations.updatedAt (Pitfall 6)
-      expect(conversationsCol.updateOne).toHaveBeenCalled();
+      expect(pendingWarning.messageTemplate).toBe("Test template");
+      expect(pendingWarning.agentId).toBe(AGENT_ID);
+      expect(pendingWarning.injectedAt).toBeInstanceOf(Date);
+      expect(pendingWarning.injectedAt.getTime()).toBeGreaterThanOrEqual(beforeCall.getTime());
+      expect(pendingWarning.injectedAt.getTime()).toBeLessThanOrEqual(afterCall.getTime());
+    });
+
+    it("does NOT call db.collection('messages').insertOne", async () => {
+      const agentsCol = makeAgentCol();
+      const balanceStateCol = makeCollection([]);
+      balanceStateCol.findOne = jest.fn().mockResolvedValue(null);
+      const messagesCol = makeCollection();
+
+      const db = makeMockDb({ agents: agentsCol, balance_state: balanceStateCol, messages: messagesCol });
+
+      await sendBonusOfferMessage({
+        userId: "user1",
+        conversationId: "conv1",
+        agentId: AGENT_ID,
+        template: "Test",
+        db,
+      });
+
+      expect(messagesCol.insertOne).not.toHaveBeenCalled();
+    });
+
+    it("throws an error if agent is not found", async () => {
+      const agentsCol = makeCollection([]);
+      agentsCol.findOne = jest.fn().mockResolvedValue(null);
+      const db = makeMockDb({ agents: agentsCol });
+
+      await expect(
+        sendBonusOfferMessage({
+          userId: "user1",
+          conversationId: "conv1",
+          agentId: "nonexistent_agent",
+          template: "Test",
+          db,
+        })
+      ).rejects.toThrow(/Agent not found/);
+    });
+  });
+
+  describe("restoreAgentSystemPrompt", () => {
+    const AGENT_ID = "agent_wxgt6su7d3pcosiil3";
+    const ORIGINAL_INSTRUCTIONS = "You are a helpful assistant for kids.";
+
+    it("restores agent instructions to originalAgentInstructions and clears balance_state fields", async () => {
+      const agentsCol = makeCollection([{ id: AGENT_ID, instructions: "INJECTED PROMPT" }]);
+      agentsCol.findOne = jest.fn().mockResolvedValue({ id: AGENT_ID, instructions: "INJECTED PROMPT" });
+
+      const balanceStateDoc = {
+        userId: "user1",
+        originalAgentInstructions: ORIGINAL_INSTRUCTIONS,
+        pendingWarning: {
+          messageTemplate: "Test",
+          injectedAt: new Date(Date.now() - 30_000),
+          agentId: AGENT_ID,
+        },
+      };
+      const balanceStateCol = makeCollection([balanceStateDoc]);
+      balanceStateCol.findOne = jest.fn().mockResolvedValue(balanceStateDoc);
+
+      const db = makeMockDb({ agents: agentsCol, balance_state: balanceStateCol });
+
+      await restoreAgentSystemPrompt({ userId: "user1", db });
+
+      // Should have updated agents with the original instructions
+      const agentsUpdateCalls = (agentsCol.updateOne as jest.Mock).mock.calls;
+      expect(agentsUpdateCalls.length).toBe(1);
+      const agentsUpdateDoc = agentsUpdateCalls[0][1] as { $set?: Record<string, unknown> };
+      expect(agentsUpdateDoc.$set?.instructions).toBe(ORIGINAL_INSTRUCTIONS);
+
+      // Should have called $unset on balance_state
+      const balanceStateUpdateCalls = (balanceStateCol.updateOne as jest.Mock).mock.calls;
+      expect(balanceStateUpdateCalls.length).toBe(1);
+      const balanceStateUpdateDoc = balanceStateUpdateCalls[0][1] as { $unset?: Record<string, unknown> };
+      expect(balanceStateUpdateDoc.$unset?.pendingWarning).toBe("");
+      expect(balanceStateUpdateDoc.$unset?.originalAgentInstructions).toBe("");
+    });
+
+    it("is idempotent — no-op when no pendingWarning exists", async () => {
+      const agentsCol = makeCollection([]);
+      agentsCol.findOne = jest.fn().mockResolvedValue({ id: AGENT_ID });
+      const balanceStateCol = makeCollection([]);
+      balanceStateCol.findOne = jest.fn().mockResolvedValue({
+        userId: "user1",
+        // no pendingWarning field
+      });
+
+      const db = makeMockDb({ agents: agentsCol, balance_state: balanceStateCol });
+
+      // Should not throw, should not call updateOne on agents
+      await expect(restoreAgentSystemPrompt({ userId: "user1", db })).resolves.toBeUndefined();
+      expect(agentsCol.updateOne).not.toHaveBeenCalled();
+    });
+
+    it("is idempotent when called twice — second call is a no-op", async () => {
+      const balanceStateDoc = {
+        userId: "user1",
+        originalAgentInstructions: ORIGINAL_INSTRUCTIONS,
+        pendingWarning: { messageTemplate: "T", injectedAt: new Date(), agentId: AGENT_ID },
+      };
+
+      let callCount = 0;
+      const balanceStateCol = makeCollection([]);
+      balanceStateCol.findOne = jest.fn().mockImplementation(async () => {
+        callCount++;
+        // First call returns pendingWarning, second returns null (already cleared)
+        return callCount === 1 ? balanceStateDoc : { userId: "user1" };
+      });
+
+      const agentsCol = makeCollection([]);
+      agentsCol.findOne = jest.fn().mockResolvedValue({ id: AGENT_ID });
+
+      const db = makeMockDb({ agents: agentsCol, balance_state: balanceStateCol });
+
+      await restoreAgentSystemPrompt({ userId: "user1", db });
+      await restoreAgentSystemPrompt({ userId: "user1", db });
+
+      // agents.updateOne called exactly once (second call was no-op)
+      expect(agentsCol.updateOne).toHaveBeenCalledTimes(1);
     });
   });
 
