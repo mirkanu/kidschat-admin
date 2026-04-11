@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 15-04-PLAN.md
-last_updated: "2026-04-10T21:13:45.740Z"
+stopped_at: Task 4 checkpoint — awaiting Manuel UAT approval
+last_updated: "2026-04-11T09:59:39.393Z"
 last_activity: "2026-04-09 — Completed quick task 9: Chat bubble overlaps Send button on mobile Test Mode page"
 progress:
-  total_phases: 2
-  completed_phases: 1
-  total_plans: 7
-  completed_plans: 6
+  total_phases: 3
+  completed_phases: 2
+  total_plans: 8
+  completed_plans: 7
   percent: 0
 ---
 
@@ -95,6 +95,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 15-safety-alert-extension-rate-limiting]: budget.ts replaces cost-ledger.ts + enforcement.ts: native tokenCredits as single source of truth
 - [Phase 15-safety-alert-extension-rate-limiting]: railway.toml config-as-code for daily-reset + monthly-reset crons (no dashboard clicks)
 - [Phase 15-safety-alert-extension-rate-limiting]: Migration run via temporary API endpoint (Railway internal MongoDB not accessible externally via railway run)
+- [Phase 15.2]: Option 7 validated: agent delivered probe marker verbatim; field path is agents.instructions not model_options.system; query key is {id: agentId}
+- [Phase 15.2]: uuid@9 used (not v13) because v13 is ESM-only and breaks ts-jest
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -139,6 +141,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-10T21:13:15.732Z
-Stopped at: Completed 15-04-PLAN.md
+Last session: 2026-04-11T09:59:24.428Z
+Stopped at: Task 4 checkpoint — awaiting Manuel UAT approval
 Resume file: None
