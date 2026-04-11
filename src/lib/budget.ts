@@ -99,7 +99,8 @@ export interface ChildState {
   remainingEur: number;
   dailyCapEur: number;
   dailyPctRemaining: number;           // 0..1 (clamped)
-  monthlySpendEur: number;
+  monthlySpendEur: number;             // stored cumulative value (from balance_state)
+  displayedMonthlySpendEur: number;    // live view: monthlySpendEur + today's spend
   monthlyCapEur: number;
   monthlyCapExhausted: boolean;
 }
@@ -206,33 +207,45 @@ export async function getRemainingEur(userId: string, db: Db): Promise<number> {
 
 /**
  * Tops up a child's daily budget:
- * - Sets balances.tokenCredits to eurToTokens(dailyCostCapEur)
+ * - Uses $max operator to set balances.tokenCredits to eurToTokens(dailyCostCapEur)
+ *   (atomic: preserves parent top-ups above the daily cap — no clobbering)
+ * - Short-circuits if displayedMonthlySpendEur >= monthlyCostCapEur (monthly cap enforcement)
+ *   but still advances lastDailyReset to prevent re-evaluation loops
  * - Updates balance_state: lastDailyReset
  * - Upserts balances doc if missing
  */
 export async function topUpDailyBudget(userId: string, db: Db): Promise<void> {
-  const budget = await getEffectiveBudget(userId, db);
-
   const now = new Date();
-  const credits = eurToTokens(budget.dailyCostCapEur);
 
-  // Update balances — use ObjectId to match LibreChat's schema
+  // Gate: skip refill if monthly cap exhausted (displayed = stored + today's spend)
+  const state = await evaluateChildState(userId, db);
+  const balanceStateCol = db.collection<BalanceStateDoc>("balance_state");
+
+  if (state.displayedMonthlySpendEur >= state.monthlyCapEur) {
+    // Still advance lastDailyReset so the daily cron doesn't reconsider this child
+    await balanceStateCol.updateOne(
+      { userId } as Parameters<typeof balanceStateCol.updateOne>[0],
+      { $set: { lastDailyReset: startOfUtcDay(now) } },
+      { upsert: true }
+    );
+    return;
+  }
+
+  const credits = eurToTokens(state.dailyCapEur);
+
+  // $max preserves parent top-ups that pushed tokenCredits above the daily cap.
+  // Atomic: if tokenCredits is missing or < credits, set to credits; else leave alone.
   const balancesCol = db.collection<BalancesDoc>("balances");
   await balancesCol.updateOne(
     { user: new ObjectId(userId) },
-    { $set: { tokenCredits: credits } },
+    { $max: { tokenCredits: credits } },
     { upsert: true }
   );
 
   // Update balance_state
-  const balanceStateCol = db.collection<BalanceStateDoc>("balance_state");
-  const stateUpdate: Partial<BalanceState> = {
-    lastDailyReset: startOfUtcDay(now),
-  };
-
   await balanceStateCol.updateOne(
     { userId } as Parameters<typeof balanceStateCol.updateOne>[0],
-    { $set: stateUpdate },
+    { $set: { lastDailyReset: startOfUtcDay(now) } },
     { upsert: true }
   );
 }
@@ -277,7 +290,11 @@ export async function evaluateChildState(userId: string, db: Db): Promise<ChildS
     ? Math.max(0, Math.min(1, remainingEur / budget.dailyCostCapEur))
     : 0;
 
-  const monthlyCapExhausted = balanceState.monthlySpendEur >= budget.monthlyCostCapEur;
+  // Live month-to-date: stored cumulative + today's spend (clamped to 0 min)
+  const todaySpentEur = Math.max(0, budget.dailyCostCapEur - remainingEur);
+  const displayedMonthlySpendEur = balanceState.monthlySpendEur + todaySpentEur;
+  // monthlyCapExhausted uses the live displayed value (not raw stored)
+  const monthlyCapExhausted = displayedMonthlySpendEur >= budget.monthlyCostCapEur;
 
   return {
     userId,
@@ -285,6 +302,7 @@ export async function evaluateChildState(userId: string, db: Db): Promise<ChildS
     dailyCapEur: budget.dailyCostCapEur,
     dailyPctRemaining,
     monthlySpendEur: balanceState.monthlySpendEur,
+    displayedMonthlySpendEur,
     monthlyCapEur: budget.monthlyCostCapEur,
     monthlyCapExhausted,
   };
