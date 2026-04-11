@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Task 4 checkpoint — awaiting Manuel UAT approval
-last_updated: "2026-04-11T09:59:39.393Z"
+status: complete
+stopped_at: "Completed 15.3-01-PLAN.md — teardown verified, UAT approved"
+last_updated: "2026-04-11T12:00:00.000Z"
 last_activity: "2026-04-09 — Completed quick task 9: Chat bubble overlaps Send button on mobile Test Mode page"
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
   percent: 0
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 
 ## Current Position
 
-Phase: 10 of 12 (Cost Tracking)
-Plan: — (not yet planned)
-Status: Ready to plan
-Last activity: 2026-04-09 — Completed quick task 9: Chat bubble overlaps Send button on mobile Test Mode page
+Phase: 15.3 (Simplification — Remove Bonus Flow)
+Plan: 01/01 complete
+Status: Complete
+Last activity: 2026-04-11 — Completed 15.3-01: teardown verified, UAT approved (5/8 partial)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -97,6 +97,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 15-safety-alert-extension-rate-limiting]: Migration run via temporary API endpoint (Railway internal MongoDB not accessible externally via railway run)
 - [Phase 15.2]: Option 7 validated: agent delivered probe marker verbatim; field path is agents.instructions not model_options.system; query key is {id: agentId}
 - [Phase 15.2]: uuid@9 used (not v13) because v13 is ESM-only and breaks ts-jest
+- [Phase 15.3-simplification]: LibreChat native "Insufficient Funds" hard block replaces all custom 70% warning + bonus offer + YES-confirmation flow; parent top-up is manual one-click €0.10 from admin UI
+- [Phase 15.3-simplification]: balance_state.monthlySpendEur is a dead field never incremented (pre-existing bug from 15-04); "This month" bar always shows 0% — flagged for follow-up quick task
+- [Phase 15.3-simplification]: instrumentation.ts polling loop deleted; no setInterval listener at Next.js startup
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -141,6 +144,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-11T09:59:24.428Z
-Stopped at: Task 4 checkpoint — awaiting Manuel UAT approval
+Last session: 2026-04-11T12:00:00.000Z
+Stopped at: Completed 15.3-01-PLAN.md — teardown verified, UAT approved
 Resume file: None

@@ -112,11 +112,11 @@ Plans:
 Tear down the custom bonus purchase flow, 70% warnings, YES detection, agent system prompt injection, and the polling change-stream listener that supported them. Research confirmed LibreChat has no native low-balance warnings, no per-user auto-refill, and no admin balance UI — so we keep the per-child daily/monthly cap enforcement (via our daily-reset/monthly-reset crons) but drop every self-service top-up mechanism. Kids hit LibreChat's native "Insufficient Funds" red block when they reach 0; parents manually top up from the admin UI.
 
 **Goal:** Delete all custom warning + bonus + injection code (~800 LOC + tests). Admin retains per-child cap enforcement and adds a one-click "Top up €0.10" button on the user detail page. Kids see only the LibreChat native balance display and native insufficient-funds block.
-**Plans:** 0/1 plans executed
+**Plans:** 1/1 plans complete
 **Requirements:** [SIMPLIFY-01]
 
 Plans:
-- [ ] 15.3-01-PLAN.md — Delete custom bonus+warning system, add parent top-up button, simplify admin settings, UAT
+- [x] 15.3-01-PLAN.md — Delete custom bonus+warning system, add parent top-up button, simplify admin settings, UAT
 
 </details>
 
