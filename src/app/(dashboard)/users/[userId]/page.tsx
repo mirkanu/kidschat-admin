@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import { UsageBars, UsageBarsSkeleton } from "@/components/dashboard/usage-bars";
+import { TopUpButton } from "./top-up-button";
 
 interface User {
   id: string;
@@ -123,11 +124,16 @@ export default async function UserDetailPage({
         </CardContent>
       </Card>
 
-      {/* Usage & Limits — 2 bars: daily spend + monthly spend */}
+      {/* Usage & Limits — 2 bars: daily spend + monthly spend + top-up button */}
       {user.role !== "ADMIN" && (
-        <Suspense fallback={<UsageBarsSkeleton />}>
-          <UsageBars userId={userId} childName={user.name} />
-        </Suspense>
+        <div className="space-y-4">
+          <Suspense fallback={<UsageBarsSkeleton />}>
+            <UsageBars userId={userId} childName={user.name} />
+          </Suspense>
+          <div className="flex justify-end">
+            <TopUpButton userId={userId} childName={user.name} />
+          </div>
+        </div>
       )}
 
       {/* Link to settings for this user */}
