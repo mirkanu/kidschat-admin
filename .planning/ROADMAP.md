@@ -118,6 +118,17 @@ Tear down the custom bonus purchase flow, 70% warnings, YES detection, agent sys
 Plans:
 - [x] 15.3-01-PLAN.md — Delete custom bonus+warning system, add parent top-up button, simplify admin settings, UAT
 
+### Phase 15.4: Cost Cap & Alert Contract Fixes (gap closure)
+Gap-closure phase for v2.4 audit findings. Three issues surfaced: (1) `balance_state.monthlySpendEur` is a dead field — initialized and reset but never incremented, so the monthly usage bar is stuck at 0% and the monthly cap is never actually enforced; (2) `monthlyCapExhausted` is computed in `evaluateChildState` but has zero consumers in `src/`; (3) `/api/notify/safety-alert` route whitelists only `safety_redirect` and `jailbreak_attempt` alertTypes, rejecting `image_prompt` with HTTP 400 (production is unaffected today because the alerts page bypasses the HTTP route via a direct server-action call, but the contract is broken). Also fix the latent `$set` clobber in `topUpDailyBudget` which erases parent top-ups at midnight UTC.
+
+**Goal:** Make monthly cap tracking + enforcement real; wire a consumer for `monthlyCapExhausted`; fix `/api/notify/safety-alert` to accept `image_prompt`; stop `topUpDailyBudget` from clobbering mid-day parent top-ups.
+**Requirements:** [IMG-LIMITS-03, IMG-ENFORCE-02, IMG-SAFETY-04]
+**Gap closure:** true
+**Audit source:** `.planning/v2.4-MILESTONE-AUDIT.md`
+
+Plans:
+- [ ] 15.4-01-PLAN.md — Wire monthlySpendEur accumulation, actually enforce monthly cap, fix top-up clobber, whitelist image_prompt alertType
+
 </details>
 
 ## Progress
@@ -139,3 +150,4 @@ Plans:
 | 13. Parent Email Notifications | v2.3 | 3/3 | Complete | 2026-04-05 |
 | 14. Enable & Safeguard Image Generation | 1/1 | Complete    | 2026-04-10 | — |
 | 15. Safety Alert Extension & Rate Limiting | 5/6 | In Progress|  | — |
+| 15.4. Cost Cap & Alert Contract Fixes | v2.4 | 0/1 | Not started | — |
