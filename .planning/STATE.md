@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 15.3-01-PLAN.md — teardown verified, UAT approved
-last_updated: "2026-04-11T18:19:29.817Z"
+stopped_at: Completed 15.4-01-PLAN.md — all gaps closed, deployed to Railway
+last_updated: "2026-04-11T20:52:29.084Z"
 last_activity: "2026-04-11 — Completed 15.3-01: teardown verified, UAT approved (5/8 partial)"
 progress:
-  total_phases: 4
-  completed_phases: 3
-  total_plans: 9
-  completed_plans: 8
+  total_phases: 5
+  completed_phases: 4
+  total_plans: 10
+  completed_plans: 9
   percent: 0
 ---
 
@@ -100,6 +100,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 15.3-simplification]: LibreChat native "Insufficient Funds" hard block replaces all custom 70% warning + bonus offer + YES-confirmation flow; parent top-up is manual one-click €0.10 from admin UI
 - [Phase 15.3-simplification]: balance_state.monthlySpendEur is a dead field never incremented (pre-existing bug from 15-04); "This month" bar always shows 0% — flagged for follow-up quick task
 - [Phase 15.3-simplification]: instrumentation.ts polling loop deleted; no setInterval listener at Next.js startup
+- [Phase 15.4]: $max operator chosen for daily refill: atomic, one-line, no schema change — preserves parent top-ups above dailyCap
+- [Phase 15.4]: displayedMonthlySpendEur = stored monthlySpendEur + today's partial spend (live view); DB truth only written at midnight UTC via $inc
+- [Phase 15.4]: Monthly cap enforcement choke point is daily-reset cron at midnight UTC; topUpDailyBudget gates on displayedMonthlySpendEur >= monthlyCostCapEur
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -132,6 +135,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 15-safety-alert-extension-rate-limiting P00 | 35 | 4 tasks | 10 files |
 | Phase 15-safety-alert-extension-rate-limiting P02 | 70 | 4 tasks | 21 files |
 | Phase 15-safety-alert-extension-rate-limiting P04 | 63 | 4 tasks | 19 files |
+| Phase 15.4-cost-cap-alert-contract-fixes P01 | 15 | 5 tasks | 6 files |
 
 ### Pending Todos
 
@@ -144,6 +148,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-11T12:00:00.000Z
-Stopped at: Completed 15.3-01-PLAN.md — teardown verified, UAT approved
+Last session: 2026-04-11T20:52:29.081Z
+Stopped at: Completed 15.4-01-PLAN.md — all gaps closed, deployed to Railway
 Resume file: None

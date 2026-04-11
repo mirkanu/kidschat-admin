@@ -150,4 +150,4 @@ Plans:
 | 13. Parent Email Notifications | v2.3 | 3/3 | Complete | 2026-04-05 |
 | 14. Enable & Safeguard Image Generation | 1/1 | Complete    | 2026-04-10 | — |
 | 15. Safety Alert Extension & Rate Limiting | 5/6 | In Progress|  | — |
-| 15.4. Cost Cap & Alert Contract Fixes | v2.4 | 0/1 | Not started | — |
+| 15.4. Cost Cap & Alert Contract Fixes | 1/1 | Complete   | 2026-04-11 | — |
