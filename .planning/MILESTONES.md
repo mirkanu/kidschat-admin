@@ -1,5 +1,28 @@
 # Milestones
 
+## v2.4 Image Generation (Shipped: 2026-04-11)
+
+**Phases completed:** 5 phases (14, 15, 15.2, 15.3, 15.4), 9 plans
+**Timeline:** 2026-04-08 → 2026-04-11 (4 days)
+**Git range:** 35 feat/fix commits
+
+**Key accomplishments:**
+- **DALL-E 3 image generation** enabled in LibreChat with child-appropriate guardrails across all 4 agent presets (Friendly Tutor, Casual Buddy, Balanced Helper, Standard Formal); `modelSpecs.enforce: true` locks kids to Haiku 4.5 + DALL-E tool
+- **Per-child cost cap enforcement** shipped via LibreChat-native `balances.tokenCredits` — `budget.ts` as the central lib with `eurToTokens`/`tokensToEur` conversion, admin settings UI for daily/monthly caps, Railway crons for daily/monthly resets
+- **Image-prompt safety detection** added `IMAGE_PROMPT_PATTERNS` to the safety-patterns lib, wired to `detectSafetyEvent` → parent email alerts via Phase 13 Resend infrastructure
+- **Simplification teardown (Phase 15.3)** — deleted ~800 LOC of custom warning/bonus/injection code after Phase 15.2's agent-injection approach failed live UAT; replaced with LibreChat's native "Insufficient Funds" red block + one-click parent "Top up €0.10" button at `/users/{childId}` (useTransition + sonner toast + active:scale-95)
+- **Gap-closure Phase 15.4** — wired `monthlySpendEur` write path (`$inc` in daily-reset cron), fixed `$set`→`$max` clobber that was erasing parent top-ups at midnight UTC, enforced monthly cap via refill gate (`displayedMonthlySpendEur >= monthlyCostCapEur`), whitelisted `image_prompt` alertType in `/api/notify/safety-alert`
+
+**Delivered:** Kids can now generate DALL-E 3 images inside the existing safety guardrails. Parents get per-child daily/monthly spend caps with real-time tracking, one-click top-ups, and image-prompt abuse alerts via email. Budget enforcement uses LibreChat's native balance system — no custom chat-thread injections.
+
+**Tech debt carried forward:** Phase 14 has no VERIFICATION.md artifact; stale LibreChat `agent_F6ITBo7EuorE7vqrXsNAm` test agent never cleaned up; duplicate aggregation logic between `alerts/page.tsx` and `/api/alerts/route.ts`; 3/8 UAT checks deferred on Phase 15.3 (hard block at 0 balance, top-up recovery, Railway log grep).
+
+**Superseded / intentionally deleted:**
+- IMG-BONUS-01, IMG-BONUS-02 — bonus purchase flow (Phase 15 → deleted in 15.3)
+- SYNTH-RENDER-01 — agent system-prompt injection for synthetic messages (Phase 15.2 → deleted in 15.3)
+
+---
+
 ## v2.3 Parent Notifications (Shipped: 2026-04-05)
 
 **Phases completed:** 1 phases, 3 plans, 0 tasks
