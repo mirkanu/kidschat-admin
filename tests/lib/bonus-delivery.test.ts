@@ -100,13 +100,14 @@ describe("bonus-delivery.ts", () => {
       const insertedDoc = (messagesCol.insertOne as jest.Mock).mock.calls[0][0] as {
         isCreatedByUser: boolean;
         endpoint: string;
-        agent_id: string;
+        model: string;
         text: string;
         conversationId: string;
       };
       expect(insertedDoc.isCreatedByUser).toBe(false);
       expect(insertedDoc.endpoint).toBe("agents");
-      expect(insertedDoc.agent_id).toBe("agent_wxgt6su7d3pcosiil3");
+      // LibreChat's agent endpoint stores the agent ID in model, not agent_id
+      expect(insertedDoc.model).toBe("agent_wxgt6su7d3pcosiil3");
       expect(insertedDoc.text).toContain("Type YES to confirm.");
       expect(insertedDoc.conversationId).toBe("conv123");
 
