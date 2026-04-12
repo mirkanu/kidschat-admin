@@ -5,7 +5,7 @@ milestone_name: milestone
 status: completed
 stopped_at: Completed 17-01 — UAT approved. Phase 17 complete. v2.6 Oversight Protection milestone shipped.
 last_updated: "2026-04-12T15:31:15.558Z"
-last_activity: "2026-04-12 — Completed 17-01: MongoDB restricted user librechat_safe blocks delete on conversations+messages at driver level. Icons fixed via Iconify API. UAT approved."
+last_activity: "2026-04-12 — Quick task 10: Deleted RAILWAY_DOCKERFILE_PATH env var, cleared 20 conversations + 81 messages for fresh Monday launch, pushed v2.4/v2.5/v2.6 tags to origin."
 progress:
   total_phases: 2
   completed_phases: 2
@@ -140,6 +140,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 13-parent-email-notifications P03 | 45 | 3 tasks | 10 files |
 | Phase 14-enable-safeguard-image-generation P01 | multi-session | 3 tasks | 1 files |
 | 9 | Chat bubble overlaps Send button on mobile Test Mode page | 2026-04-09 | 7eeee8d | [9-on-mobile-on-the-test-mode-admin-page-th](./quick/9-on-mobile-on-the-test-mode-admin-page-th/) |
+| 10 | Fix tech debt + clear chat history for fresh Monday launch | 2026-04-12 | — | [10-fix-tech-debt-and-clear-chat-history-for](./quick/10-fix-tech-debt-and-clear-chat-history-for/) |
 | Phase 15-safety-alert-extension-rate-limiting P01 | 35 | 3 tasks | 12 files |
 | Phase 15-safety-alert-extension-rate-limiting P00 | 35 | 4 tasks | 10 files |
 | Phase 15-safety-alert-extension-rate-limiting P02 | 70 | 4 tasks | 21 files |
