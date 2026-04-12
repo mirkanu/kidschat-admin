@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 15.4-01-PLAN.md — all gaps closed, deployed to Railway
-last_updated: "2026-04-11T21:31:50.240Z"
-last_activity: "2026-04-11 — Completed 15.3-01: teardown verified, UAT approved (5/8 partial)"
+stopped_at: Completed 16-01-PLAN.md — interface hardening deployed, UAT approved
+last_updated: "2026-04-11T22:00:00.000Z"
+last_activity: "2026-04-11 — Completed 16-01: MCP/Marketplace disabled, preset icons added, UAT approved. CRITICAL: HARDEN-DELETE-02 still needed"
 progress:
   total_phases: 5
   completed_phases: 4
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 
 ## Current Position
 
-Phase: 15.3 (Simplification — Remove Bonus Flow)
+Phase: 16 (LibreChat Interface Hardening)
 Plan: 01/01 complete
 Status: Complete
-Last activity: 2026-04-11 — Completed 15.3-01: teardown verified, UAT approved (5/8 partial)
+Last activity: 2026-04-11 — Completed 16-01: MCP/Marketplace disabled, preset icons added, UAT approved. CRITICAL follow-up: HARDEN-DELETE-02
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -103,6 +103,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 15.4]: $max operator chosen for daily refill: atomic, one-line, no schema change — preserves parent top-ups above dailyCap
 - [Phase 15.4]: displayedMonthlySpendEur = stored monthlySpendEur + today's partial spend (live view); DB truth only written at midnight UTC via $inc
 - [Phase 15.4]: Monthly cap enforcement choke point is daily-reset cron at midnight UTC; topUpDailyBudget gates on displayedMonthlySpendEur >= monthlyCostCapEur
+- [Phase 16-interface-hardening]: HARDEN-DELETE-01 accepted as limitation — LibreChat v0.8.4 config has no role-scoped chat delete suppression; delete still present and hard-deletes from MongoDB. CRITICAL follow-up: HARDEN-DELETE-02
+- [Phase 16-interface-hardening]: RAILWAY_RUN_AS_ROOT=true required on LibreChat Railway service for Volume mount write access (image generation EACCES fix)
+- [Phase 16-interface-hardening]: Gist config push requires CONFIG_PATH update to new commit hash after every push — old pinned hash fetches stale config on redeploy
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -148,6 +151,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-11T20:52:29.081Z
-Stopped at: Completed 15.4-01-PLAN.md — all gaps closed, deployed to Railway
+Last session: 2026-04-11T22:00:00.000Z
+Stopped at: Completed 16-01-PLAN.md — interface hardening deployed, UAT approved
 Resume file: None

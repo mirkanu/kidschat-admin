@@ -80,8 +80,8 @@ See [milestones/v2.4-ROADMAP.md](milestones/v2.4-ROADMAP.md) for full phase deta
 
 </details>
 
-<details open>
-<summary>◆ v2.5 Interface Hardening (Phase 16+) — IN PROGRESS</summary>
+<details>
+<summary>✅ v2.5 Interface Hardening (Phase 16) — SHIPPED 2026-04-11</summary>
 
 Lock down LibreChat's kid-facing UI: disable MCP server creation (capability escalation risk), disable Agent Marketplace, prevent chat deletion by non-admin users, and give the 4 tone presets distinct icons. Small hardening pass + polish.
 
@@ -92,7 +92,7 @@ Lock down every UI affordance in LibreChat that would let a child escape the saf
 **Requirements:** [HARDEN-MCP-01, HARDEN-MARKETPLACE-01, HARDEN-DELETE-01, POLISH-ICONS-01]
 
 Plans:
-- [ ] 16-01-PLAN.md — Audit live Gist config, disable MCP+marketplace+delete, assign preset icons, redeploy LibreChat, UAT as kid
+- [x] 16-01-PLAN.md — Audit live Gist config, disable MCP+marketplace+delete, assign preset icons, redeploy LibreChat, UAT as kid (UAT approved 2026-04-11; delete limitation accepted, HARDEN-DELETE-02 follow-up required)
 
 </details>
 
@@ -118,4 +118,4 @@ Plans:
 | 15.2. Synthetic Message Rendering | v2.4 | 1/1 | Superseded by 15.3 | 2026-04-11 |
 | 15.3. Simplification — Remove Bonus Flow | v2.4 | 1/1 | Complete | 2026-04-11 |
 | 15.4. Cost Cap & Alert Contract Fixes | v2.4 | 1/1 | Complete | 2026-04-11 |
-| 16. LibreChat Interface Hardening | v2.5 | 0/1 | Not started | — |
+| 16. LibreChat Interface Hardening | v2.5 | 1/1 | Complete | 2026-04-11 |
