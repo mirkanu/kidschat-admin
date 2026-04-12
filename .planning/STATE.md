@@ -145,6 +145,7 @@ Progress: [█████████░] 93%
 | Phase 14-enable-safeguard-image-generation P01 | multi-session | 3 tasks | 1 files |
 | 9 | Chat bubble overlaps Send button on mobile Test Mode page | 2026-04-09 | 7eeee8d | [9-on-mobile-on-the-test-mode-admin-page-th](./quick/9-on-mobile-on-the-test-mode-admin-page-th/) |
 | 10 | Fix tech debt + clear chat history for fresh Monday launch | 2026-04-12 | — | [10-fix-tech-debt-and-clear-chat-history-for](./quick/10-fix-tech-debt-and-clear-chat-history-for/) |
+| 11 | Fix Phase 18 verification gaps: notification badges + activity wiring | 2026-04-12 | a587b32 | [11-fix-phase-18-verification-gaps-notificat](./quick/11-fix-phase-18-verification-gaps-notificat/) |
 | Phase 15-safety-alert-extension-rate-limiting P01 | 35 | 3 tasks | 12 files |
 | Phase 15-safety-alert-extension-rate-limiting P00 | 35 | 4 tasks | 10 files |
 | Phase 15-safety-alert-extension-rate-limiting P02 | 70 | 4 tasks | 21 files |
