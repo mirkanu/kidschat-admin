@@ -5,6 +5,12 @@ import { getFromAddress } from "@/lib/email-utils";
 import { getWeeklyChildStats } from "@/lib/weekly-digest";
 
 export async function POST(req: NextRequest) {
+  // Skip on non-Mondays when called by cron (daily schedule calls all endpoints)
+  // Monday = 1 in getUTCDay()
+  if (new Date().getUTCDay() !== 1) {
+    return NextResponse.json({ skipped: true, reason: "not_monday" });
+  }
+
   // Auth: accept either a valid admin session OR a matching cron secret header
   const cronSecret = process.env.CRON_SECRET;
   const headerSecret = req.headers.get("x-cron-secret");
