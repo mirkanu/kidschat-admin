@@ -143,7 +143,7 @@ Plans:
 **Goal:** Both parents receive automated email alerts (safety alerts, daily summaries, weekly digests, account activity) via Resend, with notification recipients decoupled from admin accounts and a configurable Notifications settings page in the admin dashboard.
 **Requirements:** [EMAIL-RECIPIENTS-01, EMAIL-MIGRATE-01, EMAIL-SETTINGS-01, EMAIL-DAILY-01, EMAIL-ACTIVITY-01]
 **Depends on:** Phase 17
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 18-01-PLAN.md — Notification recipients data model + API, migrate existing senders
