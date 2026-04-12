@@ -97,7 +97,7 @@ Plans:
 
 </details>
 
-<details open>
+<details>
 <summary>✅ v2.6 Oversight Protection (Phase 17) — SHIPPED 2026-04-12</summary>
 
 Close the critical parent-oversight gap from v2.5 audit: kids can hard-delete conversations from MongoDB via LibreChat's sidebar, erasing them from the admin dashboard too. Also fix the cosmetic icon dark-mode issue from Phase 16 UAT.
@@ -137,3 +137,15 @@ Plans:
 | 15.4. Cost Cap & Alert Contract Fixes | v2.4 | 1/1 | Complete | 2026-04-11 |
 | 16. LibreChat Interface Hardening | v2.5 | 1/1 | Complete | 2026-04-11 |
 | 17. Conversation Delete Protection + Icon Fix | 1/1 | Complete   | 2026-04-12 | 2026-04-12 |
+
+### Phase 18: Email Alert System — transactional email service for automated parent notifications
+
+**Goal:** Both parents receive automated email alerts (safety alerts, daily summaries, weekly digests, account activity) via Resend, with notification recipients decoupled from admin accounts and a configurable Notifications settings page in the admin dashboard.
+**Requirements:** [EMAIL-RECIPIENTS-01, EMAIL-MIGRATE-01, EMAIL-SETTINGS-01, EMAIL-DAILY-01, EMAIL-ACTIVITY-01]
+**Depends on:** Phase 17
+**Plans:** 3 plans
+
+Plans:
+- [ ] 18-01-PLAN.md — Notification recipients data model + API, migrate existing senders
+- [ ] 18-02-PLAN.md — Enhanced Notification Settings UI with recipient management
+- [ ] 18-03-PLAN.md — Daily summary emails + account activity alerts + cron update
