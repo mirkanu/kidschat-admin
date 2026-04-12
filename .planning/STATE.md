@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 17-01 Tasks 1+2, paused at Task 3 UAT checkpoint
-last_updated: "2026-04-12T14:24:30.543Z"
+stopped_at: Completed 17-01 — MongoDB delete protection + icon fix, UAT approved
+last_updated: "2026-04-12T15:30:00Z"
 last_activity: "2026-04-11 — Completed 16-01: MCP/Marketplace disabled, preset icons added, UAT approved. CRITICAL follow-up: HARDEN-DELETE-02"
 progress:
   total_phases: 2
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 
 ## Current Position
 
-Phase: 16 (LibreChat Interface Hardening)
+Phase: 17 (Conversation Delete Protection + Icon Fix)
 Plan: 01/01 complete
 Status: Complete
-Last activity: 2026-04-11 — Completed 16-01: MCP/Marketplace disabled, preset icons added, UAT approved. CRITICAL follow-up: HARDEN-DELETE-02
+Last activity: 2026-04-12 — Completed 17-01: MongoDB restricted user librechat_safe blocks delete on conversations+messages at driver level. Icons fixed via Iconify API. UAT approved.
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -158,6 +158,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T14:52:33Z
-Stopped at: Completed 17-01 pivot (archive cron removed, MongoDB restricted user deployed) — paused at Task 3 UAT checkpoint (new approach)
+Last session: 2026-04-12T15:30:00Z
+Stopped at: Completed 17-01 — UAT approved. Phase 17 complete. v2.6 Oversight Protection milestone shipped.
 Resume file: None

@@ -9,7 +9,7 @@
 - ✅ **v2.3 Parent Notifications** — Phase 13 (shipped 2026-04-05)
 - ✅ **v2.4 Image Generation** — Phases 14, 15, 15.2, 15.3, 15.4 (shipped 2026-04-11)
 - ✅ **v2.5 Interface Hardening** — Phase 16 (shipped 2026-04-11)
-- ◆ **v2.6 Oversight Protection** — Phase 17 (in progress)
+- ✅ **v2.6 Oversight Protection** — Phase 17 (shipped 2026-04-12)
 
 ## Phases
 
@@ -98,7 +98,7 @@ Plans:
 </details>
 
 <details open>
-<summary>◆ v2.6 Oversight Protection (Phase 17) — IN PROGRESS</summary>
+<summary>✅ v2.6 Oversight Protection (Phase 17) — SHIPPED 2026-04-12</summary>
 
 Close the critical parent-oversight gap from v2.5 audit: kids can hard-delete conversations from MongoDB via LibreChat's sidebar, erasing them from the admin dashboard too. Also fix the cosmetic icon dark-mode issue from Phase 16 UAT.
 
@@ -109,7 +109,7 @@ Two items: (1) CRITICAL — LibreChat v0.8.4 has no config toggle to prevent USE
 **Requirements:** [HARDEN-DELETE-02, POLISH-ICONS-02]
 
 Plans:
-- [ ] 17-01-PLAN.md — Research LibreChat delete API + implement conversation protection + fix icon colors + redeploy + UAT
+- [x] 17-01-PLAN.md — Research LibreChat delete API + implement conversation protection + fix icon colors + redeploy + UAT (UAT approved 2026-04-12; MongoDB restricted user blocks delete at driver level; Iconify icons visible)
 
 </details>
 
@@ -136,4 +136,4 @@ Plans:
 | 15.3. Simplification — Remove Bonus Flow | v2.4 | 1/1 | Complete | 2026-04-11 |
 | 15.4. Cost Cap & Alert Contract Fixes | v2.4 | 1/1 | Complete | 2026-04-11 |
 | 16. LibreChat Interface Hardening | v2.5 | 1/1 | Complete | 2026-04-11 |
-| 17. Conversation Delete Protection + Icon Fix | 1/1 | Complete   | 2026-04-12 | — |
+| 17. Conversation Delete Protection + Icon Fix | 1/1 | Complete   | 2026-04-12 | 2026-04-12 |
