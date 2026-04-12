@@ -148,6 +148,10 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 15.4-cost-cap-alert-contract-fixes P01 | 15 | 5 tasks | 6 files |
 | Phase 17-conversation-delete-protection-icon-fix P01 | 44 | 2 tasks | 10 files |
 
+### Roadmap Evolution
+
+- Phase 18 added: Email Alert System — transactional email service for automated parent notifications
+
 ### Pending Todos
 
 None yet.
