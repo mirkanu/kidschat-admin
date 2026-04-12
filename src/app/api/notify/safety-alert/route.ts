@@ -20,9 +20,16 @@ import { notifySafetyAlert } from "@/lib/notify-safety-alert";
  * }
  */
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Auth: accept either a valid admin session OR a matching cron secret header
+  const cronSecret = process.env.CRON_SECRET;
+  const headerSecret = req.headers.get("x-cron-secret");
+  const hasCronAuth = cronSecret && headerSecret === cronSecret;
+
+  if (!hasCronAuth) {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
   }
 
   let body: Record<string, string>;
