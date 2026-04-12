@@ -8,7 +8,8 @@
 - ✅ **v2.2 Admin Intelligence** — Phases 10-12 (shipped 2026-04-05)
 - ✅ **v2.3 Parent Notifications** — Phase 13 (shipped 2026-04-05)
 - ✅ **v2.4 Image Generation** — Phases 14, 15, 15.2, 15.3, 15.4 (shipped 2026-04-11)
-- ◆ **v2.5 Interface Hardening** — Phase 16+ (in progress)
+- ✅ **v2.5 Interface Hardening** — Phase 16 (shipped 2026-04-11)
+- ◆ **v2.6 Oversight Protection** — Phase 17 (in progress)
 
 ## Phases
 
@@ -96,6 +97,22 @@ Plans:
 
 </details>
 
+<details open>
+<summary>◆ v2.6 Oversight Protection (Phase 17) — IN PROGRESS</summary>
+
+Close the critical parent-oversight gap from v2.5 audit: kids can hard-delete conversations from MongoDB via LibreChat's sidebar, erasing them from the admin dashboard too. Also fix the cosmetic icon dark-mode issue from Phase 16 UAT.
+
+### Phase 17: Conversation Delete Protection + Icon Dark Mode Fix
+Two items: (1) CRITICAL — LibreChat v0.8.4 has no config toggle to prevent USER-role conversation deletion. When a kid clicks delete in the sidebar, it hard-deletes from MongoDB's `conversations` + `messages` collections, removing the conversation from the admin dashboard. This defeats parent oversight. Research needed into LibreChat's delete API to find an interception point (MongoDB middleware/trigger, LibreChat API proxy, or pre-delete archival). (2) COSMETIC — Phase 16's lucide icon SVGs are black stroke on transparent background, which renders poorly on LibreChat's dark sidebar. Switch to white-stroke or light-colored variants.
+
+**Goal:** Kids cannot permanently destroy conversation history that parents see in the admin dashboard. Preset icons render clearly on LibreChat's dark-themed sidebar.
+**Requirements:** [HARDEN-DELETE-02, POLISH-ICONS-02]
+
+Plans:
+- [ ] 17-01-PLAN.md — Research LibreChat delete API + implement conversation protection + fix icon colors + redeploy + UAT
+
+</details>
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -119,3 +136,4 @@ Plans:
 | 15.3. Simplification — Remove Bonus Flow | v2.4 | 1/1 | Complete | 2026-04-11 |
 | 15.4. Cost Cap & Alert Contract Fixes | v2.4 | 1/1 | Complete | 2026-04-11 |
 | 16. LibreChat Interface Hardening | v2.5 | 1/1 | Complete | 2026-04-11 |
+| 17. Conversation Delete Protection + Icon Fix | v2.6 | 0/1 | Not started | — |
