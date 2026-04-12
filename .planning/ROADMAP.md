@@ -8,6 +8,7 @@
 - ✅ **v2.2 Admin Intelligence** — Phases 10-12 (shipped 2026-04-05)
 - ✅ **v2.3 Parent Notifications** — Phase 13 (shipped 2026-04-05)
 - ✅ **v2.4 Image Generation** — Phases 14, 15, 15.2, 15.3, 15.4 (shipped 2026-04-11)
+- ◆ **v2.5 Interface Hardening** — Phase 16+ (in progress)
 
 ## Phases
 
@@ -79,6 +80,22 @@ See [milestones/v2.4-ROADMAP.md](milestones/v2.4-ROADMAP.md) for full phase deta
 
 </details>
 
+<details open>
+<summary>◆ v2.5 Interface Hardening (Phase 16+) — IN PROGRESS</summary>
+
+Lock down LibreChat's kid-facing UI: disable MCP server creation (capability escalation risk), disable Agent Marketplace, prevent chat deletion by non-admin users, and give the 4 tone presets distinct icons. Small hardening pass + polish.
+
+### Phase 16: LibreChat Interface Hardening
+Lock down every UI affordance in LibreChat that would let a child escape the safety sandbox or break parent oversight. Four specific changes: (1) disable MCP server add UI — MCP servers are arbitrary capability grants and must not be user-addable; (2) disable Agent Marketplace browse/install; (3) prevent chat deletion by non-admin users so parent oversight via admin dashboard cannot be erased; (4) assign distinct icons to the 4 tone presets (Friendly Tutor, Casual Buddy, Balanced Helper, Standard Formal) so kids can visually distinguish them. All four are LibreChat config changes on the same Gist-hosted `librechat.yaml` plus one LibreChat service redeploy.
+
+**Goal:** LibreChat's kid-facing UI exposes zero capability-escalation paths (no MCP add, no marketplace), preserves admin oversight (kids cannot delete chat history), and visually distinguishes the 4 presets for better kid UX.
+**Requirements:** [HARDEN-MCP-01, HARDEN-MARKETPLACE-01, HARDEN-DELETE-01, POLISH-ICONS-01]
+
+Plans:
+- [ ] 16-01-PLAN.md — Audit live Gist config, disable MCP+marketplace+delete, assign preset icons, redeploy LibreChat, UAT as kid
+
+</details>
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -101,3 +118,4 @@ See [milestones/v2.4-ROADMAP.md](milestones/v2.4-ROADMAP.md) for full phase deta
 | 15.2. Synthetic Message Rendering | v2.4 | 1/1 | Superseded by 15.3 | 2026-04-11 |
 | 15.3. Simplification — Remove Bonus Flow | v2.4 | 1/1 | Complete | 2026-04-11 |
 | 15.4. Cost Cap & Alert Contract Fixes | v2.4 | 1/1 | Complete | 2026-04-11 |
+| 16. LibreChat Interface Hardening | v2.5 | 0/1 | Not started | — |
