@@ -24,7 +24,6 @@ interface ConversationDetailData {
   conversation: {
     conversationId: string;
     title: string;
-    isDeleted?: boolean;
   };
   messages: MessageItem[];
 }
@@ -44,18 +43,10 @@ export default async function ConversationDetailPage({
   const client = await getMongoClient();
   const db = client.db("test");
 
-  // Fetch conversation metadata — try live collection first, fall back to archive
-  let conversation = await db
+  // Fetch conversation metadata
+  const conversation = await db
     .collection("conversations")
     .findOne({ conversationId });
-
-  const isDeleted = !conversation;
-
-  if (!conversation) {
-    conversation = await db
-      .collection("archived_conversations")
-      .findOne({ conversationId });
-  }
 
   if (!conversation) {
     return (
@@ -73,20 +64,12 @@ export default async function ConversationDetailPage({
     );
   }
 
-  // Fetch messages — try live collection first, fall back to archive
-  let rawMessages = await db
+  // Fetch messages
+  const rawMessages = await db
     .collection("messages")
     .find({ conversationId })
     .sort({ createdAt: 1 })
     .toArray();
-
-  if (rawMessages.length === 0 && isDeleted) {
-    rawMessages = await db
-      .collection("archived_messages")
-      .find({ conversationId })
-      .sort({ createdAt: 1 })
-      .toArray();
-  }
 
   const LIBRECHAT_BASE = "https://librechat-production-bff2.up.railway.app";
 
@@ -140,19 +123,12 @@ export default async function ConversationDetailPage({
     conversation: {
       conversationId: conversation.conversationId ?? conversationId,
       title: conversation.title ?? "Untitled Conversation",
-      isDeleted,
     },
     messages,
   };
 
   return (
     <div>
-      {isDeleted && (
-        <div className="mx-4 mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
-          This conversation was deleted by the child. It is preserved here for
-          parent oversight.
-        </div>
-      )}
       <MessageThread
         conversation={data.conversation}
         messages={data.messages}

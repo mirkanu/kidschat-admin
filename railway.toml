@@ -15,8 +15,3 @@ command = "curl -fsS -X POST -H 'x-cron-secret: $CRON_SECRET' https://kidschat-a
 name = "monthly-reset"
 schedule = "0 0 1 * *"
 command = "curl -fsS -X POST -H 'x-cron-secret: $CRON_SECRET' https://kidschat-admin-production.up.railway.app/api/cron/monthly-reset"
-
-[[deploy.crons]]
-name = "archive-deleted"
-schedule = "*/5 * * * *"
-command = "curl -fsS -X POST -H 'x-cron-secret: $CRON_SECRET' https://kidschat-admin-production.up.railway.app/api/cron/archive-deleted"
