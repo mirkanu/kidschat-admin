@@ -25,23 +25,30 @@ export async function POST(req: NextRequest) {
   // Gather per-child stats from last 7 days
   const stats = await getWeeklyChildStats(db);
 
-  // Query ADMIN users and filter to those who haven't opted out of weekly digests
-  const allAdmins = await db
-    .collection("users")
-    .find({ role: "ADMIN" })
-    .project<{ email: string; notification_prefs?: { weeklyDigest?: boolean } }>({
-      email: 1,
-      notification_prefs: 1,
-    })
-    .toArray();
+  // Primary: use notification_recipients collection (supports both parents)
+  // Fallback: query ADMIN users if recipients collection is empty/not seeded yet
+  const { getRecipientsForType } = await import("@/lib/notification-recipients");
+  let toEmails = await getRecipientsForType("weeklyDigest");
 
-  const eligibleAdmins = allAdmins.filter(
-    (admin) => admin.notification_prefs?.weeklyDigest !== false
-  );
+  if (toEmails.length === 0) {
+    // Backward compat: fall back to ADMIN users until recipients are configured
+    const allAdmins = await db
+      .collection("users")
+      .find({ role: "ADMIN" })
+      .project<{ email: string; notification_prefs?: { weeklyDigest?: boolean } }>({
+        email: 1,
+        notification_prefs: 1,
+      })
+      .toArray();
 
-  const toEmails = eligibleAdmins
-    .map((admin) => admin.email)
-    .filter((email): email is string => typeof email === "string" && email.length > 0);
+    const eligibleAdmins = allAdmins.filter(
+      (admin) => admin.notification_prefs?.weeklyDigest !== false
+    );
+
+    toEmails = eligibleAdmins
+      .map((admin) => admin.email)
+      .filter((email): email is string => typeof email === "string" && email.length > 0);
+  }
 
   // Nothing to send
   if (toEmails.length === 0 || stats.length === 0) {

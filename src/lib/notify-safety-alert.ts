@@ -60,17 +60,25 @@ export async function notifySafetyAlert(
     return { sent: 0, reason: "duplicate" };
   }
 
-  // --- Find ADMIN users to notify ---
-  const adminUsers = await db
-    .collection("users")
-    .find({ role: "ADMIN" })
-    .project({ email: 1, name: 1, notification_prefs: 1 })
-    .toArray();
+  // --- Find recipients for safety alerts ---
+  // Primary: use notification_recipients collection (supports both parents)
+  // Fallback: query ADMIN users if recipients collection is empty/not seeded yet
+  const { getRecipientsForType } = await import("@/lib/notification-recipients");
+  let toEmails = await getRecipientsForType("safetyAlerts");
 
-  const toEmails = adminUsers
-    .filter((u) => u.notification_prefs?.safetyAlerts !== false)
-    .map((u) => u.email as string)
-    .filter(Boolean);
+  if (toEmails.length === 0) {
+    // Backward compat: fall back to ADMIN users until recipients are configured
+    const adminUsers = await db
+      .collection("users")
+      .find({ role: "ADMIN" })
+      .project({ email: 1, notification_prefs: 1 })
+      .toArray();
+
+    toEmails = adminUsers
+      .filter((u) => u.notification_prefs?.safetyAlerts !== false)
+      .map((u) => u.email as string)
+      .filter(Boolean);
+  }
 
   if (toEmails.length === 0) {
     return { sent: 0, reason: "no_recipients" };
