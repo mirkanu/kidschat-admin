@@ -53,6 +53,13 @@ Children can safely explore and learn through AI conversation, with content guar
 - ✓ One-click parent "Top up €0.10" button on `/users/{childId}` with `useTransition` pending state and sonner toast — v2.4
 - ✓ LibreChat's native red "Insufficient Funds" block handles the 0-balance hard stop (no custom chat-thread injections) — v2.4
 
+- ✓ MCP server UI disabled — kids cannot add arbitrary tool-running servers — v2.5
+- ✓ Agent Marketplace disabled — kids cannot browse or install community agents — v2.5
+- ✓ 4 distinct preset icons (graduation-cap, smile, scale-3d, briefcase) — v2.5
+- ✓ Conversation delete protection — MongoDB restricted user blocks `remove` on conversations + messages at DB level — v2.6
+- ✓ Preset icons visible on dark sidebar (Iconify light gray SVGs) — v2.6
+- ✓ DALL-E image persistence across LibreChat redeploys (Railway Volume + RAILWAY_RUN_AS_ROOT) — v2.6
+
 ### Active
 
 (None — planning next milestone)
@@ -69,7 +76,7 @@ Children can safely explore and learn through AI conversation, with content guar
 
 ## Context
 
-Shipped v2.4 on 2026-04-11. Six milestones complete.
+Shipped v2.6 on 2026-04-12. Eight milestones complete (v1.0 through v2.6).
 - **LibreChat URL:** https://librechat-production-bff2.up.railway.app
 - **Admin Dashboard URL:** https://kidschat-admin-production.up.railway.app
 - **Config:** https://gist.github.com/mirkanu/e23b999f1d3cd77726a97c20e26f0abf
@@ -116,6 +123,9 @@ Shipped v2.4 on 2026-04-11. Six milestones complete.
 | `$max` for daily cap refill (vs `$set`) | Atomic preservation of parent top-ups above daily cap — one-line MongoDB operator | ✓ Good (v2.4 — 15.4 fix) |
 | Monthly cap enforcement at daily-cron refill gate (not per-request) | No new middleware; when exhausted, daily refill becomes no-op → next midnight the child starts at 0 → native block takes over | ✓ Good (v2.4 — 15.4 design) |
 | Deferred gap closure via decimal phases (15.2, 15.3, 15.4) | Rather than rework failed phase 15.2 in place, tear down + rebuild cleanly in 15.3, then close audit gaps in 15.4 | ✓ Good — honest delivery + clean git history |
+| MongoDB restricted user for delete protection (v2.6) | Database-level `remove` block on conversations + messages — no LibreChat fork, no middleware, unkillable from client | ✓ Good — pivot from archive-cron approach after user rejected 5-min delay |
+| Gist-hosted librechat.yaml with commit-pinned CONFIG_PATH | Config edits via `gh gist edit` + Railway env var pointing to commit-pinned URL avoids CDN cache staleness | ✓ Good — established pattern in v2.5/v2.6 |
+| RAILWAY_RUN_AS_ROOT for volume permissions | LibreChat Docker image runs as non-root; Railway Volume mounts as root-owned | ✓ Good — solves EACCES on image writes, acceptable security trade-off for a private family app |
 
 ---
-*Last updated: 2026-04-11 after v2.4 milestone completion*
+*Last updated: 2026-04-12 after v2.6 milestone completion*

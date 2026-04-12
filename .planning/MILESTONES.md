@@ -1,5 +1,38 @@
 # Milestones
 
+## v2.6 Oversight Protection (Shipped: 2026-04-12)
+
+**Phases completed:** 1 phase (17), 1 plan
+**Timeline:** 2026-04-12 (single day)
+
+**Key accomplishments:**
+- **Conversation delete protection** — MongoDB role `librechat_no_delete_convos` blocks `remove` on `conversations` + `messages` collections at the database level. LibreChat's delete button is visible but non-functional (error 13). Parent oversight is structurally protected — kids cannot erase conversation history.
+- **Icon dark-mode fix** — replaced black-stroke lucide SVGs with Iconify API URLs using `?color=%23e2e8f0` (slate-200); all 4 preset icons now clearly visible on LibreChat's dark sidebar
+- **Railway Volume permissions fix** — set `RAILWAY_RUN_AS_ROOT=true` so LibreChat can write DALL-E images to the volume mount at `/app/client/public/images`
+
+**Delivered:** Parent oversight cannot be defeated by children deleting their chat history. The MongoDB permission layer is invisible, unkillable from the client, and requires no LibreChat fork.
+
+**Approach pivot:** Started with a 5-min archive cron (copies conversations before deletion); user rejected the delay window. Pivoted to MongoDB restricted user — zero delay, zero data loss, simpler code (archive cron removed entirely).
+
+**Known limitation:** Delete button still visible in LibreChat's UI (v0.8.4 has no `customCSS` config key to inject CSS). Button is a dead button — safe but slightly confusing UX.
+
+---
+
+## v2.5 Interface Hardening (Shipped: 2026-04-11)
+
+**Phases completed:** 1 phase (16), 1 plan
+**Timeline:** 2026-04-11 (single day)
+
+**Key accomplishments:**
+- **MCP server UI disabled** — `interface.mcpServers: {use: false, create: false, share: false, public: false}` — kids cannot add arbitrary tool-running MCP servers (confirmed via Railway logs: `[MCP_SERVERS] Forbidden: Insufficient permissions for User`)
+- **Agent Marketplace disabled** — `interface.marketplace: {use: false}` — kids cannot browse or install community-published agents
+- **4 distinct preset icons** — lucide SVGs assigned to Friendly Tutor (graduation-cap), Casual Buddy (smile), Balanced Helper (scale-3d), Standard Formal (briefcase)
+- **Accepted limitation documented:** LibreChat v0.8.4 has no config toggle for disabling conversation deletion (addressed in v2.6)
+
+**Delivered:** LibreChat's kid-facing UI is locked down — no capability escalation via MCP servers or marketplace agents. Each preset is visually distinct.
+
+---
+
 ## v2.4 Image Generation (Shipped: 2026-04-11)
 
 **Phases completed:** 5 phases (14, 15, 15.2, 15.3, 15.4), 9 plans

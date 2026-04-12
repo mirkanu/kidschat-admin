@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 17-01 — MongoDB delete protection + icon fix, UAT approved
-last_updated: "2026-04-12T15:30:00Z"
-last_activity: "2026-04-11 — Completed 16-01: MCP/Marketplace disabled, preset icons added, UAT approved. CRITICAL follow-up: HARDEN-DELETE-02"
+stopped_at: Completed 17-01 — UAT approved. Phase 17 complete. v2.6 Oversight Protection milestone shipped.
+last_updated: "2026-04-12T15:31:15.558Z"
+last_activity: "2026-04-12 — Completed 17-01: MongoDB restricted user librechat_safe blocks delete on conversations+messages at driver level. Icons fixed via Iconify API. UAT approved."
 progress:
   total_phases: 2
   completed_phases: 2
