@@ -9,13 +9,14 @@ interface ConversationSummary {
   updatedAt: string | null;
   userName: string | null;
   userEmail: string | null;
+  isDeleted?: boolean;
 }
 
 async function getConversations(): Promise<ConversationSummary[]> {
   const client = await getMongoClient();
   const db = client.db("test");
 
-  const pipeline: object[] = [
+  const buildPipeline = () => [
     // Join users by matching conversations.user (string) against users._id (ObjectId)
     {
       $lookup: {
@@ -38,7 +39,6 @@ async function getConversations(): Promise<ConversationSummary[]> {
       },
     },
     { $sort: { updatedAt: -1 } },
-    { $limit: 100 },
     {
       $project: {
         _id: 0,
@@ -52,13 +52,38 @@ async function getConversations(): Promise<ConversationSummary[]> {
     },
   ];
 
-  const conversations = await db
+  // Query live conversations
+  const liveConversations = await db
     .collection("conversations")
-    .aggregate<ConversationSummary>(pipeline)
+    .aggregate<ConversationSummary>(buildPipeline())
     .toArray();
 
+  // Query archived conversations (may include deleted ones)
+  const archivedConversations = await db
+    .collection("archived_conversations")
+    .aggregate<ConversationSummary>(buildPipeline())
+    .toArray();
+
+  // Build a set of live conversation IDs for deduplication
+  const liveIds = new Set(liveConversations.map((c) => c.conversationId));
+
+  // Only include archived conversations that are no longer in the live collection
+  // (i.e., they were deleted by the child)
+  const deletedConversations = archivedConversations
+    .filter((c) => !liveIds.has(c.conversationId))
+    .map((c) => ({ ...c, isDeleted: true }));
+
+  // Merge: live first (most recent activity), then deleted ones
+  const all = [...liveConversations, ...deletedConversations]
+    .sort((a, b) => {
+      const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+      const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+      return dateB - dateA;
+    })
+    .slice(0, 100);
+
   // Serialize dates to ISO strings
-  return conversations.map((c) => ({
+  return all.map((c) => ({
     ...c,
     updatedAt: c.updatedAt ? new Date(c.updatedAt).toISOString() : null,
   }));
@@ -85,7 +110,8 @@ export default async function ConversationsPage() {
       <div>
         <h1 className="text-2xl font-semibold">Conversations</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          All children&apos;s chat history
+          All children&apos;s chat history — including conversations deleted by
+          children (shown with a &quot;Deleted&quot; badge)
         </p>
       </div>
 

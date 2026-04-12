@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, MessageSquare } from "lucide-react";
+import { Search, MessageSquare, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ interface ConversationSummary {
   updatedAt: string | null;
   userName: string | null;
   userEmail: string | null;
+  isDeleted?: boolean;
 }
 
 interface ConversationsListProps {
@@ -97,19 +98,37 @@ export function ConversationsList({
               href={`/conversations/${conv.conversationId}`}
               className="flex items-center gap-4 rounded-md border p-4 hover:bg-accent hover:text-accent-foreground active:scale-[0.99] transition-all"
             >
-              {/* Icon */}
-              <div className="shrink-0 rounded-md bg-muted p-2">
-                <MessageSquare className="h-4 w-4 text-muted-foreground" />
+              {/* Icon — red trash for deleted, message square for live */}
+              <div
+                className={`shrink-0 rounded-md p-2 ${
+                  conv.isDeleted ? "bg-red-100 dark:bg-red-950" : "bg-muted"
+                }`}
+              >
+                {conv.isDeleted ? (
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                ) : (
+                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                )}
               </div>
 
-              {/* Title + child name */}
+              {/* Title + child name + deleted badge */}
               <div className="flex-1 min-w-0 space-y-1">
                 <p className="text-sm font-medium truncate">{conv.title}</p>
-                {conv.userName && (
-                  <Badge variant="secondary" className="text-xs">
-                    {conv.userName}
-                  </Badge>
-                )}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {conv.userName && (
+                    <Badge variant="secondary" className="text-xs">
+                      {conv.userName}
+                    </Badge>
+                  )}
+                  {conv.isDeleted && (
+                    <Badge
+                      variant="destructive"
+                      className="text-xs"
+                    >
+                      Deleted by child
+                    </Badge>
+                  )}
+                </div>
               </div>
 
               {/* Timestamp */}
