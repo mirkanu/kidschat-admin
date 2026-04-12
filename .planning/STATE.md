@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 Phase: 18 (Email Alert System)
 Plan: 03/03 complete
 Status: Completed
-Last activity: 2026-04-12 — Completed 18-03: daily summary emails and account activity alerts with Railway cron updated for daily schedule.
+Last activity: 2026-04-12 — Completed quick task 11: Fix Phase 18 verification gaps — notification history badges + account activity wiring.
 
 Progress: [█████████░] 93%
 
