@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 16-01-PLAN.md — interface hardening deployed, UAT approved
-last_updated: "2026-04-11T22:00:00.000Z"
-last_activity: "2026-04-11 — Completed 16-01: MCP/Marketplace disabled, preset icons added, UAT approved. CRITICAL: HARDEN-DELETE-02 still needed"
+stopped_at: Completed 17-01 Tasks 1+2, paused at Task 3 UAT checkpoint
+last_updated: "2026-04-12T14:24:30.543Z"
+last_activity: "2026-04-11 — Completed 16-01: MCP/Marketplace disabled, preset icons added, UAT approved. CRITICAL follow-up: HARDEN-DELETE-02"
 progress:
-  total_phases: 5
-  completed_phases: 4
-  total_plans: 10
-  completed_plans: 9
+  total_phases: 2
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
   percent: 0
 ---
 
@@ -106,6 +106,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 16-interface-hardening]: HARDEN-DELETE-01 accepted as limitation — LibreChat v0.8.4 config has no role-scoped chat delete suppression; delete still present and hard-deletes from MongoDB. CRITICAL follow-up: HARDEN-DELETE-02
 - [Phase 16-interface-hardening]: RAILWAY_RUN_AS_ROOT=true required on LibreChat Railway service for Volume mount write access (image generation EACCES fix)
 - [Phase 16-interface-hardening]: Gist config push requires CONFIG_PATH update to new commit hash after every push — old pinned hash fetches stale config on redeploy
+- [Phase 17-conversation-delete-protection-icon-fix]: Approach D (periodic snapshot cron, 5 min) chosen — only viable given Railway standalone MongoDB (no change streams)
+- [Phase 17-conversation-delete-protection-icon-fix]: Iconify Design API with ?color=%23e2e8f0 provides light-colored SVGs — no Gist hosting required for icon fix
+- [Phase 17-conversation-delete-protection-icon-fix]: customCSS NOT in LibreChat v0.8.x schema — CSS delete button hide skipped to avoid ZodError
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -139,6 +142,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 15-safety-alert-extension-rate-limiting P02 | 70 | 4 tasks | 21 files |
 | Phase 15-safety-alert-extension-rate-limiting P04 | 63 | 4 tasks | 19 files |
 | Phase 15.4-cost-cap-alert-contract-fixes P01 | 15 | 5 tasks | 6 files |
+| Phase 17-conversation-delete-protection-icon-fix P01 | 44 | 2 tasks | 10 files |
 
 ### Pending Todos
 
@@ -151,6 +155,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-11T22:00:00.000Z
-Stopped at: Completed 16-01-PLAN.md — interface hardening deployed, UAT approved
+Last session: 2026-04-12T14:24:30.539Z
+Stopped at: Completed 17-01 Tasks 1+2, paused at Task 3 UAT checkpoint
 Resume file: None

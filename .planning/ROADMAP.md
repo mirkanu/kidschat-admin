@@ -136,4 +136,4 @@ Plans:
 | 15.3. Simplification — Remove Bonus Flow | v2.4 | 1/1 | Complete | 2026-04-11 |
 | 15.4. Cost Cap & Alert Contract Fixes | v2.4 | 1/1 | Complete | 2026-04-11 |
 | 16. LibreChat Interface Hardening | v2.5 | 1/1 | Complete | 2026-04-11 |
-| 17. Conversation Delete Protection + Icon Fix | v2.6 | 0/1 | Not started | — |
+| 17. Conversation Delete Protection + Icon Fix | 1/1 | Complete   | 2026-04-12 | — |
