@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -9,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { NotificationSettings } from "@/components/dashboard/notification-settings";
 
 interface EmailNotification {
   _id: string;
@@ -64,8 +66,8 @@ function formatDate(iso: string): string {
 }
 
 function truncate(str: string | undefined, maxLen: number): string {
-  if (!str) return "—";
-  return str.length > maxLen ? str.slice(0, maxLen) + "…" : str;
+  if (!str) return "\u2014";
+  return str.length > maxLen ? str.slice(0, maxLen) + "\u2026" : str;
 }
 
 export default async function NotificationsPage() {
@@ -115,70 +117,85 @@ export default async function NotificationsPage() {
         </div>
       </div>
 
-      {/* Notifications table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Type</TableHead>
-              <TableHead>Recipient(s)</TableHead>
-              <TableHead>Child / Subject</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Resend ID</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {notifications.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-center text-muted-foreground py-12"
-                >
-                  No notifications sent yet
-                </TableCell>
-              </TableRow>
-            ) : (
-              notifications.map((n) => (
-                <TableRow key={n._id}>
-                  <TableCell>
-                    {n.type === "safety_alert" ? (
-                      <Badge
-                        variant="secondary"
-                        className="bg-red-100 text-red-800 hover:bg-red-100 border-red-200 whitespace-nowrap"
-                      >
-                        Safety Alert
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant="secondary"
-                        className="bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200 whitespace-nowrap"
-                      >
-                        Weekly Digest
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {n.to.length > 0 ? n.to.join(", ") : "—"}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {n.type === "safety_alert"
-                      ? (n.childName ?? "—")
-                      : n.weekOf
-                      ? `Week of ${n.weekOf}`
-                      : "—"}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
-                    {formatDate(n.sentAt)}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-xs font-mono">
-                    {truncate(n.resendId, 20)}
-                  </TableCell>
+      {/* Tabbed layout: History + Settings */}
+      <Tabs defaultValue="history" className="w-full">
+        <TabsList>
+          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+
+        {/* History tab — existing notification table */}
+        <TabsContent value="history">
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Recipient(s)</TableHead>
+                  <TableHead>Child / Subject</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Resend ID</TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              </TableHeader>
+              <TableBody>
+                {notifications.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center text-muted-foreground py-12"
+                    >
+                      No notifications sent yet
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  notifications.map((n) => (
+                    <TableRow key={n._id}>
+                      <TableCell>
+                        {n.type === "safety_alert" ? (
+                          <Badge
+                            variant="secondary"
+                            className="bg-red-100 text-red-800 hover:bg-red-100 border-red-200 whitespace-nowrap"
+                          >
+                            Safety Alert
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="secondary"
+                            className="bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200 whitespace-nowrap"
+                          >
+                            Weekly Digest
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {n.to.length > 0 ? n.to.join(", ") : "\u2014"}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {n.type === "safety_alert"
+                          ? (n.childName ?? "\u2014")
+                          : n.weekOf
+                          ? `Week of ${n.weekOf}`
+                          : "\u2014"}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
+                        {formatDate(n.sentAt)}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-xs font-mono">
+                        {truncate(n.resendId, 20)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
+
+        {/* Settings tab — recipient management (client component island) */}
+        <TabsContent value="settings">
+          <NotificationSettings />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

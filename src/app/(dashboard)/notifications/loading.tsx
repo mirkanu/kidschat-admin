@@ -16,7 +16,13 @@ export default function NotificationsLoading() {
         <Skeleton className="h-6 w-36" />
       </div>
 
-      {/* Table skeleton */}
+      {/* Tab bar skeleton */}
+      <div className="flex gap-1 bg-muted rounded-md p-1 w-fit">
+        <Skeleton className="h-8 w-20 rounded-sm" />
+        <Skeleton className="h-8 w-20 rounded-sm" />
+      </div>
+
+      {/* Table skeleton (history tab default) */}
       <div className="rounded-md border">
         {/* Header row */}
         <div className="grid grid-cols-5 gap-4 p-4 border-b bg-muted/40">
@@ -27,7 +33,7 @@ export default function NotificationsLoading() {
           <Skeleton className="h-4 w-20" />
         </div>
         {/* Data rows */}
-        {Array.from({ length: 8 }).map((_, i) => (
+        {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="grid grid-cols-5 gap-4 p-4 border-b last:border-0">
             <Skeleton className="h-5 w-24" />
             <Skeleton className="h-4 w-32" />
