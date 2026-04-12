@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 17-01 — UAT approved. Phase 17 complete. v2.6 Oversight Protection milestone shipped.
-last_updated: "2026-04-12T15:31:15.558Z"
-last_activity: "2026-04-12 — Quick task 10: Deleted RAILWAY_DOCKERFILE_PATH env var, cleared 20 conversations + 81 messages for fresh Monday launch, pushed v2.4/v2.5/v2.6 tags to origin."
+stopped_at: Completed 18-01-PLAN.md
+last_updated: "2026-04-12T19:08:27.870Z"
+last_activity: "2026-04-12 — Completed 17-01: MongoDB restricted user librechat_safe blocks delete on conversations+messages at driver level. Icons fixed via Iconify API. UAT approved."
 progress:
-  total_phases: 2
+  total_phases: 3
   completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 5
+  completed_plans: 3
   percent: 0
 ---
 
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 
 ## Current Position
 
-Phase: 17 (Conversation Delete Protection + Icon Fix)
-Plan: 01/01 complete
-Status: Complete
-Last activity: 2026-04-12 — Completed 17-01: MongoDB restricted user librechat_safe blocks delete on conversations+messages at driver level. Icons fixed via Iconify API. UAT approved.
+Phase: 18 (Email Alert System)
+Plan: 01/03 complete
+Status: In Progress
+Last activity: 2026-04-12 — Completed 18-01: notification_recipients collection with CRUD API, safety-alert and weekly-digest senders migrated to use recipients collection.
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█████████░] 89%
 
 ## Performance Metrics
 
@@ -112,6 +112,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 17-conversation-delete-protection-icon-fix]: MongoDB roles are strictly additive (no deny rules) — must enumerate every collection explicitly; wildcards cannot be used to restrict specific collections
 - [Phase 17-conversation-delete-protection-icon-fix]: librechat_safe MongoDB user — find/insert/update on conversations+messages; full readWrite on all 35 other collections; LibreChat MONGO_URI updated and redeployed
 - [Phase 17-conversation-delete-protection-icon-fix]: Railway internal MongoDB accessible externally via switchyard.proxy.rlwy.net:57501 (TCP proxy) — discovered via Railway GraphQL API v2
+- [Phase 18]: notification_recipients collection decoupled from users — both parents receive alerts without admin accounts
+- [Phase 18]: ADMIN-user fallback in senders ensures backward compat until recipients are configured
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -147,6 +149,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 15-safety-alert-extension-rate-limiting P04 | 63 | 4 tasks | 19 files |
 | Phase 15.4-cost-cap-alert-contract-fixes P01 | 15 | 5 tasks | 6 files |
 | Phase 17-conversation-delete-protection-icon-fix P01 | 44 | 2 tasks | 10 files |
+| Phase 18 P01 | 6 | 2 tasks | 4 files |
 
 ### Roadmap Evolution
 
@@ -163,6 +166,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T15:30:00Z
-Stopped at: Completed 17-01 — UAT approved. Phase 17 complete. v2.6 Oversight Protection milestone shipped.
+Last session: 2026-04-12T19:08:27.866Z
+Stopped at: Completed 18-01-PLAN.md
 Resume file: None
