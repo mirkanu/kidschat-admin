@@ -14,7 +14,7 @@ import { NotificationSettings } from "@/components/dashboard/notification-settin
 
 interface EmailNotification {
   _id: string;
-  type: "safety_alert" | "weekly_digest";
+  type: "safety_alert" | "weekly_digest" | "daily_summary" | "account_activity";
   sentAt: string;
   to: string[];
   childName?: string;
@@ -38,7 +38,7 @@ async function getNotifications(): Promise<EmailNotification[]> {
 
     return records.map((n) => ({
       _id: n._id.toString(),
-      type: (n.type as "safety_alert" | "weekly_digest") ?? "safety_alert",
+      type: (n.type as "safety_alert" | "weekly_digest" | "daily_summary" | "account_activity") ?? "safety_alert",
       sentAt: n.sentAt instanceof Date ? n.sentAt.toISOString() : String(n.sentAt ?? ""),
       to: Array.isArray(n.to) ? (n.to as string[]) : [],
       childName: n.childName as string | undefined,
@@ -78,6 +78,8 @@ export default async function NotificationsPage() {
 
   const safetyAlertsCount = notifications.filter((n) => n.type === "safety_alert").length;
   const weeklyDigestCount = notifications.filter((n) => n.type === "weekly_digest").length;
+  const dailySummaryCount = notifications.filter((n) => n.type === "daily_summary").length;
+  const accountActivityCount = notifications.filter((n) => n.type === "account_activity").length;
 
   return (
     <div className="space-y-6">
@@ -113,6 +115,24 @@ export default async function NotificationsPage() {
             className="bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200 font-semibold"
           >
             {weeklyDigestCount}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Daily summaries:</span>
+          <Badge
+            variant="secondary"
+            className="bg-green-100 text-green-800 hover:bg-green-100 border-green-200 font-semibold"
+          >
+            {dailySummaryCount}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Account activity:</span>
+          <Badge
+            variant="secondary"
+            className="bg-amber-100 text-amber-800 hover:bg-amber-100 border-amber-200 font-semibold"
+          >
+            {accountActivityCount}
           </Badge>
         </div>
       </div>
@@ -151,19 +171,36 @@ export default async function NotificationsPage() {
                   notifications.map((n) => (
                     <TableRow key={n._id}>
                       <TableCell>
-                        {n.type === "safety_alert" ? (
+                        {n.type === "safety_alert" && (
                           <Badge
                             variant="secondary"
                             className="bg-red-100 text-red-800 hover:bg-red-100 border-red-200 whitespace-nowrap"
                           >
                             Safety Alert
                           </Badge>
-                        ) : (
+                        )}
+                        {n.type === "weekly_digest" && (
                           <Badge
                             variant="secondary"
                             className="bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200 whitespace-nowrap"
                           >
                             Weekly Digest
+                          </Badge>
+                        )}
+                        {n.type === "daily_summary" && (
+                          <Badge
+                            variant="secondary"
+                            className="bg-green-100 text-green-800 hover:bg-green-100 border-green-200 whitespace-nowrap"
+                          >
+                            Daily Summary
+                          </Badge>
+                        )}
+                        {n.type === "account_activity" && (
+                          <Badge
+                            variant="secondary"
+                            className="bg-amber-100 text-amber-800 hover:bg-amber-100 border-amber-200 whitespace-nowrap"
+                          >
+                            Account Activity
                           </Badge>
                         )}
                       </TableCell>
@@ -173,8 +210,18 @@ export default async function NotificationsPage() {
                       <TableCell className="text-sm">
                         {n.type === "safety_alert"
                           ? (n.childName ?? "\u2014")
-                          : n.weekOf
-                          ? `Week of ${n.weekOf}`
+                          : n.type === "weekly_digest"
+                          ? n.weekOf
+                            ? `Week of ${n.weekOf}`
+                            : "\u2014"
+                          : n.type === "daily_summary"
+                          ? n.meta.date
+                            ? `Summary for ${n.meta.date as string}`
+                            : "\u2014"
+                          : n.type === "account_activity"
+                          ? n.meta.activityType
+                            ? String(n.meta.activityType)
+                            : "\u2014"
                           : "\u2014"}
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
