@@ -7,7 +7,7 @@
  * conversations hard-deleted by a child in LibreChat are still visible to
  * parents in the admin dashboard.
  *
- * Schedule: every 5 minutes (*/5 * * * *) via railway.toml
+ * Schedule: every 5 minutes (star-slash-5 * * * *) via railway.toml
  * Auth: x-cron-secret header (same pattern as daily-reset / monthly-reset)
  */
 
