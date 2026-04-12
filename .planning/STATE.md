@@ -106,9 +106,12 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 16-interface-hardening]: HARDEN-DELETE-01 accepted as limitation — LibreChat v0.8.4 config has no role-scoped chat delete suppression; delete still present and hard-deletes from MongoDB. CRITICAL follow-up: HARDEN-DELETE-02
 - [Phase 16-interface-hardening]: RAILWAY_RUN_AS_ROOT=true required on LibreChat Railway service for Volume mount write access (image generation EACCES fix)
 - [Phase 16-interface-hardening]: Gist config push requires CONFIG_PATH update to new commit hash after every push — old pinned hash fetches stale config on redeploy
-- [Phase 17-conversation-delete-protection-icon-fix]: Approach D (periodic snapshot cron, 5 min) chosen — only viable given Railway standalone MongoDB (no change streams)
+- [Phase 17-conversation-delete-protection-icon-fix]: Approach D (periodic snapshot cron) rejected by parent — "5 minute delay not good enough"; replaced with MongoDB permission-based blocking
 - [Phase 17-conversation-delete-protection-icon-fix]: Iconify Design API with ?color=%23e2e8f0 provides light-colored SVGs — no Gist hosting required for icon fix
 - [Phase 17-conversation-delete-protection-icon-fix]: customCSS NOT in LibreChat v0.8.x schema — CSS delete button hide skipped to avoid ZodError
+- [Phase 17-conversation-delete-protection-icon-fix]: MongoDB roles are strictly additive (no deny rules) — must enumerate every collection explicitly; wildcards cannot be used to restrict specific collections
+- [Phase 17-conversation-delete-protection-icon-fix]: librechat_safe MongoDB user — find/insert/update on conversations+messages; full readWrite on all 35 other collections; LibreChat MONGO_URI updated and redeployed
+- [Phase 17-conversation-delete-protection-icon-fix]: Railway internal MongoDB accessible externally via switchyard.proxy.rlwy.net:57501 (TCP proxy) — discovered via Railway GraphQL API v2
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -155,6 +158,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T14:24:30.539Z
-Stopped at: Completed 17-01 Tasks 1+2, paused at Task 3 UAT checkpoint
+Last session: 2026-04-12T14:52:33Z
+Stopped at: Completed 17-01 pivot (archive cron removed, MongoDB restricted user deployed) — paused at Task 3 UAT checkpoint (new approach)
 Resume file: None
