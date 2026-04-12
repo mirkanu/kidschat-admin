@@ -1,0 +1,104 @@
+version: 1.3.7
+
+# ============================================================
+# KidsChat — Production Safety Configuration
+# Authored: Phase 2 — Safety Configuration
+# NO SECRETS in this file. All keys are in Railway env vars.
+# ============================================================
+
+endpoints:
+  anthropic:
+    models:
+      - claude-haiku-4-5
+  agents:
+    capabilities:
+      - "tools"
+
+# Each preset is an agent with Claude Haiku + DALL-E-3 tool.
+# The agent's full system prompt (safety core + tone) is stored in MongoDB.
+# This lets children ask any preset to draw — no switching required.
+modelSpecs:
+  enforce: true
+  prioritize: true
+  list:
+    # ---- PRESET 1: Friendly Tutor (default) ----
+    - name: friendly-tutor
+      label: "Friendly Tutor"
+      description: "Warm and encouraging — explains things step by step"
+      iconURL: "https://unpkg.com/lucide-static@latest/icons/graduation-cap.svg"
+      default: true
+      preset:
+        endpoint: "agents"
+        agent_id: "agent_wxgt6su7d3pcosiil3"
+        greeting: "Hi! I'm your Friendly Tutor. I love helping you learn and explore ideas. What would you like to figure out today? I can also draw things if you'd like!"
+
+    # ---- PRESET 2: Casual Buddy ----
+    - name: casual-buddy
+      label: "Casual Buddy"
+      description: "Relaxed and fun — great for brainstorming and chatting"
+      iconURL: "https://unpkg.com/lucide-static@latest/icons/smile.svg"
+      default: false
+      preset:
+        endpoint: "agents"
+        agent_id: "agent_y4w1cvoyg77p9thed9"
+        greeting: "Hey! I'm your Casual Buddy. Let's talk, brainstorm, or just have a fun conversation. What's on your mind? I can draw stuff too if you want!"
+
+    # ---- PRESET 3: Balanced Helper ----
+    - name: balanced-helper
+      label: "Balanced Helper"
+      description: "Helpful and kind — straightforward answers without the extra flair"
+      iconURL: "https://unpkg.com/lucide-static@latest/icons/scale-3d.svg"
+      default: false
+      preset:
+        endpoint: "agents"
+        agent_id: "agent_64q6z5s57552cpgl0hr"
+        greeting: "Hello! I'm your Balanced Helper. Ask me anything — I'll give you clear, helpful answers. I can also create illustrations if you need them."
+
+    # ---- PRESET 4: Standard Formal ----
+    - name: standard-formal
+      label: "Standard Formal"
+      description: "Similar to standard Claude — polished and precise"
+      iconURL: "https://unpkg.com/lucide-static@latest/icons/briefcase.svg"
+      default: false
+      preset:
+        endpoint: "agents"
+        agent_id: "agent_aiv99mzvdzquym6y89k"
+        greeting: "Good day. I am ready to assist you with any questions or tasks. Image generation is also available if needed. How may I help you?"
+
+interface:
+  endpointsMenu: false
+  modelSelect: false
+  parameters: false
+  presets: false
+  agents:
+    use: true
+    create: false
+    share: false
+    public: false
+  marketplace:
+    use: false
+  mcpServers:
+    use: false
+    create: false
+    share: false
+    public: false
+  webSearch: false
+  fileSearch: false
+  runCode: false
+  multiConvo: false
+  bookmarks: false
+  prompts: false
+  temporaryChat: false
+
+fileConfig:
+  endpoints:
+    default:
+      disabled: true
+
+balance:
+  enabled: true
+  startBalance: 10000000
+  autoRefillEnabled: false
+  refillIntervalValue: 30
+  refillIntervalUnit: days
+  refillAmount: 0
