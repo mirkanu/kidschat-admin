@@ -55,6 +55,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
+    // Fire-and-forget account activity notification
+    import("@/lib/account-activity")
+      .then(({ notifyAccountActivity }) =>
+        notifyAccountActivity({
+          activityType: "recipient_added",
+          description: `Added notification recipient: ${email}`,
+          performedBy: session.user?.email ?? "unknown",
+        })
+      )
+      .catch((err) =>
+        console.error("[recipients] activity notify failed:", err)
+      );
+
     return NextResponse.json(result.recipient);
   } catch (err) {
     console.error("[notification-recipients] POST error:", err);
@@ -90,6 +103,19 @@ export async function DELETE(req: NextRequest) {
         { status: 404 }
       );
     }
+
+    // Fire-and-forget account activity notification
+    import("@/lib/account-activity")
+      .then(({ notifyAccountActivity }) =>
+        notifyAccountActivity({
+          activityType: "recipient_removed",
+          description: `Removed notification recipient (id: ${id})`,
+          performedBy: session.user?.email ?? "unknown",
+        })
+      )
+      .catch((err) =>
+        console.error("[recipients] activity notify failed:", err)
+      );
 
     return NextResponse.json({ success: true });
   } catch (err) {

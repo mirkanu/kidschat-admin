@@ -45,4 +45,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
+  events: {
+    async signIn({ user }) {
+      // Fire-and-forget — do not block login on notification delivery
+      import("@/lib/account-activity")
+        .then(({ notifyAccountActivity }) =>
+          notifyAccountActivity({
+            activityType: "login",
+            description: `Admin login: ${user.email}`,
+            performedBy: user.email ?? "unknown",
+          })
+        )
+        .catch((err) =>
+          console.error("[auth] account activity notify failed:", err)
+        );
+    },
+  },
 });
