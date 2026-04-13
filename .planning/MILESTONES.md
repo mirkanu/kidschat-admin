@@ -1,5 +1,14 @@
 # Milestones
 
+## v2.7 Email Alerts (Shipped: 2026-04-13)
+
+**Phases completed:** 3 phases, 5 plans, 0 tasks
+
+**Key accomplishments:**
+- (none recorded)
+
+---
+
 ## v2.6 Oversight Protection (Shipped: 2026-04-12)
 
 **Phases completed:** 1 phase (17), 1 plan
