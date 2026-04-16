@@ -156,3 +156,16 @@ Plans:
 | 16. LibreChat Interface Hardening | v2.5 | 1/1 | Complete | 2026-04-11 |
 | 17. Conversation Delete Protection + Icon Fix | v2.6 | 1/1 | Complete | 2026-04-12 |
 | 18. Email Alert System | v2.7 | 3/3 | Complete | 2026-04-13 |
+
+### Phase 19: Investigate why kids 20c daily budget exhausts after 2-3 questions - audit full cost pipeline LibreChat tokenCredits vs eurToTokens conversion conversation history compounding agent preset system prompts and LibreChat config multipliers
+
+**Goal:** Kids' daily budget survives a reasonable number of realistic chat turns (text, drawing, photo upload) without silent cap-bypass or unexplained credit drains. Root causes identified in the forensic research are remediated (DALL-E tool overhead on text presets, misleading budget documentation, stale cron, unexplained 194k-credit drain, startBalance loophole, missing context cap) and defensive guardrails cap blast radius of any future failure mode.
+**Requirements**: TBD (investigation phase; REQ-IDs to be minted on phase completion)
+**Depends on:** Phase 18
+**Plans:** 4 plans
+
+Plans:
+- [ ] 19-01-PLAN.md — Quick-win librechat.yaml changes: remove DALL-E tool from 4 text presets, add maxContextTokens=8000 cap, fix startBalance=0 loophole, redeploy LibreChat
+- [ ] 19-02-PLAN.md — Code + live DB defaults: fix misleading budget.ts credit-math docs, bump HARDCODED_DEFAULTS.dailyCostCapEur to 0.50, fix SYSTEM_PROMPT_TOKENS to 3290, update MongoDB global_defaults
+- [ ] 19-03-PLAN.md — Cron repair + Penelope restoration + observability: diagnose stale daily-reset cron, restore Penelope's balance, add cron_state.daily_reset.lastRunAt observability hook
+- [ ] 19-04-PLAN.md — Forensic investigation of 194k-credit unexplained drain (2026-04-16 18:35–18:43 UTC) + at least one defensive guardrail (image size limit / balance floor / context cap) + close thinking-token open question
