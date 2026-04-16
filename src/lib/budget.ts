@@ -4,13 +4,21 @@
  * Uses LibreChat's native `balances.tokenCredits` as the single source of truth for
  * per-child budget enforcement. All cost operations go through this lib.
  *
- * Conversion math:
- *   - LibreChat tokenCredits ≈ 1 credit per 1 input token (Haiku 4.5 pricing)
- *   - Haiku 4.5 input cost: ~$1.00/M tokens (USD)
- *   - USD→EUR rate: USD_TO_EUR_RATE env var, default 0.92
+ * Conversion math (DOLLAR-DENOMINATED, not token-denominated):
+ *   - LibreChat tokenCredits are priced in USD: 1 credit = $0.000001 USD (1,000,000 credits = $1).
+ *   - Haiku 4.5 rates (LibreChat internal, NOT configurable in yaml):
+ *       * INPUT tokens:  rate=1   → 1 input token costs 1 credit
+ *       * OUTPUT tokens: rate=5   → 1 output token costs 5 credits  (this is the critical gotcha)
+ *   - So a turn with 4,000 input + 500 output tokens costs 4,000 + (500 × 5) = 6,500 credits.
+ *   - USD→EUR rate: USD_TO_EUR_RATE env var, default 0.92.
  *   - eurToTokens(eur) = Math.round(eur / EUR_PER_USD / HAIKU_USD_PER_TOKEN)
- *     e.g. 0.10 EUR / 0.92 (EUR/USD) / (1/1_000_000 USD/token) = ~108_696 tokens
+ *       e.g. 0.50 EUR / 0.92 (EUR/USD) / (1/1_000_000 USD/token) ≈ 543_478 credits
  *   - tokensToEur(tokens) = tokens * HAIKU_USD_PER_TOKEN * EUR_PER_USD
+ *
+ * Capacity sanity (from Phase 19 research, 2026-04-16):
+ *   - Text turn:   ~6,000–9,500 credits (~EUR 0.006–0.009)  → 0.50 EUR buys ~55–83 turns
+ *   - Drawing turn: ~16,700 credits (~EUR 0.015)             → 0.50 EUR buys ~33 drawings
+ *   - Photo upload + text: ~19,000–22,000 credits (~EUR 0.018–0.020) → 0.50 EUR buys ~25 such turns
  */
 
 import { ObjectId, type Db } from "mongodb";
@@ -56,7 +64,7 @@ export function tokensToEur(tokens: number): number {
 
 export interface GlobalDefaults {
   key: "global_defaults";
-  dailyCostCapEur: number;       // e.g. 0.10
+  dailyCostCapEur: number;       // e.g. 0.50
   monthlyCostCapEur: number;     // e.g. 2.00
 }
 
@@ -75,7 +83,7 @@ export interface EffectiveBudget {
 /** Hardcoded fallback values — used when no MongoDB settings docs exist */
 export const HARDCODED_DEFAULTS: GlobalDefaults = {
   key: "global_defaults",
-  dailyCostCapEur: 0.10,
+  dailyCostCapEur: 0.50, // e.g. 0.50 (Phase 19: raised from 0.10 to cover realistic usage — see 19-RESEARCH.md Area 7)
   monthlyCostCapEur: 2.00,
 };
 

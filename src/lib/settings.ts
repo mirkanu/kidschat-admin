@@ -31,7 +31,7 @@ export async function ensureDefaultSettings(db: Db): Promise<void> {
   await col.insertOne({
     _id: "global_defaults",
     key: "global_defaults",
-    dailyCostCapEur: 0.10,
+    dailyCostCapEur: 0.50,
     monthlyCostCapEur: 2.00,
   } as Parameters<typeof col.insertOne>[0]);
 }
