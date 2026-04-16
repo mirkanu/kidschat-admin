@@ -45,5 +45,24 @@ export async function POST(req: NextRequest) {
   }
 
   console.log(`[daily-reset] Completed: reset=${reset}, accumulated=${accumulated}, errors=${errors.length}`);
+
+  // Phase 19 observability — record last successful run so silent cron failures are detectable.
+  try {
+    await db.collection("cron_state").updateOne(
+      { key: "daily_reset" },
+      {
+        $set: {
+          key: "daily_reset",
+          lastRunAt: new Date(),
+          lastRunStats: { reset, accumulated, errors: errors.length },
+        },
+      },
+      { upsert: true }
+    );
+  } catch (err) {
+    // Non-fatal — don't fail the cron if observability write fails.
+    console.error("[daily-reset] Failed to write cron_state:", err);
+  }
+
   return NextResponse.json({ reset, accumulated, errors });
 }
