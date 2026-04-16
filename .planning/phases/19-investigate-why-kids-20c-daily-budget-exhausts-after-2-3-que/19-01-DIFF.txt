@@ -1,0 +1,30 @@
+7a8,9
+> # Phase 19-01: maxContextTokens cap added; startBalance fixed to 0;
+> #   Drawing Studio preset added; DALL-E removed from text agents (MongoDB).
+17a20
+>     maxContextTokens: 8000
+19,21c22,23
+< # Each preset is an agent with Claude Haiku + DALL-E-3 tool.
+< # The agent's full system prompt (safety core + tone) is stored in MongoDB.
+< # This lets children ask any preset to draw — no switching required.
+---
+> # Each preset is an agent with Claude Haiku. Text presets no longer carry
+> # the DALL-E tool schema. Drawing Studio is the dedicated image-generation preset.
+69a72,82
+>     # ---- PRESET 5: Drawing Studio ----
+>     - name: drawing-studio
+>       label: "Drawing Studio"
+>       description: "Create images and illustrations with DALL-E 3"
+>       iconURL: "https://api.iconify.design/lucide/image.svg?color=%23e2e8f0"
+>       default: false
+>       preset:
+>         endpoint: "agents"
+>         agent_id: "agent_kidschat_drawing_1775634945891"
+>         greeting: "Hi! I'm the Drawing Studio. Tell me what you'd like me to draw and I'll create it for you!"
+> 
+102c115
+<   startBalance: 10000000
+---
+>   startBalance: 0
+107d119
+< 
