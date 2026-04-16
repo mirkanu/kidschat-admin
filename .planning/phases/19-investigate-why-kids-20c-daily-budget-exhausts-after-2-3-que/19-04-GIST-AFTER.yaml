@@ -1,0 +1,124 @@
+version: 1.3.7
+
+# ============================================================
+# KidsChat — Production Safety Configuration
+# Authored: Phase 2 — Safety Configuration
+# Phase 17-01: Icon URLs updated to Iconify API with color=#e2e8f0
+#   so icons render clearly on LibreChat's dark sidebar.
+# Phase 19-01: maxContextTokens cap added; startBalance fixed to 0;
+#   Drawing Studio preset added; DALL-E removed from text agents (MongoDB).
+# Phase 19-04: fileConfig size limits -- serverFileSizeLimit:2MB, avatarSizeLimit:2MB
+#   Caps blast radius of large-photo balance drain (Classification D guardrail).
+# NO SECRETS in this file. All keys are in Railway env vars.
+# ============================================================
+
+endpoints:
+  anthropic:
+    models:
+      - claude-haiku-4-5
+  agents:
+    capabilities:
+      - "tools"
+    maxContextTokens: 8000
+
+# Each preset is an agent with Claude Haiku. Text presets no longer carry
+# the DALL-E tool schema. Drawing Studio is the dedicated image-generation preset.
+modelSpecs:
+  enforce: true
+  prioritize: true
+  list:
+    # ---- PRESET 1: Friendly Tutor (default) ----
+    - name: friendly-tutor
+      label: "Friendly Tutor"
+      description: "Warm and encouraging — explains things step by step"
+      iconURL: "https://api.iconify.design/lucide/graduation-cap.svg?color=%23e2e8f0"
+      default: true
+      preset:
+        endpoint: "agents"
+        agent_id: "agent_wxgt6su7d3pcosiil3"
+        greeting: "Hi! I'm your Friendly Tutor. I love helping you learn and explore ideas. What would you like to figure out today? I can also draw things if you'd like!"
+
+    # ---- PRESET 2: Casual Buddy ----
+    - name: casual-buddy
+      label: "Casual Buddy"
+      description: "Relaxed and fun — great for brainstorming and chatting"
+      iconURL: "https://api.iconify.design/lucide/smile.svg?color=%23e2e8f0"
+      default: false
+      preset:
+        endpoint: "agents"
+        agent_id: "agent_y4w1cvoyg77p9thed9"
+        greeting: "Hey! I'm your Casual Buddy. Let's talk, brainstorm, or just have a fun conversation. What's on your mind? I can draw stuff too if you want!"
+
+    # ---- PRESET 3: Balanced Helper ----
+    - name: balanced-helper
+      label: "Balanced Helper"
+      description: "Helpful and kind — straightforward answers without the extra flair"
+      iconURL: "https://api.iconify.design/lucide/scale-3d.svg?color=%23e2e8f0"
+      default: false
+      preset:
+        endpoint: "agents"
+        agent_id: "agent_64q6z5s57552cpgl0hr"
+        greeting: "Hello! I'm your Balanced Helper. Ask me anything — I'll give you clear, helpful answers. I can also create illustrations if you need them."
+
+    # ---- PRESET 4: Standard Formal ----
+    - name: standard-formal
+      label: "Standard Formal"
+      description: "Similar to standard Claude — polished and precise"
+      iconURL: "https://api.iconify.design/lucide/briefcase.svg?color=%23e2e8f0"
+      default: false
+      preset:
+        endpoint: "agents"
+        agent_id: "agent_aiv99mzvdzquym6y89k"
+        greeting: "Good day. I am ready to assist you with any questions or tasks. Image generation is also available if needed. How may I help you?"
+
+    # ---- PRESET 5: Drawing Studio ----
+    - name: drawing-studio
+      label: "Drawing Studio"
+      description: "Create images and illustrations with DALL-E 3"
+      iconURL: "https://api.iconify.design/lucide/image.svg?color=%23e2e8f0"
+      default: false
+      preset:
+        endpoint: "agents"
+        agent_id: "agent_kidschat_drawing_1775634945891"
+        greeting: "Hi! I'm the Drawing Studio. Tell me what you'd like me to draw and I'll create it for you!"
+
+interface:
+  endpointsMenu: false
+  modelSelect: false
+  parameters: false
+  presets: false
+  agents:
+    use: true
+    create: false
+    share: false
+    public: false
+  marketplace:
+    use: false
+  mcpServers:
+    use: false
+    create: false
+    share: false
+    public: false
+  webSearch: false
+  fileSearch: false
+  runCode: false
+  multiConvo: false
+  bookmarks: false
+  prompts: false
+  temporaryChat: false
+
+fileConfig:
+  serverFileSizeLimit: 2
+  avatarSizeLimit: 2
+  endpoints:
+    default:
+      disabled: true
+      fileSizeLimit: 2
+
+balance:
+  enabled: true
+  startBalance: 0
+  autoRefillEnabled: false
+  refillIntervalValue: 30
+  refillIntervalUnit: days
+  refillAmount: 0
