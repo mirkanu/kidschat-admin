@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
+status: executing
 stopped_at: Completed 18-03-PLAN.md
-last_updated: "2026-04-13T06:36:16.931Z"
-last_activity: "2026-04-12 — Completed quick task 11: Fix Phase 18 verification gaps — notification history badges + account activity wiring."
+last_updated: "2026-04-16T21:17:07.573Z"
+last_activity: 2026-04-16 -- Phase 19 execution started
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 5
-  completed_plans: 5
-  percent: 93
+  total_phases: 1
+  completed_phases: 0
+  total_plans: 4
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-05)
 
 **Core value:** Children can safely explore and learn through AI conversation, with content guardrails that a parent controls and trusts.
-**Current focus:** v2.2 Admin Intelligence — Phase 10: Cost Tracking
+**Current focus:** Phase 19 — investigate-why-kids-20c-daily-budget-exhausts-after-2-3-que
 
 ## Current Position
 
-Phase: 18 (Email Alert System)
-Plan: 03/03 complete
-Status: Completed
-Last activity: 2026-04-12 — Completed quick task 11: Fix Phase 18 verification gaps — notification history badges + account activity wiring.
+Phase: 19 (investigate-why-kids-20c-daily-budget-exhausts-after-2-3-que) — EXECUTING
+Plan: 1 of 4
+Status: Executing Phase 19
+Last activity: 2026-04-16 -- Phase 19 execution started
 
 Progress: [█████████░] 93%
 
@@ -158,6 +158,7 @@ Progress: [█████████░] 93%
 ### Roadmap Evolution
 
 - Phase 18 added: Email Alert System — transactional email service for automated parent notifications
+- Phase 19 added: Investigate why kids' 20c/day budget exhausts after 2-3 questions — audit full cost pipeline (LibreChat tokenCredits vs eurToTokens conversion, conversation-history compounding, agent-preset system-prompt sizes, LibreChat config multipliers)
 
 ### Pending Todos
 
