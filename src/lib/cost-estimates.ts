@@ -14,8 +14,8 @@ export const PRICING = {
   SONNET_INPUT_PER_MTOK: 3.0,
   /** Sonnet output cost per million tokens (USD) */
   SONNET_OUTPUT_PER_MTOK: 15.0,
-  /** Estimated tokens in system prompt, added to input on every message */
-  SYSTEM_PROMPT_TOKENS: 400,
+  /** Estimated baseline input tokens per agent-endpoint request: ~710 agent instructions + ~2,580 tool schema (DALL-E) = ~3,290. Phase 19: raised from 400 after forensic audit showed actual baseline is 8x higher. If DALL-E tool is removed from text presets (Plan 19-01), lower this to 710 and branch per-endpoint. */
+  SYSTEM_PROMPT_TOKENS: 3290,
   /** Default average user input characters when not provided */
   DEFAULT_AVG_INPUT_CHARS: 400,
   /** Default average assistant output characters when not provided */
