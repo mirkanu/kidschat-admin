@@ -1,0 +1,54 @@
+# LibreChat Service Logs — Incident Window
+# Deployment: 4f74df22-a996-443a-b11d-24550ab931d0 (2026-04-12T15:06:53 to 2026-04-16T21:32:20)
+# Retrieved via: railway logs 4f74df22 --service 1b298e47 --since 2026-04-16T18:00:00Z --until 2026-04-16T19:00:00Z
+# Date: 2026-04-16
+#
+# NOTE: Railway log retention for REMOVED deployments is limited.
+# Only 6 log lines were retrievable for the full 18:00-19:00 UTC window.
+# There are no log entries between 18:16:08 and 18:34:53 UTC.
+# This 18-minute gap covers the bunny/DALL-E session (conv 3aa0b4f3) from 18:34:14 to 18:35:20.
+# It also covers the file uploads at 18:37:46.
+# The absence of logging is ITSELF evidence: LibreChat did not log the token deductions
+# for conv 3aa0b4f3 despite them succeeding and generating transaction records.
+
+# --- RAW LOG LINES (all that Railway returned for the incident window) ---
+
+TIMESTAMP                          LEVEL  MESSAGE
+2026-04-16T18:16:08.245487817Z     info   "2026-04-16 18:15:59 info: [Login] [Login successful] [Username: penelope.kuhs@kidschat.local] [Request-IP: 157.52.67.27]"
+2026-04-16T18:16:08.245495495Z     info   "2026-04-16 18:16:00 info: [refreshListAvatars] Avatar refresh summary: %o"
+2026-04-16T18:34:53.122793047Z     info   "2026-04-16 18:34:48 warn: [MCP_SERVERS] Forbidden: "/api/mcp/servers" - Insufficient permissions for User 69d0315763d6125f1f553e98: USE"
+2026-04-16T18:36:07.262531388Z     info   "2026-04-16 18:36:06 warn: [MCP_SERVERS] Forbidden: "/api/mcp/servers" - Insufficient permissions for User 69d0315763d6125f1f553e98: USE"
+2026-04-16T18:38:51.734591781Z     info   "2026-04-16 18:38:45 error: [ResumableAgentController] Generation error for 4594a8db-23a9-4264-b7db-b6cfb88cc63a: {"type":"token_balance","balance":0,"tokenCost":3195,"promptTokens":3195,"prev_count":0,"violation_count":0,"date":"2026-04-16T18:38:45.408Z"}"
+2026-04-16T18:39:10.746897762Z     info   "2026-04-16 18:39:07 error: [ResumableAgentController] Generation error for 61046315-85a3-42b0-9784-eba6400019d3: {"type":"token_balance","balance":0,"tokenCost":3197,"promptTokens":3197,"prev_count":0,"violation_count":0,"date":"2026-04-16T18:39:07.433Z"}"
+2026-04-16T18:42:40.286249750Z     info   "2026-04-16 18:42:38 error: [ResumableAgentController] Generation error for 665d16e9-67c7-4377-8b24-965822190021: {"type":"token_balance","balance":0,"tokenCost":22,"promptTokens":22,"prev_count":0,"violation_count":0,"date":"2026-04-16T18:42:38.194Z"}"
+
+# --- ANALYSIS OF KEY LOG ENTRIES ---
+#
+# Entry 3 (18:34:48 MCP warning):
+#   - User 69d0315763d6125f1f553e98 = Penelope
+#   - Penelope accessed /api/mcp/servers — LibreChat polls this on page load
+#   - Timing: 34 seconds after conv 3aa0b4f3 started (18:34:14)
+#   - This shows Penelope was still on the LibreChat page during/after the DALL-E session
+#
+# Entry 4 (18:36:06 MCP warning):
+#   - Second MCP poll, 1m18s after Turn 1 completed (18:34:20)
+#   - Browser still open and polling. Balance should be ~194,116 at this point.
+#   - No balance drain logged between this entry and entry 5.
+#
+# Entries 5-7 (18:38:45, 18:39:07, 18:42:38 Generation errors):
+#   - ALL three show balance:0
+#   - The balance check happens BEFORE the API call (pre-flight gate in ResumableAgentController)
+#   - None of these triggered an Anthropic API call — they were blocked by balance=0
+#   - "tokenCost" values (3195, 3197, 22) are prompt-only estimates computed by LibreChat
+#     from the tokenCount field of the user message (vision tokens pre-estimated)
+#
+# CRITICAL GAP: No log entries for conv 3aa0b4f3 API calls (successful session).
+# LibreChat v0.8.5-rc1 apparently does NOT log successful completions at info level.
+# Only errors are logged. This is a known limitation of Railway log retrieval
+# (Railway filters noise; LibreChat debug logging would require env var DEBUG=*).
+
+# --- DEPLOYMENT CONTEXT ---
+# Active deployment during incident: 4f74df22 (created 2026-04-12T15:06:53)
+# LibreChat version: v0.8.5-rc1 (from startup log: "> LibreChat@v0.8.5-rc1 backend")
+# Config version: 1.3.7 (startup log shows "Outdated Config version: 1.3.7; Latest: 1.3.8")
+# Image: Railway-managed Docker container (no explicit image tag visible in variables)
