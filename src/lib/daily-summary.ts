@@ -79,8 +79,7 @@ export async function getRecentConversations(
   const rows = await db
     .collection("messages")
     .aggregate<{
-      content: string;
-      role?: string;
+      text: string;
       isCreatedByUser?: boolean;
       createdAt: Date;
     }>([
@@ -110,7 +109,7 @@ export async function getRecentConversations(
       },
       { $unwind: { path: "$userInfo", preserveNullAndEmptyArrays: false } },
       { $match: { "userInfo.name": childName } },
-      { $project: { content: 1, role: 1, isCreatedByUser: 1, createdAt: 1 } },
+      { $project: { text: 1, isCreatedByUser: 1, createdAt: 1 } },
       { $sort: { createdAt: -1 } },
       { $limit: limit },
     ])
@@ -121,9 +120,9 @@ export async function getRecentConversations(
   // Map most-recent-first → role-prefixed lines, trimmed per-message.
   const lines = rows.map((m) => {
     const prefix = m.isCreatedByUser ? "[Child]" : "[AI]";
-    const content = typeof m.content === "string" ? m.content : "";
+    const text = typeof m.text === "string" ? m.text : "";
     // Per-message cap: 500 chars, mirrors admin-chat/context pattern.
-    const trimmed = content.length > 500 ? content.slice(0, 500) + "\u2026" : content;
+    const trimmed = text.length > 500 ? text.slice(0, 500) + "\u2026" : text;
     return `${prefix}: ${trimmed}`;
   });
 
