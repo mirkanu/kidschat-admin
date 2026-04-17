@@ -5,7 +5,7 @@ milestone_name: milestone
 status: executing
 stopped_at: Completed 18-03-PLAN.md
 last_updated: "2026-04-16T21:17:07.573Z"
-last_activity: 2026-04-17 - Renamed Daily cap → Daily allowance UI labels (quick task 260417-kgn)
+last_activity: 2026-04-17 - Parents 1M auto-refill + nav rename (quick task 260417-m3p)
 progress:
   total_phases: 1
   completed_phases: 0
@@ -149,6 +149,7 @@ Progress: [█████████░] 93%
 | 260417-afs | Fix broken Railway cron authentication — wrap startCommand in sh -c so $CRON_SECRET expands | 2026-04-17 | 544971e | [260417-afs](./quick/260417-afs-fix-broken-railway-cron-authentication-w/) |
 | 260417-cs0 | Preset-aware guidance — kids told to switch presets for image vs text to save tokens ✓ UAT passed | 2026-04-17 | 99a19b3 | [260417-cs0](./quick/260417-cs0-preset-aware-guidance-kids-told-to-switc/) |
 | 260417-kgn | Rename "Daily cap/limit" UI labels → "Daily allowance" to match $max-floor refill semantics | 2026-04-17 | c6f11ef | [260417-kgn](./quick/260417-kgn-rename-daily-cap-limit-ui-labels-to-matc/) |
+| 260417-m3p | Parents auto-refill to 1M tokens via daily-reset cron + rename nav "Settings" → "Usage Limits" | 2026-04-17 | 5740b2f | [260417-m3p](./quick/260417-m3p-parents-auto-refill-to-1m-ceiling-rename/) |
 | Phase 15-safety-alert-extension-rate-limiting P01 | 35 | 3 tasks | 12 files |
 | Phase 15-safety-alert-extension-rate-limiting P00 | 35 | 4 tasks | 10 files |
 | Phase 15-safety-alert-extension-rate-limiting P02 | 70 | 4 tasks | 21 files |
