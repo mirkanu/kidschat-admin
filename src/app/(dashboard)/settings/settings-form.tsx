@@ -118,8 +118,8 @@ export function SettingsForm({ globals, overrides, lastUpdated }: SettingsFormPr
               <div className="grid grid-cols-3 gap-4">
                 <div />
                 <p className="col-span-2 text-xs text-muted-foreground">
-                  Refilled to this minimum each midnight UTC. Parent top-ups
-                  above it are preserved; unused balance does not roll over.
+                  Each midnight UTC, balance is raised to this amount (or left
+                  unchanged if already higher — e.g. from parent top-ups).
                 </p>
               </div>
               <NumberFieldRow
