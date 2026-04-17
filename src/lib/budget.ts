@@ -34,6 +34,16 @@ const EUR_PER_USD = parseFloat(process.env.USD_TO_EUR_RATE ?? "0.92");
 const HAIKU_USD_PER_TOKEN = 1 / 1_000_000;
 
 /**
+ * Admin (parent) daily refill ceiling in LibreChat tokenCredits.
+ * Parents get $max-to-1M every midnight UTC — effectively "always has budget"
+ * without clobbering any manual top-up above 1M.
+ *
+ * ~1M credits ≈ $1 USD ≈ €0.92 — more than enough for any plausible admin chatbot usage
+ * while still being a finite ceiling (not Infinity) so a runaway loop can't drain unbounded.
+ */
+export const ADMIN_REFILL_CREDITS = 1_000_000;
+
+/**
  * Convert EUR to LibreChat tokenCredits.
  * tokenCredits ≈ 1 credit per 1 input token for Claude Haiku.
  *
@@ -340,6 +350,30 @@ export async function evaluateChildState(userId: string, db: Db): Promise<ChildS
     monthlyCapEur: budget.monthlyCostCapEur,
     monthlyCapExhausted,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Admin (parent) refill
+// ---------------------------------------------------------------------------
+
+/**
+ * Tops up an admin/parent user's balance to ADMIN_REFILL_CREDITS via $max.
+ *
+ * Differences vs topUpDailyBudget:
+ *  - No accumulateYesterdaySpend call (admins have no balance_state / monthlyCap tracking)
+ *  - No settings lookup (flat ceiling, not per-user dailyCostCapEur)
+ *  - No monthly-cap gating (admins are not rate-limited by design in v1)
+ *
+ * Uses $max so any prior parent top-up above 1M is preserved (same idiom as kids'
+ * topUpDailyBudget — atomic, single round-trip, no read-modify-write race).
+ */
+export async function topUpAdminBudget(userId: string, db: Db): Promise<void> {
+  const balancesCol = db.collection<BalancesDoc>("balances");
+  await balancesCol.updateOne(
+    { user: new ObjectId(userId) },
+    { $max: { tokenCredits: ADMIN_REFILL_CREDITS } },
+    { upsert: true }
+  );
 }
 
 // Re-export todayIso helper

@@ -9,7 +9,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import getMongoClient from "@/lib/mongodb";
-import { accumulateYesterdaySpend, topUpDailyBudget } from "@/lib/budget";
+import { accumulateYesterdaySpend, topUpAdminBudget, topUpDailyBudget } from "@/lib/budget";
 
 export async function POST(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
@@ -21,30 +21,38 @@ export async function POST(req: NextRequest) {
   const client = await getMongoClient();
   const db = client.db("test");
 
-  // Fetch all non-admin users
+  // Fetch ALL users (kids + admins); branch on role inside the loop.
   const users = await db
     .collection("users")
-    .find({ role: { $ne: "ADMIN" } }, { projection: { _id: 1 } })
+    .find({}, { projection: { _id: 1, role: 1 } })
     .toArray();
 
   let reset = 0;
   let accumulated = 0;
+  let admins_refilled = 0;
   const errors: string[] = [];
 
   for (const user of users) {
     const userId = user._id.toString();
     try {
-      const delta = await accumulateYesterdaySpend(userId, db);
-      if (delta > 0) accumulated++;
-      await topUpDailyBudget(userId, db);
-      reset++;
+      if (user.role === "ADMIN") {
+        // Parents: flat $max-to-1M refill. No monthly cap tracking, no accumulation.
+        await topUpAdminBudget(userId, db);
+        admins_refilled++;
+      } else {
+        // Kids: accumulate yesterday's spend into monthlySpendEur, then $max-to-dailyCap.
+        const delta = await accumulateYesterdaySpend(userId, db);
+        if (delta > 0) accumulated++;
+        await topUpDailyBudget(userId, db);
+        reset++;
+      }
     } catch (err) {
-      console.error(`[daily-reset] Error resetting userId=${userId}:`, err);
+      console.error(`[daily-reset] Error resetting userId=${userId} role=${user.role}:`, err);
       errors.push(userId);
     }
   }
 
-  console.log(`[daily-reset] Completed: reset=${reset}, accumulated=${accumulated}, errors=${errors.length}`);
+  console.log(`[daily-reset] Completed: reset=${reset}, accumulated=${accumulated}, admins_refilled=${admins_refilled}, errors=${errors.length}`);
 
   // Phase 19 observability — record last successful run so silent cron failures are detectable.
   try {
@@ -54,7 +62,7 @@ export async function POST(req: NextRequest) {
         $set: {
           key: "daily_reset",
           lastRunAt: new Date(),
-          lastRunStats: { reset, accumulated, errors: errors.length },
+          lastRunStats: { reset, accumulated, admins_refilled, errors: errors.length },
         },
       },
       { upsert: true }
@@ -64,5 +72,5 @@ export async function POST(req: NextRequest) {
     console.error("[daily-reset] Failed to write cron_state:", err);
   }
 
-  return NextResponse.json({ reset, accumulated, errors });
+  return NextResponse.json({ reset, accumulated, admins_refilled, errors });
 }
