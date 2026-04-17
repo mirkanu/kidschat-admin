@@ -1,8 +1,17 @@
 ---
+status: complete
 phase: 260417-cs0-preset-aware-guidance
 plan: 01
 subsystem: librechat-agents
 tags: [librechat, mongodb, agents, preset, guidance, dalle, quick-task]
+uat:
+  passed_at: 2026-04-17
+  test_a_text_redirect: PASS
+  test_b_drawing_studio_off_topic: PASS
+  test_c_drawing_studio_clarification_then_image: PASS
+  followup_recovery: PASS  # User reported: switched preset after refusal, normal answer received
+post_uat_fix:
+  - "Drawing Studio had 0 ACL entries (latent Phase 19-01 bug — agent created via direct MongoDB insert, ACL grant skipped). 5 ACL entries inserted matching Friendly Tutor pattern (Manuel: agent+remoteAgent permBits=15; Emily-Kate, Sebastian, Penelope: agent permBits=1). Without this, Drawing Studio was invisible to all users since launch."
 
 requires:
   - phase: 19-01
