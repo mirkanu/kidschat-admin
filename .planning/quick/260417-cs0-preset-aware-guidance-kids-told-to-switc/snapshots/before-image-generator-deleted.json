@@ -1,0 +1,135 @@
+{
+  "status": "deleted",
+  "deletedAt": "2026-04-17T09:16:06.591Z",
+  "targetId": "agent_F6ITBo7EuorE7vqrXsNAm",
+  "resourceId": "69d8aead89823f56120e6122",
+  "agent": {
+    "_id": "69d8aead89823f56120e6122",
+    "id": "agent_F6ITBo7EuorE7vqrXsNAm",
+    "name": "Image Generator",
+    "description": "",
+    "instructions": "You are KidsChat Drawing Helper, a friendly art assistant for children ages\n  10-14. You ONLY create wholesome, age-appropriate illustrations. When a child\n  asks you to draw, use the DALL-E tool to create the image. If a request is\n  inappropriate (violence, horror, immodest content, real people), decline\n  warmly and suggest a wholesome alternative. Keep your responses short,\n  friendly, and encouraging.",
+    "provider": "openAI",
+    "model": "gpt-4o-mini",
+    "artifacts": "",
+    "tools": [
+      "dalle"
+    ],
+    "tool_kwargs": [],
+    "author": "69cfd4edf4044c9e5e4c039a",
+    "agent_ids": [],
+    "edges": [],
+    "conversation_starters": [],
+    "versions": [
+      {
+        "name": "Image Generator",
+        "description": "",
+        "instructions": "You are KidsChat Drawing Helper, a friendly art assistant for children ages\n  10-14. You ONLY create wholesome, age-appropriate illustrations. When a child\n  asks you to draw, use the DALL-E tool to create the image. If a request is\n  inappropriate (violence, horror, immodest content, real people), decline\n  warmly and suggest a wholesome alternative. Keep your responses short,\n  friendly, and encouraging.",
+        "model_parameters": {},
+        "edges": [],
+        "artifacts": "",
+        "support_contact": {
+          "name": "",
+          "email": ""
+        },
+        "category": "general",
+        "provider": "openAI",
+        "model": "gpt-4o-mini",
+        "id": "agent_F6ITBo7EuorE7vqrXsNAm",
+        "tools": [
+          "dalle"
+        ],
+        "createdAt": "2026-04-10T08:02:53.396Z",
+        "updatedAt": "2026-04-10T08:02:53.396Z"
+      }
+    ],
+    "category": "general",
+    "support_contact": {
+      "name": "",
+      "email": ""
+    },
+    "is_promoted": false,
+    "mcpServerNames": [],
+    "tool_options": {},
+    "createdAt": "2026-04-10T08:02:53.399Z",
+    "updatedAt": "2026-04-10T08:02:53.399Z",
+    "__v": 0
+  },
+  "aclentries": [
+    {
+      "_id": "69d8aead4880f84eaf893669",
+      "resourceId": "69d8aead89823f56120e6122",
+      "principalType": "user",
+      "principalId": "69cfd4edf4044c9e5e4c039a",
+      "principalModel": "User",
+      "resourceType": "agent",
+      "__v": 0,
+      "createdAt": "2026-04-10T08:02:53.430Z",
+      "grantedAt": "2026-04-10T08:02:53.429Z",
+      "grantedBy": "69cfd4edf4044c9e5e4c039a",
+      "permBits": 15,
+      "roleId": "69cfd4914880f84eaf89360e",
+      "updatedAt": "2026-04-10T08:02:53.430Z"
+    },
+    {
+      "_id": "69d8aead4880f84eaf89366a",
+      "resourceType": "remoteAgent",
+      "principalModel": "User",
+      "principalId": "69cfd4edf4044c9e5e4c039a",
+      "principalType": "user",
+      "resourceId": "69d8aead89823f56120e6122",
+      "__v": 0,
+      "createdAt": "2026-04-10T08:02:53.439Z",
+      "grantedAt": "2026-04-10T08:02:53.439Z",
+      "grantedBy": "69cfd4edf4044c9e5e4c039a",
+      "permBits": 15,
+      "roleId": "69cfd4914880f84eaf893617",
+      "updatedAt": "2026-04-10T08:02:53.439Z"
+    },
+    {
+      "_id": "69d8aed54880f84eaf89366b",
+      "resourceType": "agent",
+      "principalType": "user",
+      "principalId": "69d0315763d6125f1f553e97",
+      "resourceId": "69d8aead89823f56120e6122",
+      "__v": 0,
+      "createdAt": "2026-04-10T08:03:33.500Z",
+      "grantedAt": "2026-04-10T08:03:33.500Z",
+      "grantedBy": "69cfd4edf4044c9e5e4c039a",
+      "permBits": 1,
+      "principalModel": "User",
+      "roleId": "69cfd4914880f84eaf89360c",
+      "updatedAt": "2026-04-10T08:03:33.500Z"
+    },
+    {
+      "_id": "69d8aed54880f84eaf89366c",
+      "resourceId": "69d8aead89823f56120e6122",
+      "principalId": "69d0315763d6125f1f553e98",
+      "principalType": "user",
+      "resourceType": "agent",
+      "__v": 0,
+      "createdAt": "2026-04-10T08:03:33.500Z",
+      "grantedAt": "2026-04-10T08:03:33.500Z",
+      "grantedBy": "69cfd4edf4044c9e5e4c039a",
+      "permBits": 1,
+      "principalModel": "User",
+      "roleId": "69cfd4914880f84eaf89360c",
+      "updatedAt": "2026-04-10T08:03:33.500Z"
+    },
+    {
+      "_id": "69d8aed54880f84eaf89366d",
+      "resourceType": "agent",
+      "principalType": "user",
+      "principalId": "69cfd67ff4044c9e5e4c03a7",
+      "resourceId": "69d8aead89823f56120e6122",
+      "__v": 0,
+      "createdAt": "2026-04-10T08:03:33.500Z",
+      "grantedAt": "2026-04-10T08:03:33.500Z",
+      "grantedBy": "69cfd4edf4044c9e5e4c039a",
+      "permBits": 1,
+      "principalModel": "User",
+      "roleId": "69cfd4914880f84eaf89360c",
+      "updatedAt": "2026-04-10T08:03:33.500Z"
+    }
+  ]
+}
