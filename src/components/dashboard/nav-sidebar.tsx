@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Shield, MessageSquare, Users, BarChart3, AlertTriangle, BookOpen, Activity, PenLine, Bell, Settings } from "lucide-react";
+import { Shield, MessageSquare, Users, BarChart3, AlertTriangle, BookOpen, Activity, PenLine, Bell, Gauge } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Sheet,
@@ -21,7 +21,7 @@ const activeNavItems = [
   { href: "/safety-rules", label: "Safety Rules", icon: BookOpen },
   { href: "/test-mode", label: "Test Mode", icon: Activity },
   { href: "/prompt-editor", label: "Rules Editor", icon: PenLine },
-  { href: "/settings", label: "Usage Limits", icon: Settings },
+  { href: "/settings", label: "Usage Limits", icon: Gauge },
 ];
 
 interface NavSidebarProps {
