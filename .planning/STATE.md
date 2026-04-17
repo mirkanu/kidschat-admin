@@ -98,7 +98,7 @@ Progress: [█████████░] 93%
 - [Phase 15.2]: Option 7 validated: agent delivered probe marker verbatim; field path is agents.instructions not model_options.system; query key is {id: agentId}
 - [Phase 15.2]: uuid@9 used (not v13) because v13 is ESM-only and breaks ts-jest
 - [Phase 15.3-simplification]: LibreChat native "Insufficient Funds" hard block replaces all custom 70% warning + bonus offer + YES-confirmation flow; parent top-up is manual one-click €0.10 from admin UI
-- [Phase 15.3-simplification]: balance_state.monthlySpendEur is a dead field never incremented (pre-existing bug from 15-04); "This month" bar always shows 0% — flagged for follow-up quick task
+- [Phase 15.3-simplification]: ~~balance_state.monthlySpendEur is a dead field never incremented~~ — RESOLVED in Phase 15.4 by `accumulateYesterdaySpend()` in daily-reset cron (verified live 2026-04-17: Penelope €0.50, Sebastian €0.36)
 - [Phase 15.3-simplification]: instrumentation.ts polling loop deleted; no setInterval listener at Next.js startup
 - [Phase 15.4]: $max operator chosen for daily refill: atomic, one-line, no schema change — preserves parent top-ups above dailyCap
 - [Phase 15.4]: displayedMonthlySpendEur = stored monthlySpendEur + today's partial spend (live view); DB truth only written at midnight UTC via $inc
