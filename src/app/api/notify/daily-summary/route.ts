@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Db } from "mongodb";
 import { auth } from "@/auth";
 import getMongoClient from "@/lib/mongodb";
 import { getFromAddress } from "@/lib/email-utils";
@@ -22,7 +23,9 @@ export async function POST(req: NextRequest) {
   const client = await getMongoClient();
   const db = client.db("test");
 
-  // Gather per-child stats from last 24 hours
+  // Gather per-child stats from last 24 hours.
+  // Each kid arrives with alertCount + conversationExcerpts populated; AI
+  // summary fields are still empty and get filled in below.
   const stats = await getDailyChildStats(db);
 
   // Primary: use notification_recipients collection (supports both parents)
@@ -31,7 +34,6 @@ export async function POST(req: NextRequest) {
   let toEmails = await getRecipientsForType("dailySummary");
 
   if (toEmails.length === 0) {
-    // Backward compat: fall back to ADMIN users until recipients are configured
     const allAdmins = await db
       .collection("users")
       .find({ role: "ADMIN" })
@@ -56,16 +58,66 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  // --- Enrich with AI-generated per-kid summaries + alert paraphrases ---
+  // Both calls run concurrently across kids; per-kid try/catch ensures one
+  // failure doesn't block any other kid or the overall email send.
+  const oneDayAgo = new Date();
+  oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+  const { summarizeChildDay, summarizeAlerts } = await import("@/lib/ai-summary");
+
+  await Promise.all(
+    stats.map(async (kid) => {
+      // (a) Child day summary
+      if (kid.totalMessages === 0) {
+        kid.summary = "No activity yesterday.";
+      } else {
+        try {
+          kid.summary = await summarizeChildDay(
+            kid.name,
+            kid.totalMessages,
+            kid.conversationExcerpts,
+          );
+        } catch (e) {
+          console.error(
+            `[daily-summary] summarizeChildDay failed for ${kid.name}:`,
+            e,
+          );
+          kid.summary = "(summary unavailable today)";
+        }
+      }
+
+      // (b) Alert summary — only when the kid had alerts today
+      if (kid.alertCount > 0) {
+        try {
+          const alerts = await fetchAlertsForKid(db, kid.name, oneDayAgo);
+          kid.alertSummary = await summarizeAlerts(kid.name, alerts);
+        } catch (e) {
+          console.error(
+            `[daily-summary] summarizeAlerts failed for ${kid.name}:`,
+            e,
+          );
+          kid.alertSummary = "(alert summary unavailable)";
+        }
+      }
+    }),
+  );
+
+  // --- Build email template props (strip conversationExcerpts — raw kid text
+  // must not flow to email HTML; threat T-p94-02). ---
+  const childrenForTemplate = stats.map(
+    ({ conversationExcerpts: _excerpts, ...rest }) => rest,
+  );
+
   // Lazy imports so this module is safe to import at build time
   const { resend } = await import("@/lib/resend");
   const { DailySummaryEmail } = await import("@/components/emails/daily-summary-email");
 
-  // Send the daily summary email via Resend
   const { data, error } = await resend.emails.send({
     from: getFromAddress(),
     to: toEmails,
     subject: `KidsChat Daily Summary \u2014 ${date}`,
-    react: DailySummaryEmail({ children: stats, date }),
+    react: DailySummaryEmail({ children: childrenForTemplate, date }),
   });
 
   if (error) {
@@ -73,14 +125,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to send email", detail: error }, { status: 500 });
   }
 
-  // Record send in email_notifications collection
+  // Record send in email_notifications collection. Strip conversationExcerpts
+  // from the audit doc — we only retain the rendered summary + stats (privacy:
+  // raw kid text should not be persisted here; threat T-p94-02).
+  const childStatsForAudit = stats.map(
+    ({ conversationExcerpts: _excerpts, ...rest }) => rest,
+  );
+
   await db.collection("email_notifications").insertOne({
     type: "daily_summary",
     sentAt: new Date(),
     to: toEmails,
     date,
     resendId: data?.id ?? null,
-    meta: { childStats: stats },
+    meta: { childStats: childStatsForAudit },
   });
 
   return NextResponse.json({
@@ -88,6 +146,44 @@ export async function POST(req: NextRequest) {
     children: stats.length,
     date,
   });
+}
+
+/**
+ * Fetch recent safety alerts for a single child, most-recent first, capped at 10.
+ * Projects only the fields the Haiku alert prompt needs.
+ */
+async function fetchAlertsForKid(
+  db: Db,
+  childName: string,
+  since: Date,
+): Promise<Array<{ alertType: string; matchedPattern: string; messageExcerpt: string }>> {
+  const rows = await db
+    .collection("email_notifications")
+    .find({
+      type: "safety_alert",
+      childName,
+      sentAt: { $gte: since },
+    })
+    .project<{
+      meta?: {
+        alertType?: string;
+        matchedPattern?: string;
+        messageExcerpt?: string;
+      };
+    }>({
+      "meta.alertType": 1,
+      "meta.matchedPattern": 1,
+      "meta.messageExcerpt": 1,
+    })
+    .sort({ sentAt: -1 })
+    .limit(10)
+    .toArray();
+
+  return rows.map((r) => ({
+    alertType: r.meta?.alertType ?? "unknown",
+    matchedPattern: r.meta?.matchedPattern ?? "",
+    messageExcerpt: r.meta?.messageExcerpt ?? "",
+  }));
 }
 
 /**

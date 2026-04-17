@@ -11,11 +11,20 @@ import {
   Link,
 } from "@react-email/components";
 
+/**
+ * Per-child card data rendered in the daily-summary email.
+ *
+ * Mirrors `DailyChildStats` (src/lib/daily-summary.ts) MINUS the raw
+ * `conversationExcerpts` field — that's deliberately stripped in the
+ * route before being passed to this template, because raw kid text
+ * must not flow to email HTML (threat T-p94-02).
+ */
 export interface DailyChildStat {
   name: string;
   totalMessages: number;
-  imageRequests: number;
-  topPresets: string[];
+  alertCount: number;
+  summary: string;
+  alertSummary: string | null;
 }
 
 export interface DailySummaryEmailProps {
@@ -94,103 +103,78 @@ export function DailySummaryEmail({ children, date }: DailySummaryEmailProps) {
           ) : (
             children.map((child, index) => (
               <div key={child.name}>
-                {/* Child name */}
-                <Text
+                <div
                   style={{
-                    color: "#111827",
-                    fontSize: "16px",
-                    fontWeight: "700",
-                    margin: "0 0 12px",
-                  }}
-                >
-                  {child.name}
-                </Text>
-
-                {/* Stats table */}
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    backgroundColor: "#f9fafb",
+                    border: "1px solid #e5e7eb",
                     borderRadius: "6px",
-                    marginBottom: "8px",
+                    padding: "16px",
+                    backgroundColor: "#f9fafb",
                   }}
                 >
-                  <thead>
-                    <tr>
-                      <th
-                        style={{
-                          color: "#6b7280",
-                          fontSize: "12px",
-                          fontWeight: "600",
-                          textAlign: "left",
-                          padding: "8px 12px",
-                          borderBottom: "1px solid #e5e7eb",
-                        }}
-                      >
-                        Messages
-                      </th>
-                      <th
-                        style={{
-                          color: "#6b7280",
-                          fontSize: "12px",
-                          fontWeight: "600",
-                          textAlign: "left",
-                          padding: "8px 12px",
-                          borderBottom: "1px solid #e5e7eb",
-                        }}
-                      >
-                        Image Requests
-                      </th>
-                      <th
-                        style={{
-                          color: "#6b7280",
-                          fontSize: "12px",
-                          fontWeight: "600",
-                          textAlign: "left",
-                          padding: "8px 12px",
-                          borderBottom: "1px solid #e5e7eb",
-                        }}
-                      >
-                        Presets Used
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td
-                        style={{
-                          color: "#111827",
-                          fontSize: "14px",
-                          fontWeight: "600",
-                          padding: "10px 12px",
-                        }}
-                      >
-                        {child.totalMessages}
-                      </td>
-                      <td
-                        style={{
-                          color: "#111827",
-                          fontSize: "14px",
-                          padding: "10px 12px",
-                        }}
-                      >
-                        {child.imageRequests}
-                      </td>
-                      <td
-                        style={{
-                          color: "#374151",
-                          fontSize: "13px",
-                          padding: "10px 12px",
-                        }}
-                      >
-                        {child.topPresets.length > 0
-                          ? child.topPresets.slice(0, 3).join(", ")
-                          : "\u2014"}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                  {/* Child name */}
+                  <Text
+                    style={{
+                      color: "#111827",
+                      fontSize: "16px",
+                      fontWeight: "700",
+                      margin: "0 0 8px",
+                    }}
+                  >
+                    {child.name}
+                  </Text>
+
+                  {/* Totals line */}
+                  <Text
+                    style={{
+                      color: "#374151",
+                      fontSize: "14px",
+                      margin: "0 0 4px",
+                    }}
+                  >
+                    {child.totalMessages} messages today
+                  </Text>
+
+                  {/* Alerts line — always shown (incl. 0) */}
+                  <Text
+                    style={{
+                      color:
+                        child.alertCount > 0 ? "#b91c1c" : "#374151",
+                      fontSize: "14px",
+                      fontWeight: child.alertCount > 0 ? "600" : "400",
+                      margin: "0 0 4px",
+                    }}
+                  >
+                    Alerts: {child.alertCount}
+                  </Text>
+
+                  {/* Optional AI-paraphrased alert summary */}
+                  {child.alertSummary && (
+                    <Text
+                      style={{
+                        color: "#7f1d1d",
+                        fontSize: "13px",
+                        fontStyle: "italic",
+                        margin: "0 0 8px",
+                        lineHeight: "1.4",
+                      }}
+                    >
+                      {child.alertSummary}
+                    </Text>
+                  )}
+
+                  {/* AI-paraphrased day summary */}
+                  <Text
+                    style={{
+                      color: "#374151",
+                      fontSize: "13px",
+                      margin: "8px 0 0",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    <span style={{ fontWeight: 600 }}>Summary:</span>{" "}
+                    {child.summary}
+                  </Text>
+                </div>
 
                 {index < children.length - 1 && (
                   <Hr
