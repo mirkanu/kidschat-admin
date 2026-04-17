@@ -28,20 +28,6 @@ export default function UserDetailLoading() {
         </div>
       </div>
 
-      {/* Usage & Limits — 2-bar skeleton */}
-      <div className="rounded-lg border p-6 space-y-5">
-        <Skeleton className="h-5 w-28" />
-        {Array.from({ length: 2 }).map((_, i) => (
-          <div key={i} className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-3 w-32" />
-            </div>
-            <Skeleton className="h-2 w-full rounded-full" />
-            <Skeleton className="h-3 w-40" />
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

@@ -37,6 +37,7 @@ export async function topUpChildBalance(
     const newBalanceEur = tokensToEur(Math.max(0, newCredits));
 
     revalidatePath(`/users/${userId}`);
+    revalidatePath("/settings");
 
     return { ok: true, newBalanceEur };
   } catch (err) {

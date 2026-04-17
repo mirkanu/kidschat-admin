@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import Link from "next/link";
@@ -7,8 +6,6 @@ import { ObjectId } from "mongodb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
-import { UsageBars, UsageBarsSkeleton } from "@/components/dashboard/usage-bars";
-import { TopUpButton } from "./top-up-button";
 
 interface User {
   id: string;
@@ -124,28 +121,6 @@ export default async function UserDetailPage({
         </CardContent>
       </Card>
 
-      {/* Usage & Limits — 2 bars: daily spend + monthly spend + top-up button */}
-      {user.role !== "ADMIN" && (
-        <div className="space-y-4">
-          <Suspense fallback={<UsageBarsSkeleton />}>
-            <UsageBars userId={userId} childName={user.name} />
-          </Suspense>
-          <div className="flex justify-end">
-            <TopUpButton userId={userId} childName={user.name} />
-          </div>
-        </div>
-      )}
-
-      {/* Link to settings for this user */}
-      {user.role !== "ADMIN" && (
-        <div className="text-sm text-muted-foreground">
-          To set per-child limits for {user.name},{" "}
-          <Link href="/settings" className="underline hover:text-foreground transition-colors">
-            visit the Settings page
-          </Link>
-          .
-        </div>
-      )}
     </div>
   );
 }

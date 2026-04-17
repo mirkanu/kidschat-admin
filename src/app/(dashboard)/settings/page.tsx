@@ -7,6 +7,8 @@ import type { GlobalDefaults, ChildOverride } from "@/lib/budget";
 import { SettingsForm } from "./settings-form";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ChildOverrideRow } from "./types";
+import { UsageBars, UsageBarsSkeleton } from "@/components/dashboard/usage-bars";
+import { TopUpButton } from "../users/[userId]/top-up-button";
 
 // ---------------------------------------------------------------------------
 // Data fetching
@@ -137,6 +139,56 @@ function SettingsFormSkeleton() {
 }
 
 // ---------------------------------------------------------------------------
+// Per-child Usage section (above the tabs)
+// ---------------------------------------------------------------------------
+
+async function ChildUsageSection() {
+  const { overrides } = await getSettingsData();
+  // `overrides` is already the full list of non-admin children (userId + childName),
+  // sorted by name — reuse it directly to avoid a second MongoDB roundtrip.
+
+  if (overrides.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No child accounts yet.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {overrides.map((child) => (
+        <div key={child.userId} className="space-y-3">
+          <h3 className="text-base font-medium">{child.childName}</h3>
+          <Suspense fallback={<UsageBarsSkeleton />}>
+            <UsageBars userId={child.userId} childName={child.childName} />
+          </Suspense>
+          <div className="flex justify-end">
+            <TopUpButton userId={child.userId} childName={child.childName} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ChildUsageSectionSkeleton() {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: 2 }).map((_, i) => (
+        <div key={i} className="space-y-3">
+          <Skeleton className="h-5 w-32" />
+          <UsageBarsSkeleton />
+          <div className="flex justify-end">
+            <Skeleton className="h-9 w-32" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -145,7 +197,7 @@ export default async function SettingsPage() {
   if (!session) redirect("/login");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-semibold">Usage Limits</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -153,6 +205,20 @@ export default async function SettingsPage() {
         </p>
       </div>
 
+      {/* NEW: Current usage section */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold">Current usage</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Live balance and daily/monthly spend per child.
+          </p>
+        </div>
+        <Suspense fallback={<ChildUsageSectionSkeleton />}>
+          <ChildUsageSection />
+        </Suspense>
+      </section>
+
+      {/* EXISTING: Tabs (Global Defaults / Per-Child Overrides) */}
       <Suspense fallback={<SettingsFormSkeleton />}>
         <SettingsContent />
       </Suspense>
