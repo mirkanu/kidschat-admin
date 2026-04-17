@@ -5,7 +5,7 @@ milestone_name: milestone
 status: executing
 stopped_at: Completed 18-03-PLAN.md
 last_updated: "2026-04-16T21:17:07.573Z"
-last_activity: 2026-04-17 - Consolidated per-child Usage & Limits into /settings (quick task 260417-njb)
+last_activity: 2026-04-18 - Daily-summary email overhaul shipped + AI paraphrased summaries (quick task 260417-p94)
 progress:
   total_phases: 1
   completed_phases: 0
@@ -151,6 +151,7 @@ Progress: [█████████░] 93%
 | 260417-kgn | Rename "Daily cap/limit" UI labels → "Daily allowance" to match $max-floor refill semantics | 2026-04-17 | c6f11ef | [260417-kgn](./quick/260417-kgn-rename-daily-cap-limit-ui-labels-to-matc/) |
 | 260417-m3p | Parents auto-refill to 1M tokens via daily-reset cron + rename nav "Settings" → "Usage Limits" | 2026-04-17 | 5740b2f | [260417-m3p](./quick/260417-m3p-parents-auto-refill-to-1m-ceiling-rename/) |
 | 260417-njb | Consolidate per-child Usage & Limits (bars + top-up) into /settings; remove from /users/{id} | 2026-04-17 | 5a3a863 | [260417-njb](./quick/260417-njb-consolidate-per-child-usage-limits-into-/) |
+| 260417-p94 | Daily-summary email overhaul: drop image-requests/presets-used; add Alerts + Haiku 4.5 paraphrased per-kid summary | 2026-04-18 | fdd5a92 | [260417-p94](./quick/260417-p94-daily-summary-email-overhaul-drop-image-/) |
 | Phase 15-safety-alert-extension-rate-limiting P01 | 35 | 3 tasks | 12 files |
 | Phase 15-safety-alert-extension-rate-limiting P00 | 35 | 4 tasks | 10 files |
 | Phase 15-safety-alert-extension-rate-limiting P02 | 70 | 4 tasks | 21 files |
