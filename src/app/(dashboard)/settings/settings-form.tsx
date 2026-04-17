@@ -110,11 +110,18 @@ export function SettingsForm({ globals, overrides, lastUpdated }: SettingsFormPr
             <Separator />
             <div className="space-y-3">
               <NumberFieldRow
-                label="Daily cap (€)"
+                label="Daily allowance (€)"
                 name="dailyCostCapEur"
                 defaultValue={globals.dailyCostCapEur}
                 step="0.001"
               />
+              <div className="grid grid-cols-3 gap-4">
+                <div />
+                <p className="col-span-2 text-xs text-muted-foreground">
+                  Refilled to this minimum each midnight UTC. Parent top-ups
+                  above it are preserved; unused balance does not roll over.
+                </p>
+              </div>
               <NumberFieldRow
                 label="Monthly cap (€)"
                 name="monthlyCostCapEur"

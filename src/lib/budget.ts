@@ -242,7 +242,7 @@ export async function accumulateYesterdaySpend(userId: string, db: Db): Promise<
 /**
  * Tops up a child's daily budget:
  * - Uses $max operator to set balances.tokenCredits to eurToTokens(dailyCostCapEur)
- *   (atomic: preserves parent top-ups above the daily cap — no clobbering)
+ *   (atomic: preserves parent top-ups above the daily allowance — no clobbering)
  * - Short-circuits if displayedMonthlySpendEur >= monthlyCostCapEur (monthly cap enforcement)
  *   but still advances lastDailyReset to prevent re-evaluation loops
  * - Updates balance_state: lastDailyReset
@@ -267,7 +267,7 @@ export async function topUpDailyBudget(userId: string, db: Db): Promise<void> {
 
   const credits = eurToTokens(state.dailyCapEur);
 
-  // $max preserves parent top-ups that pushed tokenCredits above the daily cap.
+  // $max preserves parent top-ups that pushed tokenCredits above the daily allowance.
   // Atomic: if tokenCredits is missing or < credits, set to credits; else leave alone.
   const balancesCol = db.collection<BalancesDoc>("balances");
   await balancesCol.updateOne(

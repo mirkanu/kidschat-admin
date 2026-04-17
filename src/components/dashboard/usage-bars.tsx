@@ -68,7 +68,7 @@ export async function UsageBars({ userId }: UsageBarsProps) {
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            {dailyPercent}% of daily cap used
+            {dailyPercent}% of daily allowance used
           </p>
         </div>
 

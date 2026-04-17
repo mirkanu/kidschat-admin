@@ -172,7 +172,7 @@ export function ChildOverridesTable({
         {/* Header row — matches the form grid template */}
         <div className="grid grid-cols-[9rem_1fr_1fr_7rem] items-center gap-2 px-3 py-2 bg-muted/50 text-xs font-medium text-muted-foreground">
           <div>Child</div>
-          <div>Daily cap (€)</div>
+          <div>Daily allowance (€)</div>
           <div>Monthly cap (€)</div>
           <div className="text-right">Actions</div>
         </div>
