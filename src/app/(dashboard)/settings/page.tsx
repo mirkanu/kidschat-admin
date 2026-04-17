@@ -147,7 +147,7 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Settings</h1>
+        <h1 className="text-2xl font-semibold">Usage Limits</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Configure daily and monthly cost caps and per-child overrides.
         </p>

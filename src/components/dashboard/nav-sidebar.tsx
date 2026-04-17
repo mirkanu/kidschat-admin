@@ -21,7 +21,7 @@ const activeNavItems = [
   { href: "/safety-rules", label: "Safety Rules", icon: BookOpen },
   { href: "/test-mode", label: "Test Mode", icon: Activity },
   { href: "/prompt-editor", label: "Rules Editor", icon: PenLine },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/settings", label: "Usage Limits", icon: Settings },
 ];
 
 interface NavSidebarProps {
