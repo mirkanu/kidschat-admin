@@ -1,8 +1,43 @@
 # Phase 20: Image Search — Research + POC — Research
 
 **Researched:** 2026-04-18
+**Amended:** 2026-04-18 (Amendment A — provider pivot from Brave to Google CSE + Openverse)
 **Domain:** LibreChat v0.8.4 agent tooling, kid-safe image search APIs, MCP integration, markdown-rendered image grids, admin-dashboard streaming parity
-**Confidence:** HIGH for tool mechanism + provider + hotlink; MEDIUM for Test Mode architecture (needs source-code probe during POC)
+**Confidence:** HIGH for tool mechanism + providers + hotlink; MEDIUM for Test Mode architecture (needs source-code probe during POC)
+
+---
+
+## Amendment A — Provider pivot from Brave to Google CSE + Openverse (2026-04-18)
+
+After the original research recommended Brave, the parent flagged that Brave's $5/month base plan is not a true free tier and requested testing genuinely free options first. Updated recommendations:
+
+**New provider shortlist:**
+- **Google Custom Search JSON API** (primary) — 100 queries/day free per GCP project; `searchType=image`; `safe=active` strict SafeSearch; `cx` (custom search engine) configured to search the whole web; sufficient for family scale (20 queries/day actual vs 100/day free cap = 5× headroom). `[VERIFIED: developers.google.com/custom-search/v1/overview]`
+- **Openverse API** (fallback) — `api.openverse.org/v1/images/?q=...` — unlimited free, no auth required, pre-filtered to Creative Commons content (Flickr, Wikimedia, museums, etc.). Narrower corpus than Google but strong for craft/educational queries and zero risk of inappropriate content. `[VERIFIED: api.openverse.org/v1/]`
+
+**New tool mechanism (supersedes original §Decision Recommendations D-13a):** Neither provider has an official MCP server. A **custom `kidschat-image-search-mcp` Node MCP server** (~100 LOC at `services/image-search-mcp/` in the KidAI repo) wraps both providers with primary-fallback logic and exposes a single `image_search` tool to LibreChat. Deployed as a new Railway service pointing at the subdirectory. MCP wire protocol with LibreChat is unchanged — we just author the server ourselves instead of using Brave's.
+
+**Implementation sketch for the custom MCP server:**
+- Node TS + `@modelcontextprotocol/sdk` + `fetch`. No other dependencies.
+- One tool: `image_search(query: string, count?: number=10)` returns `{ images: [{ url, thumbnail, title, source_domain, license? }] }`.
+- Primary call: Google CSE JSON API with `safe=active&searchType=image`.
+- Fallback condition: Google returned 0 results OR `error.code=429` (daily-cap exceeded) → call Openverse `/v1/images/?q={query}&license_type=all-cc`.
+- Never return source site URLs to the agent — only thumbnail URLs + titles. Enforces option iii click-through policy at the tool boundary, not just at the prompt layer.
+
+**Why this preserves plan structure:**
+- Railway service deploy flow unchanged (swap `kidschat-brave-mcp` for `kidschat-image-search-mcp`).
+- LibreChat `mcpServers` config + agent `tools: ["image_search"]` pattern unchanged (just rename the tool from `brave_image_search` to `image_search`).
+- Phase 22 Test Mode can import the MCP server's primary-fallback library code directly for Option B re-implementation — shared logic, no drift.
+
+**Brave status:** Culled in this pass. Remains a fallback option if Google CSE + Openverse fail UAT — in which case D-03 is re-amended with a live Brave test.
+
+**Decision Recommendations D-13a, D-13b updates:**
+- **D-13a (Tool Mechanism):** MCP via custom `kidschat-image-search-mcp` server (not Brave's official server). Confidence HIGH — MCP protocol with LibreChat is verified working (same mechanism as Drawing Studio's DALL-E).
+- **D-13b (Search Provider):** Google CSE primary + Openverse fallback, both integrated in the custom MCP server. Confidence MEDIUM pending UAT — Google CSE's SafeSearch quality on family-likely queries is the risk we POC during Plan 20-05.
+
+D-13c (hotlink) and D-14 (Test Mode architecture) unchanged by this amendment.
+
+---
 
 ## Summary
 

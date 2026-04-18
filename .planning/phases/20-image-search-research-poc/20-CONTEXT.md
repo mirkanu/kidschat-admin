@@ -20,11 +20,23 @@ Phase 20 resolves the technical unknowns blocking v2.9 Image Search + Test Mode 
 - **D-02:** Phase 20's deliverable is code + documented decisions sufficient that Phase 21 (kid production rollout) and Phase 22 (Test Mode parity) can plan without additional research.
 
 ### Provider Candidate Shortlist
-- **D-03:** Two candidate providers get actively stood up and queried during Phase 20:
-  - **Brave Search API** — modern, independent index, strict SafeSearch, image endpoint, generous free tier
-  - **LibreChat v0.8.4 built-in `web_search` tool** — if it exists in this LibreChat version and supports image results, it would be a zero-code path
-- Serper, Google CSE, Bing, Kagi, and other providers are **culled on desk review only** during research — no live API testing in Phase 20.
-- **D-04:** Decision criterion for picking the final provider: SafeSearch quality on the agreed test set (D-11), cost/free-tier fit, image endpoint ergonomics (thumbnail URL presence, title, source domain), hotlink-blocking rate on sample results.
+- **D-03 (AMENDED 2026-04-18 — see Amendment A below):** Two candidate providers get actively stood up and queried during Phase 20, both genuinely free at family usage:
+  - **Google Custom Search JSON API** (primary) — 100 queries/day free tier (per GCP project), strict SafeSearch param, image search via `searchType=image`, Google-wide corpus
+  - **Openverse API** (fallback/complement) — unlimited free, no auth required, pre-filtered Creative Commons content from Flickr/Wikimedia/museums/etc., good for craft/educational queries
+- Brave Search API, LibreChat built-in `web_search`, Serper, Bing, Kagi, Pexels/Unsplash all **culled on desk review** — see Amendment A.
+- **D-04:** Decision criterion for picking the final provider: SafeSearch quality on the agreed test set (D-11), cost/free-tier fit, image endpoint ergonomics (thumbnail URL presence, title, source domain), hotlink-blocking rate on sample results. Combined-provider strategy expected: Google CSE for breadth, Openverse as fallback for queries where Google is over-strict or returns poor craft/educational results.
+
+### Amendment A — Provider Pivot from Brave to Google CSE + Openverse (2026-04-18)
+
+**Trigger:** Parent reviewed initial research finding that Brave's "base plan with $5 credit" model is not a true free tier, and requested testing genuinely free options first.
+
+**Original D-03 (superseded):** Brave Search API + LibreChat built-in `web_search`.
+
+**Why Brave is culled in this pass:** $5/month base plan is not "free-forever" (research agent's phrasing was accurate but the parent's tolerance for paid-from-day-one is lower than assumed). Brave remains a fallback option if Google CSE + Openverse fail UAT — in which case D-03 can be re-amended.
+
+**Architectural consequence:** Neither Google CSE nor Openverse has an official MCP server. Tool mechanism changes from "Brave official MCP server" to a **custom `kidschat-image-search-mcp` Node server** (~100 LOC) living in the KidAI repo at `services/image-search-mcp/`, wrapping both providers with primary-fallback logic. Deployed as a new Railway service pointing at the subdirectory. MCP wire protocol with LibreChat still applies — we just author the server ourselves instead of using Brave's.
+
+**This amendment supersedes D-03 and shifts tool-mechanism work into Plan 20-01. Other locked decisions (D-01, D-02, D-04 through D-14) remain unchanged.**
 
 ### Phase 20 Done Criteria
 - **D-05:** Phase 20 is complete when **the parent reviewer (you) can use the Image Search preset in LibreChat against the dev Gist configuration and confirm results look safe and render properly** for the agreed test query set (D-11).
