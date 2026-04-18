@@ -499,22 +499,22 @@ Parent draft workflow: open a private note, write exact phrasings, run as the pa
 
 **A2 is the one assumption worth early verification in Phase 20 task 01** — if Brave MCP ships a non-standard HTTP that LibreChat can't speak, we fall back to running the MCP server in stdio mode inside a Node sidecar container, which adds ~1 task.
 
-## Open Questions
+## Open Questions (RESOLVED via Phase 20 plans)
 
 1. **Does LibreChat v0.8.4's `streamable-http` transport speak the exact MCP wire protocol that Brave's MCP server implements?**
    - What we know: Both support MCP; both support HTTP; neither doc confirms the exact handshake flavor.
    - What's unclear: Whether it's the 2024 MCP "streamable HTTP" spec or an older bespoke HTTP wrap.
-   - Recommendation: First POC task is a connectivity check — stand up Brave MCP on Railway, add minimal `mcpServers` block, restart LibreChat, `docker logs librechat | grep mcp`. Fail-fast.
+   - **RESOLVED via Plan 20-04 Task 20-04-02** — fail-fast smoke test with two pivot variants if the default HTTP transport fails: (pivot 1) MCP stdio mode in a Node sidecar container; (pivot 2) custom OpenAPI tool wrapping Brave's REST API directly. Parent checkpoint before pivot 2.
 
-2. **What authentication mechanism would Option A require for admin → LibreChat `/api/agents/chat` calls?**
+2. **What authentication mechanism would Option A (proxy through LibreChat) require for admin → LibreChat `/api/agents/chat` calls?**
    - What we know: LibreChat uses JWT-based auth for kids; Test Mode currently bypasses LibreChat entirely.
    - What's unclear: Whether minting a service-account JWT (with an admin `_id`) would pass LibreChat's API auth.
-   - Recommendation: Don't resolve in Phase 20. D-14 already recommends Option B; this question only matters if we need to revisit Option A. Park it.
+   - **RESOLVED: parked** — D-14 selection flipped to Option B (re-implement server-side) during this research pass; this question only matters if Option A is revisited. Parent re-verifies `GITHUB_GIST_TOKEN` validity (stale from Phase 15) during Plan 20-01 Wave 0 Brave API signup step, which serves as the combined credentials check before Plan 20-02 Gist fork.
 
 3. **Is there a rate limit on `imgs.search.brave.com` that could throttle the kid's page render when 8 thumbnails load at once?**
    - What we know: Brave CDN is production-grade but not documented for third-party-embed rate limits.
    - What's unclear: Per-IP throttle behavior.
-   - Recommendation: POC sample test — run a query, measure time to 8 images loading, check browser network tab for 429s. Likely fine.
+   - **RESOLVED via Plan 20-05 Task 20-05-02** — hotlink sample recorded during parent UAT; escalation criterion is ≥5% broken-image rate across the 20 test queries, which triggers Phase 21 proxy-fallback requirement.
 
 ## Project Constraints (from CLAUDE.md + STATE.md)
 
