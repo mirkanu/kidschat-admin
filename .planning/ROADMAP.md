@@ -12,6 +12,7 @@
 - ✅ **v2.6 Oversight Protection** — Phase 17 (shipped 2026-04-12)
 - ✅ **v2.7 Email Alerts** — Phase 18 (shipped 2026-04-13)
 - ✅ **v2.8 Budget Hardening** — Phase 19 (shipped 2026-04-18)
+- 🚧 **v2.9 Kid Image Search + Test Mode Preset Parity** — Phases 20-22 (in progress)
 
 ## Phases
 
@@ -132,6 +133,66 @@ Plans:
 
 </details>
 
+<details>
+<summary>✅ v2.8 Budget Hardening (Phase 19) — SHIPPED 2026-04-18</summary>
+
+Forensic investigation + remediation of kids' 20c/day budget exhausting after 2-3 questions. Root causes fixed across the full cost pipeline: DALL-E tool schema overhead removed from text presets, maxContextTokens cap added, startBalance loophole closed, SYSTEM_PROMPT_TOKENS corrected (400 → 3290), daily-reset cron pipeline restored, image-size guardrail deployed, observability added.
+
+See [milestones/v2.8-ROADMAP.md](milestones/v2.8-ROADMAP.md) for full phase details.
+
+- [x] **Phase 19: Budget Exhaustion Investigation & Remediation** — 4/4 plans (completed 2026-04-18)
+
+</details>
+
+<details open>
+<summary>🚧 v2.9 Kid Image Search + Test Mode Preset Parity (Phases 20-22) — IN PROGRESS</summary>
+
+A new kid-facing "Image Search" preset inside LibreChat (no external browser, no click-through, full parent oversight via existing MongoDB + email pipeline), plus Test Mode parity so parents can dry-run all 6 presets (4 text + Drawing Studio + Image Search) with full tool execution before changes hit the kids. Structured as **research+POC → production rollout → admin parity** because three real tech questions (tool mechanism, search provider, Test Mode architecture) only resolve through investigation and must be answered before committing to a production implementation.
+
+- [ ] **Phase 20: Image Search — Research + POC** — Pick tool mechanism (LibreChat web_search vs MCP vs custom OpenAPI tool), pick provider (Brave/Serper/Google CSE), decide hotlink mitigation approach, decide Test Mode architecture; stand up end-to-end POC in staging preset against a real API key.
+- [ ] **Phase 21: Image Search — Production rollout (kid-facing)** — Deploy preset to production Gist, domain blocklist, search-count cap + admin UI, safety pattern wiring, full UAT as Penelope.
+- [ ] **Phase 22: Test Mode preset parity (admin-facing)** — Preset selector, tool execution for all 6 presets (using architecture decided in Phase 20), daily-summary email inclusion of image searches, side-by-side parity UAT.
+
+### Phase 20: Image Search — Research + POC
+**Goal:** Open architectural questions for kid image search are answered with working evidence; a staging preset demonstrates end-to-end image search for one kid account, unblocking Phases 21 and 22.
+**Depends on:** Phase 19
+**Requirements:** (research underpinning — no v1 requirements close here; decisions feed Phases 21/22)
+**Success Criteria** (what must be TRUE):
+  1. A documented decision exists for the image-search tool mechanism (LibreChat built-in web_search vs MCP server vs custom OpenAPI tool), with rationale.
+  2. A documented decision exists for the search provider (Brave / Serper / Google CSE), with rationale covering SafeSearch strictness, pricing, and kid-query reliability.
+  3. A documented decision exists for hotlink mitigation (server-side image proxy vs provider-cached CDN vs client-only fallback).
+  4. A documented decision exists for Test Mode tool-execution architecture (proxy-through-LibreChat vs re-implement server-side).
+  5. A working end-to-end POC: typing "volcano" as Sebastian in a staging Image Search preset returns an inline image grid rendered in LibreChat's chat UI — no click-through links, no commentary.
+**Plans**: TBD
+
+### Phase 21: Image Search — Production rollout (kid-facing)
+**Goal:** Penelope and Sebastian have a production "Image Search" preset with SafeSearch, domain blocklist, per-day search cap, and full parent oversight via existing MongoDB/email pipelines — zero click-through to source sites.
+**Depends on:** Phase 20
+**Requirements:** SEARCH-01, SEARCH-02, SEARCH-03, SEARCH-04, SEARCH-05, SEARCH-06, SEARCH-07, SEARCH-08, SAFETY-01, SAFETY-02, OVERSIGHT-01, OVERSIGHT-02
+**Success Criteria** (what must be TRUE):
+  1. Penelope sees "Image Search" as a sixth preset in the LibreChat preset selector and can select it.
+  2. Typing an age-appropriate query (e.g., "lions", "rainbow") returns an inline grid of 8-12 images rendered as plain images (not clickable links), with no AI commentary; hotlink-blocked images render via the proxy fallback.
+  3. An attempt to query a blocklist-matching domain or a SafeSearch-tripped term is filtered out before reaching the kid, and suspicious query patterns fire an existing-pipeline parent email alert.
+  4. After N searches in a day (configurable per child via admin UI, same pattern as daily cost override), Penelope is blocked from additional searches until the next day.
+  5. The admin conversation log shows the Image Search session with a visible preset badge distinguishing it from text-chat conversations; every query + returned URL set is persisted in MongoDB via LibreChat's normal conversation/message write path.
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 22: Test Mode preset parity (admin-facing)
+**Goal:** A parent opens admin Test Mode, picks any of the 6 presets (4 text + Drawing Studio + Image Search), and experiences exactly what a kid would — including actual DALL-E image generation and actual image-search results — so preset/tool changes can be verified before reaching the kids.
+**Depends on:** Phase 21
+**Requirements:** TESTMODE-01, TESTMODE-02, TESTMODE-03, OVERSIGHT-03
+**Success Criteria** (what must be TRUE):
+  1. The admin Test Mode page exposes a preset/agent selector with all 6 presets (Friendly Tutor, Casual Buddy, Balanced Helper, Standard Formal, Drawing Studio, Image Search).
+  2. Selecting Drawing Studio and submitting a prompt triggers real DALL-E image generation and renders the resulting image inline in Test Mode.
+  3. Selecting Image Search and submitting a query returns the same inline image grid a kid would see for that query (same SafeSearch, same blocklist, same click-through policy).
+  4. A side-by-side parity UAT across all 6 presets (parent Test Mode vs Penelope's actual LibreChat session) produces matching behavior within expected variance, documented in the phase's VERIFICATION.md.
+  5. The daily-summary email for each kid includes an "Image searches today" count plus a sample of recent queries, matching the paraphrased-summary style from quick task 260417-p94.
+**Plans**: TBD
+**UI hint**: yes
+
+</details>
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -158,14 +219,6 @@ Plans:
 | 17. Conversation Delete Protection + Icon Fix | v2.6 | 1/1 | Complete | 2026-04-12 |
 | 18. Email Alert System | v2.7 | 3/3 | Complete | 2026-04-13 |
 | 19. Budget Exhaustion Investigation & Remediation | v2.8 | 4/4 | Complete | 2026-04-18 |
-
-<details>
-<summary>✅ v2.8 Budget Hardening (Phase 19) — SHIPPED 2026-04-18</summary>
-
-Forensic investigation + remediation of kids' 20c/day budget exhausting after 2-3 questions. Root causes fixed across the full cost pipeline: DALL-E tool schema overhead removed from text presets, maxContextTokens cap added, startBalance loophole closed, SYSTEM_PROMPT_TOKENS corrected (400 → 3290), daily-reset cron pipeline restored, image-size guardrail deployed, observability added.
-
-See [milestones/v2.8-ROADMAP.md](milestones/v2.8-ROADMAP.md) for full phase details.
-
-- [x] **Phase 19: Budget Exhaustion Investigation & Remediation** — 4/4 plans (completed 2026-04-18)
-
-</details>
+| 20. Image Search — Research + POC | v2.9 | 0/0 | Not started | — |
+| 21. Image Search — Production rollout | v2.9 | 0/0 | Not started | — |
+| 22. Test Mode preset parity | v2.9 | 0/0 | Not started | — |

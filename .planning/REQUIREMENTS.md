@@ -53,23 +53,23 @@ Penelope and Sebastian can search the web for images inside LibreChat via a dedi
 
 ## Traceability
 
-(To be filled by roadmapper — each requirement mapped to exactly one phase.)
-
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| SEARCH-01 | — | Planned |
-| SEARCH-02 | — | Planned |
-| SEARCH-03 | — | Planned |
-| SEARCH-04 | — | Planned |
-| SEARCH-05 | — | Planned |
-| SEARCH-06 | — | Planned |
-| SEARCH-07 | — | Planned |
-| SEARCH-08 | — | Planned |
-| SAFETY-01 | — | Planned |
-| SAFETY-02 | — | Planned |
-| OVERSIGHT-01 | — | Planned |
-| OVERSIGHT-02 | — | Planned |
-| OVERSIGHT-03 | — | Planned |
-| TESTMODE-01 | — | Planned |
-| TESTMODE-02 | — | Planned |
-| TESTMODE-03 | — | Planned |
+| SEARCH-01 | Phase 21 | Planned |
+| SEARCH-02 | Phase 21 | Planned |
+| SEARCH-03 | Phase 21 | Planned |
+| SEARCH-04 | Phase 21 | Planned |
+| SEARCH-05 | Phase 21 | Planned |
+| SEARCH-06 | Phase 21 | Planned |
+| SEARCH-07 | Phase 21 | Planned |
+| SEARCH-08 | Phase 21 | Planned |
+| SAFETY-01 | Phase 21 | Planned |
+| SAFETY-02 | Phase 21 | Planned |
+| OVERSIGHT-01 | Phase 21 | Planned |
+| OVERSIGHT-02 | Phase 21 | Planned |
+| OVERSIGHT-03 | Phase 22 | Planned |
+| TESTMODE-01 | Phase 22 | Planned |
+| TESTMODE-02 | Phase 22 | Planned |
+| TESTMODE-03 | Phase 22 | Planned |
+
+**Note on Phase 20:** Phase 20 is a research+POC phase whose deliverable is architectural decisions (tool mechanism, provider, hotlink mitigation, Test Mode architecture) and a working staging POC. It does not close any v1 requirements directly — every SEARCH/SAFETY/OVERSIGHT/TESTMODE requirement closes in Phase 21 or Phase 22. Phase 20's decisions are load-bearing for both downstream phases.

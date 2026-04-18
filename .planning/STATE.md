@@ -2,16 +2,17 @@
 gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: Kid Image Search + Test Mode Preset Parity
-status: defining_requirements
+status: roadmapped
 stopped_at: ""
-last_updated: "2026-04-18T12:20:00.000Z"
-last_activity: 2026-04-18 — v2.9 milestone started (defining requirements)
+last_updated: "2026-04-18T13:00:00.000Z"
+last_activity: 2026-04-18 — v2.9 roadmap created (Phases 20/21/22)
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
   percent: 0
+current_phase: 20
 ---
 
 # Project State
@@ -25,10 +26,10 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 20 — Image Search — Research + POC (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-18 — Milestone v2.9 started
+Status: Roadmapped; ready to plan Phase 20
+Last activity: 2026-04-18 — Roadmap written, 3 phases defined, 16/16 requirements mapped
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -165,6 +166,9 @@ Progress: [░░░░░░░░░░] 0%
 
 - Phase 18 added: Email Alert System — transactional email service for automated parent notifications
 - Phase 19 added: Investigate why kids' 20c/day budget exhausts after 2-3 questions — audit full cost pipeline (LibreChat tokenCredits vs eurToTokens conversion, conversation-history compounding, agent-preset system-prompt sizes, LibreChat config multipliers)
+- Phase 20 added: Image Search — Research + POC (v2.9) — pick tool mechanism, provider, hotlink mitigation, Test Mode architecture; stand up staging POC
+- Phase 21 added: Image Search — Production rollout (v2.9) — kid-facing preset, domain blocklist, search-count cap, oversight, UAT
+- Phase 22 added: Test Mode preset parity (v2.9) — admin-facing all-6-preset selector with tool parity + daily-summary email enrichment
 
 ### Pending Todos
 
@@ -174,11 +178,12 @@ Progress: [░░░░░░░░░░] 0%
 
 ### Blockers/Concerns
 
+- Phase 20 has real open tech questions (search provider, tool mechanism, Test Mode architecture) — decisions must be resolved before Phase 21/22 can commit to an implementation
 - Phase 12 prerequisite: `GITHUB_GIST_TOKEN` must be added to Railway env before Phase 12 testing can begin (fine-grained PAT, Gist scope only)
 - Phase 12 design decision needed during planning: rollback storage — new `prompt_history` collection vs. field on existing document
 
 ## Session Continuity
 
-Last session: 2026-04-12T19:29:45.302Z
-Stopped at: Completed 18-03-PLAN.md
+Last session: 2026-04-18T13:00:00.000Z
+Stopped at: v2.9 roadmap written (Phases 20/21/22)
 Resume file: None
