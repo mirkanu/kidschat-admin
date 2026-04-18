@@ -168,7 +168,8 @@ Progress: [█████████░] 93%
 
 ### Pending Todos
 
-None yet.
+1 pending — see `.planning/todos/pending/`. Most recent:
+- **Set up Resend custom domain for multi-recipient email delivery** (2026-04-18) — Emily-Kate alerts disabled until done; daily-summary cron only sends to Manuel
 
 ### Blockers/Concerns
 
