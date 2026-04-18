@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: Kid Image Search + Test Mode Preset Parity
 status: executing
-stopped_at: Phase 20 context gathered
-last_updated: "2026-04-18T16:13:54.679Z"
-last_activity: 2026-04-18 -- Phase 20 planning complete
+stopped_at: Completed 20-01-PLAN.md (kidschat-image-search-mcp live on Railway)
+last_updated: "2026-04-18T23:51:17.166Z"
+last_activity: 2026-04-18
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 6
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 17
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-18)
 
 **Core value:** Children can safely explore and learn through AI conversation, with content guardrails that a parent controls and trusts.
-**Current focus:** v2.9 — Kid Image Search + Test Mode Preset Parity
+**Current focus:** Phase 20 — image-search-research-poc
 
 ## Current Position
 
-Phase: 20 — Image Search — Research + POC (not started)
-Plan: —
+Phase: 20 (image-search-research-poc) — EXECUTING
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-04-18 -- Phase 20 planning complete
+Last activity: 2026-04-18
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -116,6 +116,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 18]: ADMIN-user fallback in senders ensures backward compat until recipients are configured
 - [Phase 18]: Green header for daily summary, orange for account activity — four distinct email color themes
 - [Phase 18]: Account activity alerts opt-in only (no ADMIN fallback); Railway cron runs daily, weekly-digest self-skips on non-Mondays
+- [Phase 20]: Openverse is the sole image-search provider (Google CSE dropped; Amendment B). Custom MCP server at services/image-search-mcp/ deployed to Railway as kidschat-image-search-mcp.
+- [Phase 20]: Option-iii click-through policy enforced at the MCP tool boundary (openverse.ts strips foreign_landing_url and url), not at the agent prompt layer.
+- [Phase 20]: railway up --path-as-root <subdir> is the working pattern for monorepo-subdirectory deploys; RAILWAY_ROOT_DIRECTORY env var is NOT recognized by Railway.
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -160,6 +163,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 17-conversation-delete-protection-icon-fix P01 | 44 | 2 tasks | 10 files |
 | Phase 18 P01 | 6 | 2 tasks | 4 files |
 | Phase 18 P03 | 5 | 2 tasks | 8 files |
+| Phase 20 P01 | 35 | 3 tasks | 8 files |
 
 ### Roadmap Evolution
 
@@ -183,6 +187,6 @@ Progress: [░░░░░░░░░░] 0%
 
 ## Session Continuity
 
-Last session: 2026-04-18T13:31:52.514Z
-Stopped at: Phase 20 context gathered
-Resume file: .planning/phases/20-image-search-research-poc/20-CONTEXT.md
+Last session: 2026-04-18T23:51:17.158Z
+Stopped at: Completed 20-01-PLAN.md (kidschat-image-search-mcp live on Railway)
+Resume file: None

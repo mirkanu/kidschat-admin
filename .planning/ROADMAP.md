@@ -163,7 +163,15 @@ A new kid-facing "Image Search" preset inside LibreChat (no external browser, no
   3. A documented decision exists for hotlink mitigation (server-side image proxy vs provider-cached CDN vs client-only fallback).
   4. A documented decision exists for Test Mode tool-execution architecture (proxy-through-LibreChat vs re-implement server-side).
   5. A working end-to-end POC: typing "volcano" as Sebastian in a staging Image Search preset returns an inline image grid rendered in LibreChat's chat UI — no click-through links, no commentary.
-**Plans**: TBD
+**Plans:** 6 plans
+
+Plans:
+- [x] 20-01-PLAN.md — Wave 0 blockers: provision Brave API key + deploy kidschat-brave-mcp Railway service
+- [ ] 20-02-PLAN.md — Fork production Gist to dev Gist with MCP declaration + Image Search preset (production untouched)
+- [ ] 20-03-PLAN.md — Seed MongoDB Image Search agent doc with brave_image_search tool + strict router system prompt
+- [ ] 20-04-PLAN.md — Swap CONFIG_PATH to dev Gist, redeploy LibreChat, resolve OQ1 MCP wire compat (fail-fast), parent browser smoke test
+- [ ] 20-05-PLAN.md — Parent UAT: 20-query safety test set as Sebastian, hotlink survivability sample, DOM click-through inspection
+- [ ] 20-06-PLAN.md — Lock 4 decisions in 20-DECISIONS.md, update STATE, revert CONFIG_PATH to production (preserve dev Gist/MCP service/agent doc for Phase 21)
 
 ### Phase 21: Image Search — Production rollout (kid-facing)
 **Goal:** Penelope and Sebastian have a production "Image Search" preset with SafeSearch, domain blocklist, per-day search cap, and full parent oversight via existing MongoDB/email pipelines — zero click-through to source sites.
@@ -219,6 +227,6 @@ A new kid-facing "Image Search" preset inside LibreChat (no external browser, no
 | 17. Conversation Delete Protection + Icon Fix | v2.6 | 1/1 | Complete | 2026-04-12 |
 | 18. Email Alert System | v2.7 | 3/3 | Complete | 2026-04-13 |
 | 19. Budget Exhaustion Investigation & Remediation | v2.8 | 4/4 | Complete | 2026-04-18 |
-| 20. Image Search — Research + POC | v2.9 | 0/0 | Not started | — |
+| 20. Image Search — Research + POC | v2.9 | 1/6 | In Progress|  |
 | 21. Image Search — Production rollout | v2.9 | 0/0 | Not started | — |
 | 22. Test Mode preset parity | v2.9 | 0/0 | Not started | — |
