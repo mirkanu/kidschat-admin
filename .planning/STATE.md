@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.8
-milestone_name: Budget Hardening
-status: shipped
-stopped_at: v2.8 milestone archived
-last_updated: "2026-04-18T12:17:17.429Z"
-last_activity: 2026-04-18 — v2.8 Budget Hardening archived; planning next milestone
+milestone: v2.9
+milestone_name: Kid Image Search + Test Mode Preset Parity
+status: defining_requirements
+stopped_at: ""
+last_updated: "2026-04-18T12:20:00.000Z"
+last_activity: 2026-04-18 — v2.9 milestone started (defining requirements)
 progress:
-  total_phases: 1
-  completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,14 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-18)
 
 **Core value:** Children can safely explore and learn through AI conversation, with content guardrails that a parent controls and trusts.
-**Current focus:** Planning next milestone (v2.8 Budget Hardening shipped 2026-04-18)
+**Current focus:** v2.9 — Kid Image Search + Test Mode Preset Parity
 
 ## Current Position
 
-Milestone: v2.8 Budget Hardening — SHIPPED 2026-04-18
-Last activity: 2026-04-18 — v2.8 archived; /gsd-new-milestone to begin next cycle
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-18 — Milestone v2.9 started
 
-Progress: [██████████] 100% (v2.8 complete)
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 

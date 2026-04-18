@@ -76,7 +76,31 @@ Children can safely explore and learn through AI conversation, with content guar
 
 ### Active
 
-(None — planning next milestone)
+## Current Milestone: v2.9 Kid Image Search + Test Mode Preset Parity
+
+**Goal:** Penelope and Sebastian can search the web for images inside LibreChat via a dedicated "Image Search" preset — no external browser, no source-site navigation, full parent oversight. Parents can dry-run any preset (including tool-using ones like Image Search and Drawing Studio) from admin Test Mode before it hits the kids.
+
+**Target features:**
+
+_Kid-facing (LibreChat):_
+- New agent preset "Image Search" alongside existing 5 presets
+- Backend image-search tool (SafeSearch strict) — provider picked in Phase 20 research
+- Agent is a strict router: returns markdown image grid only, no commentary
+- Click-through policy: images render inline for view/save/screenshot, not clickable links — no source-site navigation
+- Hotlink-safe rendering (proxy fallback for sites that block hotlinking)
+- Secondary safety layer: domain/URL blocklist on top of provider SafeSearch
+- Per-day search-count cap per child (separate from cost cap)
+
+_Admin-facing (Test Mode):_
+- Preset/agent selector in Test Mode UI (all 6 presets kids see)
+- Tool-parity: Test Mode handles tool-using presets end-to-end — DALL-E for Drawing Studio, web_image_search for Image Search
+- Parent can verify exactly what a kid experiences for any preset before deploying a change
+
+**Key context:**
+- No LibreChat fork (preset + tool only — maintains v2.5/v2.6 unchanged-upstream pattern)
+- Zero click-through by design — kid sees image, saves/screenshots, done
+- LLM cost negligible (~€0.0001/search) — Haiku is a thin router
+- Oversight is free — reuses MongoDB conversation logging, safety detection, delete-protection, email pipeline
 
 ### Out of Scope
 
