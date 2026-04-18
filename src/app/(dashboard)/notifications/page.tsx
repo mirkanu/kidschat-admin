@@ -137,6 +137,27 @@ export default async function NotificationsPage() {
         </div>
       </div>
 
+      {/* Single-recipient banner — Resend sandbox sender restricts sends to account owner only.
+          Remove this banner once a verified domain is set up at resend.com/domains and
+          RESEND_FROM_ADDRESS is updated. */}
+      <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <strong>Heads up:</strong> emails currently only deliver to{" "}
+        <code className="rounded bg-amber-100 px-1 py-0.5 text-amber-900">manuelkuhs@gmail.com</code>.
+        Other recipients are stored but disabled — Resend&apos;s sandbox sender (
+        <code className="rounded bg-amber-100 px-1 py-0.5 text-amber-900">onboarding@resend.dev</code>
+        ) only allows sends to the account owner. To enable multi-recipient delivery,
+        verify a custom domain at{" "}
+        <a
+          href="https://resend.com/domains"
+          target="_blank"
+          rel="noreferrer"
+          className="underline hover:text-amber-700"
+        >
+          resend.com/domains
+        </a>{" "}
+        and update <code className="rounded bg-amber-100 px-1 py-0.5 text-amber-900">RESEND_FROM_ADDRESS</code>.
+      </div>
+
       {/* Tabbed layout: History + Settings */}
       <Tabs defaultValue="history" className="w-full">
         <TabsList>
