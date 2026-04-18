@@ -77,13 +77,51 @@ DALL-E 3 image generation across all 4 LibreChat agent presets with child-approp
 - Sessions: 1 extended session across plan-phase → execute-phase → audit → gap close → complete
 - Notable: Autonomous gap-closure plan (15.4) required zero user interaction from spawn to deploy — shows the value of precise audit files as planner input
 
+## Milestone: v2.8 — Budget Hardening
+
+**Shipped:** 2026-04-18
+**Phases:** 1 (Phase 19) | **Plans:** 4
+
+### What Was Built
+- Removed DALL-E tool schema from 4 text agent presets (~2,580 tokens/turn saved), added maxContextTokens=8000 cap, fixed startBalance=0 loophole, introduced dedicated Drawing Studio preset
+- Raised daily cap €0.20 → €0.50; corrected SYSTEM_PROMPT_TOKENS from 400 → 3290 so admin cost estimates reflect real agent overhead (~8× higher than assumed)
+- Restored Railway daily-reset cron pipeline via 3 dedicated cron services; unblocked Penelope's balance; added `cron_state.daily_reset.lastRunAt` observability
+- Forensic investigation of mystery 194k-credit drain — classified as "D (unknown)" rather than forcing a false narrative; deployed defensive image-size guardrail (serverFileSizeLimit:2MB) and confirmed thinking tokens are billed
+- Follow-on quick tasks: parents auto-refill to 1M tokens via cron; preset-aware guidance; Settings → Usage Limits rename; daily-summary email overhaul with Haiku 4.5 paraphrased per-kid summaries
+
+### What Worked
+- Forensic investigation surfaced 5 distinct root causes across the cost pipeline — single-phase coverage avoided whack-a-mole across multiple milestones
+- Dedicated cron services instead of one multi-cron service made silent failures visible and independently recoverable
+- Accepting "unknown" as a valid classification for the 194k drain — defensive guardrails cap blast radius without requiring certainty
+- Preset-aware user education (switch to Drawing Studio for images) — behavioral complement to the cost fix
+
+### What Was Inefficient
+- Cron pipeline had been silently broken for unknown duration before Penelope's zero-balance surfaced it — observability should have existed earlier
+- SYSTEM_PROMPT_TOKENS=400 was ~8× under actual; an earlier spot-check against a live request would have caught this
+- Multiple related fixes landed as quick tasks after phase close (260417-*), inflating scope-creep during the milestone tail
+
+### Patterns Established
+- `cron_state.<cron_name>.lastRunAt` — lightweight observability hook for any scheduled job; write timestamp at start of every run, alert on staleness
+- DALL-E tool isolation pattern: dedicated image-generation preset separate from text presets — tool schemas cost tokens even when unused
+- Honest classification (A/B/C/D) in forensic writeups when evidence is inconclusive; defensive guardrails instead of forced conclusions
+
+### Key Lessons
+- Tool schemas on every turn aren't free — the single biggest cost win came from removing DALL-E from 4 text presets, not from tuning models or prompts
+- Cron services should each own one schedule; bundling schedules amplifies blast radius of any single failure
+- A budget system without live observability fails silently; `cron_state` writes are cheap insurance
+
+### Cost Observations
+- Model mix: Opus for orchestration + investigation, Sonnet for execution, Haiku 4.5 for the paraphrased daily-summary emails
+- Sessions: ~3 days (2026-04-16 → 2026-04-18) including follow-on quick tasks
+- Notable: One phase, four plans, five distinct root causes fixed — high density thanks to upfront forensic research
+
 ## Cross-Milestone Trends
 
-| Metric | v1.0 | v2.4 |
-|--------|------|------|
-| Phases | 3 | 5 |
-| Plans | 10 | 9 |
-| Timeline | 1 day | 4 days |
-| Custom code | 0 lines | ~400 LOC added, ~800 LOC deleted (net −400) |
-| Config files | 1 (librechat.yaml) | librechat.yaml + budget.ts + 2 crons + settings UI |
-| Tests | 0 | 65 passing (6 suites) |
+| Metric | v1.0 | v2.4 | v2.8 |
+|--------|------|------|------|
+| Phases | 3 | 5 | 1 |
+| Plans | 10 | 9 | 4 |
+| Timeline | 1 day | 4 days | 3 days |
+| Custom code | 0 lines | ~400 LOC added, ~800 LOC deleted (net −400) | Small edits to librechat.yaml + budget.ts + cron route + forensics docs |
+| Config files | 1 (librechat.yaml) | librechat.yaml + budget.ts + 2 crons + settings UI | librechat.yaml (Gist 7049fc8) + 3 dedicated cron services + cron_state observability |
+| Tests | 0 | 65 passing (6 suites) | 65 passing (unchanged — forensic milestone, not feature) |

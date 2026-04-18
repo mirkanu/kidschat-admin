@@ -65,6 +65,15 @@ Children can safely explore and learn through AI conversation, with content guar
 - ✓ Account activity alerts auto-triggered on login and recipient changes (amber theme, 5-min dedup) — v2.7
 - ✓ 4 distinct email alert types with colored badges in notification history (red/blue/green/amber) — v2.7
 
+- ✓ DALL-E tool schema removed from 4 text agent presets (~2,580 tokens/turn saved) — v2.8
+- ✓ maxContextTokens=8000 cap on agents endpoint prevents conversation-history compounding — v2.8
+- ✓ startBalance=0 closes the 10M-token-per-new-user loophole — v2.8
+- ✓ Drawing Studio preset introduced as the single DALL-E-enabled agent (Clean text/image separation) — v2.8
+- ✓ Daily cap raised €0.20 → €0.50; SYSTEM_PROMPT_TOKENS corrected 400 → 3290 so admin cost estimates reflect real agent overhead — v2.8
+- ✓ Railway daily-reset cron pipeline restored via 3 dedicated cron services; cron_state.daily_reset.lastRunAt observability prevents future silent failures — v2.8
+- ✓ 2MB image-size guardrail (serverFileSizeLimit) caps blast radius of upload-driven token drains — v2.8
+- ✓ Parents auto-refill to 1M tokens via daily-reset cron; preset-aware guidance tells kids to switch presets for image vs text — v2.8
+
 ### Active
 
 (None — planning next milestone)
@@ -81,7 +90,7 @@ Children can safely explore and learn through AI conversation, with content guar
 
 ## Context
 
-Shipped v2.7 on 2026-04-13. Nine milestones complete (v1.0 through v2.7).
+Shipped v2.8 on 2026-04-18. Ten milestones complete (v1.0 through v2.8).
 - **LibreChat URL:** https://librechat-production-bff2.up.railway.app
 - **Admin Dashboard URL:** https://kidschat-admin-production.up.railway.app
 - **Config:** https://gist.github.com/mirkanu/e23b999f1d3cd77726a97c20e26f0abf
@@ -133,6 +142,10 @@ Shipped v2.7 on 2026-04-13. Nine milestones complete (v1.0 through v2.7).
 | MongoDB restricted user for delete protection (v2.6) | Database-level `remove` block on conversations + messages — no LibreChat fork, no middleware, unkillable from client | ✓ Good — pivot from archive-cron approach after user rejected 5-min delay |
 | Gist-hosted librechat.yaml with commit-pinned CONFIG_PATH | Config edits via `gh gist edit` + Railway env var pointing to commit-pinned URL avoids CDN cache staleness | ✓ Good — established pattern in v2.5/v2.6 |
 | RAILWAY_RUN_AS_ROOT for volume permissions | LibreChat Docker image runs as non-root; Railway Volume mounts as root-owned | ✓ Good — solves EACCES on image writes, acceptable security trade-off for a private family app |
+| DALL-E tool schema on Drawing Studio only (not all 4 text presets) | Tool schema adds ~2,580 tokens/turn even when unused; separating text/image presets reclaims the daily budget | ✓ Good (v2.8) — single biggest cost win in the milestone |
+| Dedicated Railway cron services (one per schedule) | Consolidated multi-cron service had silent failures; isolating each cron makes failures visible and recoverable | ✓ Good (v2.8) — also added `cron_state.daily_reset.lastRunAt` observability |
+| 194k-credit drain left classified as "D (unknown)" rather than forced to a root cause | Forensic evidence was inconclusive; manufacturing a narrative would mislead future debugging — defensive guardrails (image-size limit, context cap) shrink blast radius regardless | ✓ Good (v2.8) — honest uncertainty over false closure |
+| $max operator for daily auto-refill | Preserves parent top-ups above daily allowance; atomic, one-line MongoDB operator | ✓ Good (v2.8 reconfirmed) — renamed UI "Daily cap" → "Daily allowance" to match $max-floor semantics |
 
 ---
-*Last updated: 2026-04-13 after v2.7 milestone completion*
+*Last updated: 2026-04-18 after v2.8 milestone completion*

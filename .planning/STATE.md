@@ -1,36 +1,34 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: executing
-stopped_at: Completed 18-03-PLAN.md
-last_updated: "2026-04-16T21:17:07.573Z"
-last_activity: 2026-04-18 - Daily-summary email overhaul shipped + AI paraphrased summaries (quick task 260417-p94)
+milestone: v2.8
+milestone_name: Budget Hardening
+status: shipped
+stopped_at: v2.8 milestone archived
+last_updated: "2026-04-18T12:17:17.429Z"
+last_activity: 2026-04-18 — v2.8 Budget Hardening archived; planning next milestone
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 0
-  percent: 0
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-05)
+See: .planning/PROJECT.md (updated 2026-04-18)
 
 **Core value:** Children can safely explore and learn through AI conversation, with content guardrails that a parent controls and trusts.
-**Current focus:** Phase 19 — investigate-why-kids-20c-daily-budget-exhausts-after-2-3-que
+**Current focus:** Planning next milestone (v2.8 Budget Hardening shipped 2026-04-18)
 
 ## Current Position
 
-Phase: 19 (investigate-why-kids-20c-daily-budget-exhausts-after-2-3-que) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 19
-Last activity: 2026-04-16 -- Phase 19 execution started
+Milestone: v2.8 Budget Hardening — SHIPPED 2026-04-18
+Last activity: 2026-04-18 — v2.8 archived; /gsd-new-milestone to begin next cycle
 
-Progress: [█████████░] 93%
+Progress: [██████████] 100% (v2.8 complete)
 
 ## Performance Metrics
 
@@ -169,6 +167,7 @@ Progress: [█████████░] 93%
 ### Pending Todos
 
 1 pending — see `.planning/todos/pending/`. Most recent:
+
 - **Set up Resend custom domain for multi-recipient email delivery** (2026-04-18) — Emily-Kate alerts disabled until done; daily-summary cron only sends to Manuel
 
 ### Blockers/Concerns
