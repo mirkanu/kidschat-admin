@@ -38,6 +38,24 @@ Phase 20 resolves the technical unknowns blocking v2.9 Image Search + Test Mode 
 
 **This amendment supersedes D-03 and shifts tool-mechanism work into Plan 20-01. Other locked decisions (D-01, D-02, D-04 through D-14) remain unchanged.**
 
+### Amendment B — Provider Collapse to Openverse-only (2026-04-19)
+
+**Trigger:** During Plan 20-01 execution, two blockers surfaced while provisioning Google Custom Search:
+1. **Google deprecated the "Search the entire web" toggle on new Programmable Search Engines.** New CSEs can only be restricted to listed sites (≤50 distinct domains, no `*.com` patterns). A curated-domain alternative was drafted but then obviated by blocker 2.
+2. **Google Cloud project "GSD projects" returned persistent `403 PERMISSION_DENIED "This project does not have the access to Custom Search JSON API"`** despite the Custom Search API showing as enabled and API-key restrictions being correct, across two freshly generated keys. Likely a project-level billing/org-policy quirk that would require debugging opaque GCP state.
+
+**Decision (parent, 2026-04-19):** Drop Google Custom Search entirely. Openverse becomes the **sole** provider. Rationale: (a) architectural simplification — no credentials, no `user_setup` checkpoint, no dashboard dance, no GOOGLE_CSE_KEY/GOOGLE_CSE_CX env vars on Railway; (b) stronger kid-safety posture — Openverse's pre-curated CC-licensed catalog (Wikimedia, Flickr Commons, museums, government archives) is arguably safer than SafeSearch-filtered open web; (c) Openverse is already stood up, tested from the shell, and working. Plan 20-01 was rewritten in-flight to reflect this scope.
+
+**Architectural consequence:**
+- `services/image-search-mcp/src/providers/google-cse.ts` — not created (was planned in original 20-01, dropped before author).
+- `services/image-search-mcp/src/providers/openverse.ts` — the only provider module.
+- Fallback logic in `server.ts` — removed (there's nothing to fall back to); single-provider surface-the-error-up pattern instead.
+- Kid-safety posture note: the Google-SafeSearch story is gone, but Openverse's catalog is pre-filtered at source — no open-web content is possible.
+
+**Trade-off accepted:** Openverse lacks copyrighted contemporary characters (Pokémon, Minecraft, Elsa, Spider-Man, etc.). Strong on animals, nature, history, art, science, geography, vehicles, world cultures, musical instruments. If Plan 20-05 UAT reveals breadth gaps on your kids' actual interests, Plan 20-06 can record a future-work note to add **Pexels** as a no-auth fallback (also CC-style, also free, no dashboard signup). **Do NOT reintroduce Google CSE.**
+
+**Supersedes:** D-03 (now Openverse-only instead of Google+Openverse) and D-04 (no more "pick the final provider" — there is only one). D-13b's "Google CSE primary + Openverse fallback" reduces to "Openverse only." Other locked decisions (D-01, D-02, D-05 through D-14) remain unchanged in spirit (test-set, done-criteria, Test Mode architecture, hotlink policy are provider-agnostic).
+
 ### Phase 20 Done Criteria
 - **D-05:** Phase 20 is complete when **the parent reviewer (you) can use the Image Search preset in LibreChat against the dev Gist configuration and confirm results look safe and render properly** for the agreed test query set (D-11).
 - **D-06:** Penelope and Sebastian do **not** UAT the preset during Phase 20 — kid UAT belongs in Phase 21 after production rollout. Rationale: avoid beta noise and ensure the parent has vetted SafeSearch quality before kids see anything.

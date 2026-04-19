@@ -1,7 +1,7 @@
 # Phase 20: Image Search — Research + POC — Research
 
 **Researched:** 2026-04-18
-**Amended:** 2026-04-18 (Amendment A — provider pivot from Brave to Google CSE + Openverse)
+**Amended:** 2026-04-18 (Amendment A — provider pivot from Brave to Google CSE + Openverse); 2026-04-19 (Amendment B — collapse to Openverse-only; see below)
 **Domain:** LibreChat v0.8.4 agent tooling, kid-safe image search APIs, MCP integration, markdown-rendered image grids, admin-dashboard streaming parity
 **Confidence:** HIGH for tool mechanism + providers + hotlink; MEDIUM for Test Mode architecture (needs source-code probe during POC)
 
@@ -36,6 +36,52 @@ After the original research recommended Brave, the parent flagged that Brave's $
 - **D-13b (Search Provider):** Google CSE primary + Openverse fallback, both integrated in the custom MCP server. Confidence MEDIUM pending UAT — Google CSE's SafeSearch quality on family-likely queries is the risk we POC during Plan 20-05.
 
 D-13c (hotlink) and D-14 (Test Mode architecture) unchanged by this amendment.
+
+---
+
+## Amendment B — Collapse to Openverse-only (2026-04-19)
+
+**Trigger (surfaced during Plan 20-01 execution):**
+
+1. **Google Programmable Search Engine has deprecated the "Search the entire web" toggle for new engines.** The Amendment A provider design assumed this toggle was available on fresh CSEs. On 2026-04-19, when creating a new CSE for this project, the only available site-scope modes restrict queries to ≤50 listed domains (no `*.com` wildcards, no whole-web mode). A curated-domain alternative with ~33 kid-safe educational domains was drafted, but blocker 2 killed the Google path before the `cx` could be tested.
+2. **Persistent `403 PERMISSION_DENIED "This project does not have the access to Custom Search JSON API"`** on the user's Google Cloud project ("GSD projects") across two freshly generated API keys, despite:
+   - Custom Search API showing as enabled on the correct project
+   - API key restrictions correctly scoped (or explicitly unrestricted)
+   - ~5-minute propagation wait after enable
+   - Fresh key regeneration to bypass any stale auth-layer cache
+
+Likely root cause: billing-linkage or org-policy state on the project that is opaque from the user's side. Debugging Google's auth layer was judged a worse use of time than switching providers.
+
+**Decision:** Drop Google Custom Search entirely. **Openverse is now the sole provider.** The Amendment A architecture (custom MCP server, `services/image-search-mcp/` at the KidAI repo, `image_search` tool, Railway deploy, `mcpServers` wiring in dev Gist) is **preserved**; only the provider-count and fallback logic change.
+
+**Revised implementation (supersedes Amendment A's §"Implementation sketch"):**
+- Node TS + `@modelcontextprotocol/sdk` + `fetch`. No other dependencies.
+- One tool: `image_search(query: string, count?: number=10)` returns `{ images: [{ thumbnail, title, source_domain, license, provider }], provider_used: "openverse" }`.
+- **Sole call:** Openverse `GET https://api.openverse.org/v1/images/?q=<query>&page_size=<count>`.
+- **No fallback path** (single provider). On HTTP 429 or 5xx, return `{ images: [], error: "rate_limited" | "upstream_error" }` — do not throw.
+- Option iii enforcement unchanged: `foreign_landing_url` and `url` stripped at the provider boundary.
+
+**Safety-posture change (net positive):**
+- Lost: Google SafeSearch filtering (`safe=active`) over open-web content. Never actually exercised since we never got past the 403.
+- Gained: Openverse's catalog is *structurally* kid-safe — every image is CC-licensed content from Wikimedia, Flickr Commons, museums (Met, Smithsonian, Getty, Louvre, etc.), and government archives (NASA, NOAA, Library of Congress). No open-web content can enter the pipeline. This is a stronger safety story than content-filtered open web, because there's no filter to fail.
+
+**Breadth trade-off accepted:**
+- Openverse lacks copyrighted contemporary characters and franchises (Pokémon, Minecraft, Elsa, Spider-Man, Fortnite, etc.). Strong on: animals, nature, history, art, science, geography, vehicles, musical instruments, world cultures, food, plants, anatomy.
+- If Plan 20-05 UAT reveals breadth gaps on the kids' actual interests, Plan 20-06 can record a future-work note to add **Pexels** as a no-auth fallback (also CC-style, also free, no dashboard signup). **Do NOT reintroduce Google CSE** — its project-level auth failure is unresolved and the whole-web toggle is gone.
+
+**Headline-findings revisions** (the top of this research doc listed 6 findings grounded in the Brave-era assumptions; here's how Amendment B changes them):
+- Finding 1 (LibreChat `web_search` no images): unchanged.
+- Finding 2 (Brave MCP): moot — Brave was culled in Amendment A and Google CSE is now culled too. Custom MCP server design is unchanged; only its provider count drops from 2 → 1.
+- Finding 3 (Brave CDN hotlink immunity): moot. **New hotlink posture:** Openverse thumbnails are served from `api.openverse.org` / various CC source CDNs. Hotlink-survivability of Openverse thumbnails needs fresh measurement in Plan 20-04 or 20-05 — assume we may need the Phase 21 image-proxy fallback.
+- Finding 4 (Brave pricing): moot — Brave dropped in Amendment A.
+- Finding 5 (markdown renderer no anchor wrap): unchanged.
+- Finding 6 (Test Mode Option B): unchanged.
+
+**Decision Recommendations revisions:**
+- **D-13a (Tool Mechanism):** Unchanged — MCP via custom `kidschat-image-search-mcp` server.
+- **D-13b (Search Provider):** **Openverse only.** Confidence HIGH — Openverse endpoint verified working from the shell during Plan 20-01; catalog is structurally kid-safe.
+- **D-13c (Hotlink):** Downgrade confidence from HIGH (Brave CDN) to MEDIUM-pending-UAT. Measure hotlink-block rate on sample Openverse thumbnails during Plan 20-05.
+- **D-14 (Test Mode):** Unchanged.
 
 ---
 
