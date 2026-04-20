@@ -42,11 +42,18 @@ function buildMcpServer(): McpServer {
           .max(20)
           .default(20)
           .describe("Number of results (1-20, default 20). Capped at 20 by Openverse anonymous tier."),
+        page: z
+          .number()
+          .int()
+          .min(1)
+          .max(20)
+          .default(1)
+          .describe("Result page, 1-indexed (default 1). Increment to fetch more results for the same query."),
       },
     },
-    async ({ query, count }) => {
+    async ({ query, count, page }) => {
       const started = Date.now();
-      const result = await searchOpenverseImages(query, count ?? 10);
+      const result = await searchOpenverseImages(query, count ?? 10, page ?? 1);
       const duration_ms = Date.now() - started;
 
       // Structured log — never log full query text (privacy); log length only.

@@ -27,10 +27,12 @@ const OPENVERSE_BASE = "https://api.openverse.org/v1/images/";
 export async function searchOpenverseImages(
   query: string,
   count: number = 10,
+  page: number = 1,
 ): Promise<OpenverseResult> {
   // Openverse anonymous tier: page_size ≤ 20. Values >20 return HTTP 401.
   const pageSize = Math.max(1, Math.min(count, 20));
-  const url = `${OPENVERSE_BASE}?q=${encodeURIComponent(query)}&page_size=${pageSize}`;
+  const pageNum = Math.max(1, Math.min(Math.floor(page), 20));
+  const url = `${OPENVERSE_BASE}?q=${encodeURIComponent(query)}&page_size=${pageSize}&page=${pageNum}`;
 
   let res: Response;
   try {
