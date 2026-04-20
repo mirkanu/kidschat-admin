@@ -14,8 +14,9 @@ PROD_GIST_SHA_PRE=6bf08d0e96be272eefa47ccd2ada192c8808be60d85b280ef3cddbf2b2c1d7
 ## Dev Gist (populated by Task 20-02-02; agent_id reconciled post-wave-2)
 
 DEV_GIST_ID=b0c89395bbefb4f7ff9124d0d9014999
-DEV_GIST_SHA=fd8dd87b84d43bd427ca20beebcbb49d21b580e9
-DEV_CONFIG_PATH=https://gist.githubusercontent.com/mirkanu/b0c89395bbefb4f7ff9124d0d9014999/raw/fd8dd87b84d43bd427ca20beebcbb49d21b580e9/dev-librechat.yaml
+DEV_GIST_SHA=3206129683ee5fb58f8131966276a13a249a640a
+DEV_CONFIG_PATH=https://gist.githubusercontent.com/mirkanu/b0c89395bbefb4f7ff9124d0d9014999/raw/3206129683ee5fb58f8131966276a13a249a640a/dev-librechat.yaml
+DEV_GIST_SHA_PRE_RECONCILE=fd8dd87b84d43bd427ca20beebcbb49d21b580e9
 
 ## Image Search Agent (seeded by Plan 20-03)
 

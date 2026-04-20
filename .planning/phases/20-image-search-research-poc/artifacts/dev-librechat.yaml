@@ -97,7 +97,7 @@ modelSpecs:
       default: false
       preset:
         endpoint: "agents"
-        agent_id: "agent_kidschat_imagesearch_1776667619589"
+        agent_id: "agent_kidschat_imagesearch_1776667852767"
         greeting: "Hi! Tell me what to search for — I'll show you pictures. Try 'origami cats' or 'watercolor trees'."
 
 interface:
