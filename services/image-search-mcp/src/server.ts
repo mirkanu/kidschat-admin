@@ -39,9 +39,9 @@ function buildMcpServer(): McpServer {
           .number()
           .int()
           .min(1)
-          .max(30)
-          .default(30)
-          .describe("Number of results (1-30, default 30)"),
+          .max(20)
+          .default(20)
+          .describe("Number of results (1-20, default 20). Capped at 20 by Openverse anonymous tier."),
       },
     },
     async ({ query, count }) => {

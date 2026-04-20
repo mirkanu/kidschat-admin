@@ -28,7 +28,8 @@ export async function searchOpenverseImages(
   query: string,
   count: number = 10,
 ): Promise<OpenverseResult> {
-  const pageSize = Math.max(1, Math.min(count, 30));
+  // Openverse anonymous tier: page_size ≤ 20. Values >20 return HTTP 401.
+  const pageSize = Math.max(1, Math.min(count, 20));
   const url = `${OPENVERSE_BASE}?q=${encodeURIComponent(query)}&page_size=${pageSize}`;
 
   let res: Response;
