@@ -156,6 +156,7 @@ Progress: [░░░░░░░░░░] 0%
 | 260417-njb | Consolidate per-child Usage & Limits (bars + top-up) into /settings; remove from /users/{id} | 2026-04-17 | 5a3a863 | [260417-njb](./quick/260417-njb-consolidate-per-child-usage-limits-into-/) |
 | 260417-p94 | Daily-summary email overhaul: drop image-requests/presets-used; add Alerts + Haiku 4.5 paraphrased per-kid summary | 2026-04-18 | fdd5a92 | [260417-p94](./quick/260417-p94-daily-summary-email-overhaul-drop-image-/) |
 | 260420-g6h | Headless LibreChat chat-test CLI — Claude can drive any preset end-to-end without a browser (JWT + 2-step SSE + tool-call capture) | 2026-04-20 | 950901c | [260420-g6h](./quick/260420-g6h-headless-librechat-chat-test-cli-for-end/) |
+| 260420-upl | Fix image upload on kid LibreChat — raise cap 2→10MB + explicit agents endpoint (Penelope repro) | 2026-04-20 | config-only | [260420-upl](./quick/260420-upl-file-upload-10mb-fix/) |
 | Phase 15-safety-alert-extension-rate-limiting P01 | 35 | 3 tasks | 12 files |
 | Phase 15-safety-alert-extension-rate-limiting P00 | 35 | 4 tasks | 10 files |
 | Phase 15-safety-alert-extension-rate-limiting P02 | 70 | 4 tasks | 21 files |
