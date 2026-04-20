@@ -39,9 +39,9 @@ function buildMcpServer(): McpServer {
           .number()
           .int()
           .min(1)
-          .max(12)
-          .default(10)
-          .describe("Number of results (1-12, default 10)"),
+          .max(30)
+          .default(30)
+          .describe("Number of results (1-30, default 30)"),
       },
     },
     async ({ query, count }) => {

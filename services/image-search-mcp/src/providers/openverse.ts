@@ -28,7 +28,7 @@ export async function searchOpenverseImages(
   query: string,
   count: number = 10,
 ): Promise<OpenverseResult> {
-  const pageSize = Math.max(1, Math.min(count, 12));
+  const pageSize = Math.max(1, Math.min(count, 30));
   const url = `${OPENVERSE_BASE}?q=${encodeURIComponent(query)}&page_size=${pageSize}`;
 
   let res: Response;
