@@ -170,7 +170,7 @@ Plans:
 - [x] 20-02-PLAN.md — Fork production Gist to dev Gist with MCP declaration + Image Search preset (production untouched)
 - [x] 20-03-PLAN.md — Seed MongoDB Image Search agent doc with brave_image_search tool + strict router system prompt
 - [x] 20-04-PLAN.md — Swap CONFIG_PATH to dev Gist, redeploy LibreChat, resolve OQ1 MCP wire compat (fail-fast), parent browser smoke test
-- [ ] 20-05-PLAN.md — Parent UAT: 20-query safety test set as Sebastian, hotlink survivability sample, DOM click-through inspection
+- [x] 20-05-PLAN.md — Parent UAT: 20-query safety test set as Sebastian, hotlink survivability sample, DOM click-through inspection
 - [x] 20-06-PLAN.md — Lock 4 decisions in 20-DECISIONS.md, update STATE, revert CONFIG_PATH to production (preserve dev Gist/MCP service/agent doc for Phase 21)
 
 ### Phase 21: Image Search — Production rollout (kid-facing)
@@ -227,6 +227,6 @@ Plans:
 | 17. Conversation Delete Protection + Icon Fix | v2.6 | 1/1 | Complete | 2026-04-12 |
 | 18. Email Alert System | v2.7 | 3/3 | Complete | 2026-04-13 |
 | 19. Budget Exhaustion Investigation & Remediation | v2.8 | 4/4 | Complete | 2026-04-18 |
-| 20. Image Search — Research + POC | v2.9 | 5/6 | In Progress|  |
+| 20. Image Search — Research + POC | v2.9 | 6/6 | Complete   | 2026-04-20 |
 | 21. Image Search — Production rollout | v2.9 | 0/0 | Not started | — |
 | 22. Test Mode preset parity | v2.9 | 0/0 | Not started | — |
