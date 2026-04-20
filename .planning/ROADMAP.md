@@ -201,6 +201,25 @@ Plans:
 
 </details>
 
+## Backlog
+
+### Phase 999.1: Sentry error monitoring + cron dead-man's-switch (BACKLOG)
+
+**Goal:** [Captured for future planning] Add Sentry to kidschat-admin + a dead-man's-switch so silent cron failures (like the Apr 19 401 that stopped Penelope's daily summaries) page us before the user notices.
+
+**Scope:**
+- Install `@sentry/nextjs` in `kidschat-admin` only (not LibreChat — upstream + PII-heavy, needs separate privacy review). Covers `/api/cron/*`, `/api/notify/*`, admin UI route handlers. Scrub user IDs and any child content before send.
+- Dead-man's-switch: Sentry Crons OR a `/api/health/crons` endpoint that checks MongoDB `cron_state.lastRunAt` for `daily_reset` and `daily_summary` — alert if >26h stale. (Plain Sentry errors would NOT have caught Apr 19 — the cron never reached admin.)
+- Free tier 5k errors/month is sufficient.
+
+**Motivation:** Apr 19 incident — `daily-reset-cron` (00:00 UTC) and `daily-notifications-cron` (08:00 UTC) both CRASHED with HTTP 401 and Railway silently paused them (`restartPolicyType: NEVER`). Penelope missed her daily summary. The only signal was Railway's generic "Deployment crashed" email — no visibility into *why* or *which endpoint*. Hotfix shipped retries; this phase adds observability.
+
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd-review-backlog when ready)
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
