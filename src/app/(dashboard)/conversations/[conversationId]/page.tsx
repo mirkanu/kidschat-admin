@@ -24,6 +24,7 @@ interface ConversationDetailData {
   conversation: {
     conversationId: string;
     title: string;
+    preset?: "image-search";
   };
   messages: MessageItem[];
 }
@@ -119,10 +120,17 @@ export default async function ConversationDetailPage({
     };
   });
 
+  // Phase 21-04 OVERSIGHT-02: derive preset badge from conversation.spec
+  const convSpec =
+    typeof conversation.spec === "string" ? conversation.spec : null;
+  const preset: "image-search" | undefined =
+    convSpec === "image-search" ? "image-search" : undefined;
+
   const data: ConversationDetailData = {
     conversation: {
       conversationId: conversation.conversationId ?? conversationId,
       title: conversation.title ?? "Untitled Conversation",
+      preset,
     },
     messages,
   };

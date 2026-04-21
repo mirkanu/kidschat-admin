@@ -9,6 +9,7 @@ interface ConversationSummary {
   updatedAt: string | null;
   userName: string | null;
   userEmail: string | null;
+  preset?: "image-search";
 }
 
 async function getConversations(): Promise<ConversationSummary[]> {
@@ -47,22 +48,35 @@ async function getConversations(): Promise<ConversationSummary[]> {
         createdAt: 1,
         userName: "$userInfo.name",
         userEmail: "$userInfo.email",
+        // Phase 21-04 OVERSIGHT-02: project modelSpec name so the list can
+        // render a preset badge. LibreChat stores this as `conversations.spec`
+        // (verified by scripts/probe-conv.ts against claude-test's Phase 20
+        // conversations — every Image Search row has spec:"image-search").
+        spec: 1,
       },
     },
   ];
 
+  type ConversationSummaryRaw = ConversationSummary & { spec?: string | null };
+
   const conversations = await db
     .collection("conversations")
-    .aggregate<ConversationSummary>(pipeline)
+    .aggregate<ConversationSummaryRaw>(pipeline)
     .toArray();
 
-  // Serialize dates to ISO strings
+  // Serialize dates to ISO strings and derive preset field
   return conversations
     .slice(0, 100)
-    .map((c) => ({
-      ...c,
-      updatedAt: c.updatedAt ? new Date(c.updatedAt).toISOString() : null,
-    }));
+    .map((c) => {
+      const { spec, ...rest } = c;
+      const preset: ConversationSummary["preset"] =
+        spec === "image-search" ? "image-search" : undefined;
+      return {
+        ...rest,
+        updatedAt: c.updatedAt ? new Date(c.updatedAt).toISOString() : null,
+        preset,
+      };
+    });
 }
 
 export default async function ConversationsPage() {

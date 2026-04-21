@@ -24,7 +24,11 @@ interface MessageItem {
 }
 
 interface Props {
-  conversation: { conversationId: string; title: string };
+  conversation: {
+    conversationId: string;
+    title: string;
+    preset?: "image-search";
+  };
   messages: MessageItem[];
 }
 
@@ -57,6 +61,9 @@ export function MessageThread({ conversation, messages }: Props) {
         <h1 className="text-xl font-semibold flex-1 truncate">
           {conversation.title || "Untitled Conversation"}
         </h1>
+        {conversation.preset === "image-search" && (
+          <Badge variant="secondary">Image Search</Badge>
+        )}
         <Badge variant="secondary">
           {messages.length} {messages.length === 1 ? "message" : "messages"}
         </Badge>

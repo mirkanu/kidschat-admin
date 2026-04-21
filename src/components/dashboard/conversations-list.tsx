@@ -13,6 +13,7 @@ interface ConversationSummary {
   updatedAt: string | null;
   userName: string | null;
   userEmail: string | null;
+  preset?: "image-search";
 }
 
 interface ConversationsListProps {
@@ -109,6 +110,11 @@ export function ConversationsList({
                   {conv.userName && (
                     <Badge variant="secondary" className="text-xs">
                       {conv.userName}
+                    </Badge>
+                  )}
+                  {conv.preset === "image-search" && (
+                    <Badge variant="secondary" className="text-xs">
+                      Image Search
                     </Badge>
                   )}
                 </div>
