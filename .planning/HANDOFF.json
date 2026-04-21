@@ -16,7 +16,7 @@
     {"id": "21-06", "name": "Daily-summary email: image-search count + merged Haiku paraphrase", "status": "done", "commit": "e5e6c19"}
   ],
   "remaining_tasks": [
-    {"id": "21-05-01", "name": "Pre-UAT smoke + Telegram parent hand-iPads ping", "status": "in_progress", "progress": "executor launched 2026-04-21T15:35Z, agentId aa49466a3c4433f15 — running in background awaiting parent Telegram reply"},
+    {"id": "21-05-01", "name": "Pre-UAT smoke + Telegram parent hand-iPads ping", "status": "awaiting_human", "progress": "Smoke PASSED (MCP /health ok, chat-test 20 proxy thumbnails, quota 20+1 gate, daily-reset fired). Telegram msg 2205 sent to chat 1462848748. Executor exited at checkpoint. Kids start UAT at remaining:20."},
     {"id": "21-05-02", "name": "Live kid UAT (A preset-visibility, B happy-path 10 queries, C safety blocklist, D cap, E oversight)", "status": "not_started"},
     {"id": "21-05-03", "name": "Phase-close commit + STATE update + ROADMAP ✅", "status": "not_started"}
   ],
