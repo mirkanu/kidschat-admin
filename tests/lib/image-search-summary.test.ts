@@ -110,7 +110,7 @@ const h = (hoursAgo: number) =>
 
 describe("getImageSearchStats", () => {
   beforeEach(() => {
-    jest.useFakeTimers({ now });
+    jest.useFakeTimers({ now: now.getTime() });
   });
 
   it("returns {count:0, queries:[]} when child has no image-search messages in window", async () => {
@@ -211,7 +211,7 @@ describe("summarizeImageSearchQueries", () => {
   it("calls Haiku with system prompt + model + max_tokens=60 + 10s timeout", async () => {
     mockCreate.mockResolvedValue({
       content: [{ type: "text", text: "Penelope looked at animals and origami." }],
-    });
+    } as never);
 
     const result = await summarizeImageSearchQueries("Penelope", [
       "cats",
@@ -235,14 +235,14 @@ describe("summarizeImageSearchQueries", () => {
   });
 
   it("throws on empty text response", async () => {
-    mockCreate.mockResolvedValue({ content: [{ type: "text", text: "   " }] });
+    mockCreate.mockResolvedValue({ content: [{ type: "text", text: "   " }] } as never);
     await expect(
       summarizeImageSearchQueries("Penelope", ["cats"]),
     ).rejects.toThrow(/empty/i);
   });
 
   it("throws on SDK rejection (timeout / 5xx)", async () => {
-    mockCreate.mockRejectedValue(new Error("boom"));
+    mockCreate.mockRejectedValue(new Error("boom") as never);
     await expect(
       summarizeImageSearchQueries("Penelope", ["cats"]),
     ).rejects.toThrow("boom");
