@@ -124,6 +124,7 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 21]: 20-05 C-2 APPROVED-WITH-CAVEATS after retry shipped: 'cute red origami cats' now returns 5 results; 21-05 UAT SEARCH-02 threshold stays at ≥60%
 - [Phase 21]: [Phase 21-02]: client.db("test") matches sibling routes verbatim (W3 revision)
 - [Phase 21]: [Phase 21-02]: services/ + tests/ excluded from admin tsconfig — Phase 20 MCP sibling service broke strict TS sweep
+- [Phase 21]: D-21-A supersedes Phase 20 D-10 — dev Gist b0c89395 anointed as production; CONFIG_PATH unchanged; prod Gist archived
 
 ### v2.2 Architecture Decisions (from research)
 

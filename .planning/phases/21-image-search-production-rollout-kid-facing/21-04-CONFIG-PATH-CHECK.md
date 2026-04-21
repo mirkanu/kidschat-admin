@@ -75,10 +75,41 @@ Sent via Telegram at unix-time 1776769589 (2026-04-21):
 Per plan directive ("If parent does not reply within 30 minutes, return CHECKPOINT REACHED — do NOT
 proceed without explicit GO"), executor returns a `checkpoint:human-action` to the orchestrator.
 
-## Post-decision actions (will be filled in by continuation agent)
+## Decision — DEVIATE (parent-confirmed 2026-04-21)
 
-- [ ] Parent reply captured (`swap` / `deviate` / `hold`)
-- [ ] Branch executed (A / B1 / B2)
-- [ ] Post-swap grep output (Branch B1 only)
-- [ ] STATE.md entry written:
-      `[Phase 21 · D-10 resolution]: Live CONFIG_PATH = <gist id> (<prod|dev-as-prod|unchanged>); Image Search modelSpec + mcpServers grep-verified in live-served Gist on 2026-04-21.`
+**Branch taken:** B2 (deviate — anoint dev Gist as production).
+
+**Reasoning:**
+Dev Gist `b0c89395bbefb4f7ff9124d0d9014999` pinned at SHA `603952711b835350e3d086bbee47e2a945b4e18d`
+has served production since 2026-04-20 parent UAT and never flipped back. A formal swap introduces
+a LibreChat cold-start window for purely aesthetic cleanup. Anointing the dev Gist as production
+is lower-risk and has zero functional impact — the content is already correct, already live, and
+already parent-validated.
+
+**Actions taken:**
+
+1. **Gist description renamed** via GitHub API to eliminate the "dev" label:
+   ```
+   $ gh api -X PATCH /gists/b0c89395bbefb4f7ff9124d0d9014999 \
+       -f description='kidschat-production-librechat-config'
+   # Response: "description":"kidschat-production-librechat-config", "updated_at":"2026-04-21T12:25:47Z"
+   ```
+   The Gist is now labeled `kidschat-production-librechat-config` in the GitHub UI.
+
+2. **Original production Gist `6bf08d0e…` left untouched** — archival, cold backup. No content merge
+   required (image-search entries already live in the anointed Gist).
+
+3. **`CONFIG_PATH` unchanged** on Railway `LibreChat 🪶` service — still points at
+   `https://gist.githubusercontent.com/mirkanu/b0c89395bbefb4f7ff9124d0d9014999/raw/603952711b835350e3d086bbee47e2a945b4e18d/dev-librechat.yaml`.
+   No redeploy triggered. No user-visible churn.
+
+4. **Formal decision record:** `21-DECISIONS.md` § D-21-A supersedes `20-DECISIONS.md` § D-10.
+
+**Post-decision state:**
+
+- [x] Parent reply captured: `deviate` (confirmed 2026-04-21)
+- [x] Branch executed: B2 (anoint dev as production)
+- [x] Post-swap grep output: N/A (no swap performed)
+- [x] Gist description renamed via GitHub API
+- [x] D-21-A recorded in `21-DECISIONS.md` superseding D-10
+- [x] STATE.md decisions log updated with Phase 21 · D-21-A line
