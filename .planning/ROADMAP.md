@@ -187,7 +187,7 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 21-01-PLAN.md — MCP hardening: query blocklist + domain blocklist + hotlink proxy + quota client (Wave 1)
+- [x] 21-01-PLAN.md — MCP hardening: query blocklist + domain blocklist + hotlink proxy + quota client (Wave 1)
 - [ ] 21-02-PLAN.md — Admin schema + /api/image-search/quota endpoint + daily-reset cron bolt-on (Wave 1)
 - [ ] 21-03-PLAN.md — /settings UI override widget extended with Daily searches column (Wave 2)
 - [ ] 21-04-PLAN.md — Safety-pattern extension + preset badge + OVERSIGHT-01 audit + ACL re-grant (Wave 2)
@@ -254,5 +254,5 @@ Plans:
 | 18. Email Alert System | v2.7 | 3/3 | Complete | 2026-04-13 |
 | 19. Budget Exhaustion Investigation & Remediation | v2.8 | 4/4 | Complete | 2026-04-18 |
 | 20. Image Search — Research + POC | v2.9 | 6/6 | Complete   | 2026-04-20 |
-| 21. Image Search — Production rollout | v2.9 | 0/5 | Planned | — |
+| 21. Image Search — Production rollout | v2.9 | 1/5 | In Progress|  |
 | 22. Test Mode preset parity | v2.9 | 0/0 | Not started | — |

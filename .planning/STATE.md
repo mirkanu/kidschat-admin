@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: Kid Image Search + Test Mode Preset Parity
 status: executing
-stopped_at: Session resumed — routing to /gsd-plan-phase 21 (Phase 20 closed ✓)
-last_updated: "2026-04-21T09:57:21.724Z"
-last_activity: 2026-04-21 -- Phase 21 planning complete
+stopped_at: Completed 21-01-PLAN.md — MCP hardened, deployed, 20 tests green
+last_updated: "2026-04-21T10:44:42.717Z"
+last_activity: 2026-04-21
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 11
-  completed_plans: 6
-  percent: 55
+  completed_plans: 7
+  percent: 64
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 ## Current Position
 
 Phase: 20 (image-search-research-poc) — EXECUTING
-Plan: 1 of 6
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-04-21 -- Phase 21 planning complete
+Last activity: 2026-04-21
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -119,6 +119,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 20]: Openverse is the sole image-search provider (Google CSE dropped; Amendment B). Custom MCP server at services/image-search-mcp/ deployed to Railway as kidschat-image-search-mcp.
 - [Phase 20]: Option-iii click-through policy enforced at the MCP tool boundary (openverse.ts strips foreign_landing_url and url), not at the agent prompt layer.
 - [Phase 20]: railway up --path-as-root <subdir> is the working pattern for monorepo-subdirectory deploys; RAILWAY_ROOT_DIRECTORY env var is NOT recognized by Railway.
+- [Phase 21]: MCP-level safety gates locked: 7-regex query blocklist, 10-host domain blocklist, fail-open quota client, host-allowlisted /proxy, modifier-trim retry
+- [Phase 21]: userId-forwarding: live LibreChat probe deferred to 21-02; fallback tool-arg user_id wired; mcp.probe log line emits every /mcp request for audit
+- [Phase 21]: 20-05 C-2 APPROVED-WITH-CAVEATS after retry shipped: 'cute red origami cats' now returns 5 results; 21-05 UAT SEARCH-02 threshold stays at ≥60%
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -166,6 +169,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 18 P01 | 6 | 2 tasks | 4 files |
 | Phase 18 P03 | 5 | 2 tasks | 8 files |
 | Phase 20 P01 | 35 | 3 tasks | 8 files |
+| Phase 21 P01 | 45 | 3 tasks | 9 files |
 
 ### Roadmap Evolution
 
@@ -189,6 +193,6 @@ Progress: [░░░░░░░░░░] 0%
 
 ## Session Continuity
 
-Last session: 2026-04-21
-Stopped at: Session resumed — routing to /gsd-plan-phase 21 (Phase 20 closed ✓)
+Last session: 2026-04-21T10:44:22.796Z
+Stopped at: Completed 21-01-PLAN.md — MCP hardened, deployed, 20 tests green
 Resume file: None

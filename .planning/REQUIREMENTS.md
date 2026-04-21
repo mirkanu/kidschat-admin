@@ -9,17 +9,17 @@ Penelope and Sebastian can search the web for images inside LibreChat via a dedi
 ### Search (kid-facing)
 
 - [ ] **SEARCH-01**: A new "Image Search" preset appears in the LibreChat preset selector alongside the existing 5 presets (4 text + Drawing Studio).
-- [ ] **SEARCH-02**: Typing a query in the Image Search preset returns an inline grid of 8-12 thumbnail images within the chat message.
-- [ ] **SEARCH-03**: The image-search tool calls a kid-safe provider with SafeSearch forced to `strict`; SafeSearch cannot be downgraded from the kid side.
+- [x] **SEARCH-02**: Typing a query in the Image Search preset returns an inline grid of 8-12 thumbnail images within the chat message.
+- [x] **SEARCH-03**: The image-search tool calls a kid-safe provider with SafeSearch forced to `strict`; SafeSearch cannot be downgraded from the kid side.
 - [ ] **SEARCH-04**: Image URLs render inline as plain images, not as clickable hyperlinks to source sites (option iii click-through policy).
 - [ ] **SEARCH-05**: The agent returns only a markdown image grid — no text commentary, no AI reasoning about the images, no image manipulation.
-- [ ] **SEARCH-06**: Images from hotlink-blocking sources render via a server-side proxy fallback so no broken-image icons appear.
-- [ ] **SEARCH-07**: A per-child, per-day search-count cap is enforced independently of the existing daily cost cap.
+- [x] **SEARCH-06**: Images from hotlink-blocking sources render via a server-side proxy fallback so no broken-image icons appear.
+- [x] **SEARCH-07**: A per-child, per-day search-count cap is enforced independently of the existing daily cost cap.
 - [ ] **SEARCH-08**: The search-count cap has a sensible default and can be overridden per child via the admin dashboard (same UI pattern as existing daily cost overrides).
 
 ### Safety (defense-in-depth)
 
-- [ ] **SAFETY-01**: A configurable domain blocklist filters results after the provider's SafeSearch, before rendering to the kid.
+- [x] **SAFETY-01**: A configurable domain blocklist filters results after the provider's SafeSearch, before rendering to the kid.
 - [ ] **SAFETY-02**: Existing `detectSafetyEvent` pattern matching runs on the kid's raw query text; concerning patterns fire the existing parent email alert pipeline (no new notification code path required).
 
 ### Oversight (parent visibility)
