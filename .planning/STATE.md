@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: Kid Image Search + Test Mode Preset Parity
 status: executing
-stopped_at: 21-06 shipped — OVERSIGHT-03 live (Penelope paraphrased summary verified); awaiting parent GO on Telegram msg 2199
-last_updated: "2026-04-21T13:06:31.217Z"
+stopped_at: Phase 21 closed — image search live for kids; Phase 22 (Test Mode preset parity) is next
+last_updated: "2026-04-21T16:00:00.000Z"
 last_activity: 2026-04-21
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 12
-  completed_plans: 11
-  percent: 92
+  completed_plans: 12
+  percent: 96
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-18)
 
 **Core value:** Children can safely explore and learn through AI conversation, with content guardrails that a parent controls and trusts.
-**Current focus:** Phase 20 — image-search-research-poc
+**Current focus:** Phase 22 — Test Mode preset parity
 
 ## Current Position
 
-Phase: 20 (image-search-research-poc) — EXECUTING
-Plan: 5 of 6
-Status: Ready to execute
+Phase: 22 (test-mode-preset-parity) — NOT STARTED
+Plan: 0 of 5
+Status: Ready to plan
 Last activity: 2026-04-21
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████████░] 96%
 
 ## Performance Metrics
 
@@ -202,6 +202,6 @@ Progress: [░░░░░░░░░░] 0%
 
 ## Session Continuity
 
-Last session: 2026-04-21T13:06:00.445Z
-Stopped at: 21-06 shipped — OVERSIGHT-03 live (Penelope paraphrased summary verified); awaiting parent GO on Telegram msg 2199
+Last session: 2026-04-21T16:00:00.000Z
+Stopped at: Phase 21 closed (APPROVED-WITH-CAVEATS, parent manual sign-off); Phase 22 ready to plan
 Resume file: None

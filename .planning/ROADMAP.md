@@ -150,7 +150,7 @@ See [milestones/v2.8-ROADMAP.md](milestones/v2.8-ROADMAP.md) for full phase deta
 A new kid-facing "Image Search" preset inside LibreChat (no external browser, no click-through, full parent oversight via existing MongoDB + email pipeline), plus Test Mode parity so parents can dry-run all 6 presets (4 text + Drawing Studio + Image Search) with full tool execution before changes hit the kids. Structured as **research+POC → production rollout → admin parity** because three real tech questions (tool mechanism, search provider, Test Mode architecture) only resolve through investigation and must be answered before committing to a production implementation.
 
 - [ ] **Phase 20: Image Search — Research + POC** — Pick tool mechanism (LibreChat web_search vs MCP vs custom OpenAPI tool), pick provider (Brave/Serper/Google CSE), decide hotlink mitigation approach, decide Test Mode architecture; stand up end-to-end POC in staging preset against a real API key.
-- [ ] **Phase 21: Image Search — Production rollout (kid-facing)** — Deploy preset to production Gist, domain blocklist, search-count cap + admin UI, safety pattern wiring, full UAT as Penelope.
+- [x] **Phase 21: Image Search — Production rollout (kid-facing)** — Deploy preset to production Gist, domain blocklist, search-count cap + admin UI, safety pattern wiring, full UAT as Penelope. ✅ 2026-04-21
 - [ ] **Phase 22: Test Mode preset parity (admin-facing)** — Preset selector, tool execution for all 6 presets (using architecture decided in Phase 20), daily-summary email inclusion of image searches, side-by-side parity UAT.
 
 ### Phase 20: Image Search — Research + POC
@@ -193,7 +193,7 @@ Plans:
 - [x] 21-03-PLAN.md — /settings UI override widget extended with Daily searches column (Wave 2)
 - [x] 21-04-PLAN.md — Safety-pattern extension + preset badge + OVERSIGHT-01 audit + ACL re-grant (Wave 2)
 - [x] 21-06-PLAN.md — Daily-summary email: image-search count + Haiku-paraphrased query summary (Wave 2, OVERSIGHT-03)
-- [ ] 21-05-PLAN.md — Kid UAT as Penelope & Sebastian + phase close (Wave 3)
+- [x] 21-05-PLAN.md — Kid UAT as Penelope & Sebastian + phase close (Wave 3)
 
 ### Phase 22: Test Mode preset parity (admin-facing)
 **Goal:** A parent opens admin Test Mode, picks any of the 6 presets (4 text + Drawing Studio + Image Search), and experiences exactly what a kid would — including actual DALL-E image generation and actual image-search results — so preset/tool changes can be verified before reaching the kids.
@@ -255,5 +255,5 @@ Plans:
 | 18. Email Alert System | v2.7 | 3/3 | Complete | 2026-04-13 |
 | 19. Budget Exhaustion Investigation & Remediation | v2.8 | 4/4 | Complete | 2026-04-18 |
 | 20. Image Search — Research + POC | v2.9 | 6/6 | Complete   | 2026-04-20 |
-| 21. Image Search — Production rollout | v2.9 | 5/6 | In Progress|  |
+| 21. Image Search — Production rollout | v2.9 | 6/6 | Complete   | 2026-04-21 |
 | 22. Test Mode preset parity | v2.9 | 0/0 | Not started | — |
