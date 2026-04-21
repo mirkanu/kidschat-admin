@@ -1,4 +1,14 @@
 ---
+post_merge_amendment: |
+  2026-04-21 — Parent feedback on first live email: fragmented format
+  (separate italic image-search line above the main summary) felt disjointed.
+  Applied inline fix (commit 8f395fe): merged image-search paraphrase into
+  summarizeChildDay via optional 4th arg; removed summarizeImageSearchQueries
+  + IMAGE_SEARCH_QUERIES_SYSTEM_PROMPT; dropped imageSearchSummary field from
+  DailyChildStats / email template / audit strip. Factual "Image searches: N"
+  line retained. Phrasing tweak (commit eb288c4): "searched for images of …".
+  Net: 1 Haiku call per kid/day instead of 2, single cohesive parent summary.
+  Parent APPROVED final output.
 phase: 21
 plan: 06
 subsystem: parent-oversight / daily-summary email
