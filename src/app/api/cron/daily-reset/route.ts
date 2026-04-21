@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import getMongoClient from "@/lib/mongodb";
 import { accumulateYesterdaySpend, topUpAdminBudget, topUpDailyBudget } from "@/lib/budget";
+import { resetAllSearchCounters } from "@/lib/image-search-quota";
 
 export async function POST(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
@@ -52,7 +53,16 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  console.log(`[daily-reset] Completed: reset=${reset}, accumulated=${accumulated}, admins_refilled=${admins_refilled}, errors=${errors.length}`);
+  // Phase 21-02: wipe per-child Openverse search counters after the user loop.
+  // Collection key is {userId, utcDay} so deleteMany is equivalent to counter=0 for today.
+  let search_counters_reset = 0;
+  try {
+    search_counters_reset = await resetAllSearchCounters(db);
+  } catch (err) {
+    console.error("[daily-reset] Failed to reset search_counters:", err);
+  }
+
+  console.log(`[daily-reset] Completed: reset=${reset}, accumulated=${accumulated}, admins_refilled=${admins_refilled}, search_counters_reset=${search_counters_reset}, errors=${errors.length}`);
 
   // Phase 19 observability — record last successful run so silent cron failures are detectable.
   try {
@@ -62,7 +72,7 @@ export async function POST(req: NextRequest) {
         $set: {
           key: "daily_reset",
           lastRunAt: new Date(),
-          lastRunStats: { reset, accumulated, admins_refilled, errors: errors.length },
+          lastRunStats: { reset, accumulated, admins_refilled, search_counters_reset, errors: errors.length },
         },
       },
       { upsert: true }
@@ -72,5 +82,5 @@ export async function POST(req: NextRequest) {
     console.error("[daily-reset] Failed to write cron_state:", err);
   }
 
-  return NextResponse.json({ reset, accumulated, admins_refilled, errors });
+  return NextResponse.json({ reset, accumulated, admins_refilled, search_counters_reset, errors });
 }
