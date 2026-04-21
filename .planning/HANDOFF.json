@@ -1,0 +1,37 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-04-21T15:40:04.569Z",
+  "phase": "21",
+  "phase_name": "Image Search — Production rollout (kid-facing)",
+  "phase_dir": ".planning/phases/21-image-search-production-rollout-kid-facing",
+  "plan": 5,
+  "task": 1,
+  "total_tasks": 3,
+  "status": "paused",
+  "completed_tasks": [
+    {"id": "21-01", "name": "MCP hardening (blocklist + proxy + Openverse retry + quota client)", "status": "done", "commit": "048f8e0"},
+    {"id": "21-02", "name": "Admin quota backend + /api/image-search/quota + daily-reset bolt-on", "status": "done", "commit": "e45a83c"},
+    {"id": "21-03", "name": "/settings UI Daily-searches override", "status": "done", "commit": "3668dc7"},
+    {"id": "21-04", "name": "Safety patterns + preset badge + CONFIG_PATH deviate + kids' ACL re-grant (GO-LIVE)", "status": "done", "commit": "8d15423"},
+    {"id": "21-06", "name": "Daily-summary email: image-search count + merged Haiku paraphrase", "status": "done", "commit": "e5e6c19"}
+  ],
+  "remaining_tasks": [
+    {"id": "21-05-01", "name": "Pre-UAT smoke + Telegram parent hand-iPads ping", "status": "in_progress", "progress": "executor launched 2026-04-21T15:35Z, agentId aa49466a3c4433f15 — running in background awaiting parent Telegram reply"},
+    {"id": "21-05-02", "name": "Live kid UAT (A preset-visibility, B happy-path 10 queries, C safety blocklist, D cap, E oversight)", "status": "not_started"},
+    {"id": "21-05-03", "name": "Phase-close commit + STATE update + ROADMAP ✅", "status": "not_started"}
+  ],
+  "blockers": [],
+  "human_actions_pending": [
+    {"action": "Reply on Telegram to the 21-05 executor's pre-UAT ping (when it arrives) to start the kid UAT", "context": "Executor is running in background (agentId aa49466a3c4433f15); will Telegram chat 1462848748 after MCP health + chat-test + quota-21-call smoke passes", "blocking": true}
+  ],
+  "decisions": [
+    {"decision": "Image Search ACL live for Penelope + Sebastian on production LibreChat", "rationale": "Plan 21-04-03 GO-LIVE flip committed; aclentries 4→6 on resourceId=69e5cd12f538d268466e71fd", "phase": "21"},
+    {"decision": "D-21-A supersedes Phase 20 D-10: dev Gist b0c89395 anointed as production; CONFIG_PATH unchanged; prod Gist archived", "rationale": "Live CONFIG_PATH already pointed at dev Gist from Phase 20 UAT flip; swap-back would reintroduce LibreChat cold-start risk for purely aesthetic cleanup", "phase": "21"},
+    {"decision": "Daily-summary email: single merged Haiku paraphrase weaves image-search queries into the existing summary sentence using phrasing 'searched for images of …'", "rationale": "Parent feedback: fragmented two-paragraph format felt disjointed; single summary is cleaner and -1 Haiku call/kid/day", "phase": "21"},
+    {"decision": "Kept the per-day image-search cap (SEARCH-07/08) despite being cost-redundant with daily €-cap", "rationale": "Anti-compulsion / content-exposure volume control, not cost control. Already built + deployed — easier to keep than rip.", "phase": "21"},
+    {"decision": "OVERSIGHT-03 pulled forward from Phase 22 to Phase 21 via Plan 21-06", "rationale": "First real daily-summary email post-kid-go-live was the one where under-delivery would hurt most", "phase": "21"}
+  ],
+  "uncommitted_files": [],
+  "next_action": "Wait for 21-05 executor's Telegram ping (if session is resuming immediately, check Telegram chat 1462848748 for latest UAT-related messages first). If the executor has completed in the background, read the last completion notification. Otherwise: the parent drives the UAT via Telegram replies; executor handles the state-update commits.",
+  "context_notes": "Phase 21 is 5/6 plans closed (83%). Only Plan 21-05 (kid UAT) remains — all 3 tasks are human-verify checkpoints driven via Telegram. The 21-05 executor was launched in background just before this pause; it will Telegram when ready for parent input. Cron note: daily-reset + daily-notifications were stuck CRASHED from 2026-04-20 and redeployed via GraphQL this session — backlog item 999.1 (Sentry + cron dead-man's-switch) is clearly load-bearing and should be promoted after Phase 21 closes."
+}
