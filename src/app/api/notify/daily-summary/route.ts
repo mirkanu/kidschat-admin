@@ -100,13 +100,32 @@ export async function POST(req: NextRequest) {
           kid.alertSummary = "(alert summary unavailable)";
         }
       }
+
+      // (c) Image-search queries summary (Plan 21-06, OVERSIGHT-03).
+      // DL-1/DL-2: always show count; paraphrase only when >0.
+      if (kid.imageSearchCount > 0 && kid.imageSearchQueries.length > 0) {
+        try {
+          const { summarizeImageSearchQueries } = await import("@/lib/ai-summary");
+          kid.imageSearchSummary = await summarizeImageSearchQueries(
+            kid.name,
+            kid.imageSearchQueries,
+          );
+        } catch (e) {
+          console.error(
+            `[daily-summary] summarizeImageSearchQueries failed for ${kid.name}:`,
+            e,
+          );
+          kid.imageSearchSummary = "(image-search summary unavailable)";
+        }
+      }
+      // When count === 0, imageSearchSummary stays null (template omits the line per DL-2).
     }),
   );
 
   // --- Build email template props (strip conversationExcerpts — raw kid text
   // must not flow to email HTML; threat T-p94-02). ---
   const childrenForTemplate = stats.map(
-    ({ conversationExcerpts: _excerpts, ...rest }) => rest,
+    ({ conversationExcerpts: _excerpts, imageSearchQueries: _queries, ...rest }) => rest,
   );
 
   // Lazy imports so this module is safe to import at build time
@@ -129,7 +148,7 @@ export async function POST(req: NextRequest) {
   // from the audit doc — we only retain the rendered summary + stats (privacy:
   // raw kid text should not be persisted here; threat T-p94-02).
   const childStatsForAudit = stats.map(
-    ({ conversationExcerpts: _excerpts, ...rest }) => rest,
+    ({ conversationExcerpts: _excerpts, imageSearchQueries: _queries, ...rest }) => rest,
   );
 
   await db.collection("email_notifications").insertOne({

@@ -25,6 +25,10 @@ export interface DailyChildStat {
   alertCount: number;
   summary: string;
   alertSummary: string | null;
+  // Plan 21-06 / OVERSIGHT-03. NOTE: the raw query-text array is stripped by
+  // the route before reaching this template (privacy T-21-06-01).
+  imageSearchCount: number;
+  imageSearchSummary: string | null;
 }
 
 export interface DailySummaryEmailProps {
@@ -159,6 +163,32 @@ export function DailySummaryEmail({ children, date }: DailySummaryEmailProps) {
                       }}
                     >
                       {child.alertSummary}
+                    </Text>
+                  )}
+
+                  {/* Image searches line — always shown (DL-2, Plan 21-06) */}
+                  <Text
+                    style={{
+                      color: "#374151",
+                      fontSize: "14px",
+                      margin: "0 0 4px",
+                    }}
+                  >
+                    Image searches: {child.imageSearchCount}
+                  </Text>
+
+                  {/* Optional AI-paraphrased image-search summary — only when count > 0 */}
+                  {child.imageSearchSummary && (
+                    <Text
+                      style={{
+                        color: "#4b5563",
+                        fontSize: "13px",
+                        fontStyle: "italic",
+                        margin: "0 0 8px",
+                        lineHeight: "1.4",
+                      }}
+                    >
+                      {child.imageSearchSummary}
                     </Text>
                   )}
 

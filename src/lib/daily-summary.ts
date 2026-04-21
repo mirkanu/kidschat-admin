@@ -28,6 +28,13 @@ export interface DailyChildStats {
   alertSummary: string | null;
   /** Raw role-prefixed excerpts fed to the AI — ephemeral, not persisted. */
   conversationExcerpts: string;
+  // --- Plan 21-06 / OVERSIGHT-03 ---
+  /** Total image-search queries in last 24h (rendered on every kid card). */
+  imageSearchCount: number;
+  /** Most-recent-first, dedup'd, capped at 5. Ephemeral — stripped from audit doc. */
+  imageSearchQueries: string[];
+  /** AI-paraphrased one-sentence summary, or fallback string; null when count === 0. */
+  imageSearchSummary: string | null;
 }
 
 /**
@@ -54,6 +61,9 @@ export function formatDailyStats(raw: RawDailyRow[]): DailyChildStats[] {
     summary: "",
     alertSummary: null,
     conversationExcerpts: "",
+    imageSearchCount: 0,
+    imageSearchQueries: [],
+    imageSearchSummary: null,
   }));
 }
 
@@ -213,16 +223,21 @@ export async function getDailyChildStats(db: Db): Promise<DailyChildStats[]> {
         // Can't look up alerts / messages for an anonymous row.
         return;
       }
-      const [alertCount, conversationExcerpts] = await Promise.all([
-        db.collection("email_notifications").countDocuments({
-          type: "safety_alert",
-          childName: kid.name,
-          sentAt: { $gte: oneDayAgo },
-        }),
-        getRecentConversations(kid.name, db, 20),
-      ]);
+      const { getImageSearchStats } = await import("./image-search-summary");
+      const [alertCount, conversationExcerpts, imageSearchStats] =
+        await Promise.all([
+          db.collection("email_notifications").countDocuments({
+            type: "safety_alert",
+            childName: kid.name,
+            sentAt: { $gte: oneDayAgo },
+          }),
+          getRecentConversations(kid.name, db, 20),
+          getImageSearchStats(kid.name, db),
+        ]);
       kid.alertCount = alertCount;
       kid.conversationExcerpts = conversationExcerpts;
+      kid.imageSearchCount = imageSearchStats.count;
+      kid.imageSearchQueries = imageSearchStats.queries;
     }),
   );
 
