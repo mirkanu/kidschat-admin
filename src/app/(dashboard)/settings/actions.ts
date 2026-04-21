@@ -17,6 +17,15 @@ function parseOptionalFloat(
   return n;
 }
 
+function parseOptionalInt(
+  value: FormDataEntryValue | null
+): number | undefined {
+  if (value === null || value === "") return undefined;
+  const n = parseInt(value as string, 10);
+  if (isNaN(n) || n < 0) return undefined;
+  return n;
+}
+
 // ---------------------------------------------------------------------------
 // Save global defaults
 // ---------------------------------------------------------------------------
@@ -33,12 +42,17 @@ export async function saveGlobalDefaults(
     const monthlyCostCapEur = parseOptionalFloat(
       formData.get("monthlyCostCapEur")
     );
+    const dailySearchCountCap = parseOptionalInt(
+      formData.get("dailySearchCountCap")
+    );
 
     // Build update — only include fields that were provided
     const setFields: Partial<Omit<GlobalDefaults, "key">> = {};
     if (dailyCostCapEur !== undefined) setFields.dailyCostCapEur = dailyCostCapEur;
     if (monthlyCostCapEur !== undefined)
       setFields.monthlyCostCapEur = monthlyCostCapEur;
+    if (dailySearchCountCap !== undefined)
+      setFields.dailySearchCountCap = dailySearchCountCap;
 
     if (Object.keys(setFields).length === 0) {
       return { ok: false, error: "No changes to save" };
@@ -89,6 +103,9 @@ export async function saveChildOverride(
     const monthlyCostCapEur = parseOptionalFloat(
       formData.get("monthlyCostCapEur")
     );
+    const dailySearchCountCap = parseOptionalInt(
+      formData.get("dailySearchCountCap")
+    );
 
     const setFields: Partial<Omit<ChildOverride, "key" | "userId">> = {};
     const unsetFields: Record<string, ""> = {};
@@ -104,6 +121,12 @@ export async function saveChildOverride(
       setFields.monthlyCostCapEur = monthlyCostCapEur;
     } else {
       unsetFields.monthlyCostCapEur = "";
+    }
+
+    if (dailySearchCountCap !== undefined) {
+      setFields.dailySearchCountCap = dailySearchCountCap;
+    } else {
+      unsetFields.dailySearchCountCap = "";
     }
 
     const update: Record<string, unknown> = {

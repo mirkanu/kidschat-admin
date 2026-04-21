@@ -44,6 +44,9 @@ async function getSettingsData(): Promise<{
     monthlyCostCapEur:
       (globalDoc?.monthlyCostCapEur as number | undefined) ??
       HARDCODED_DEFAULTS.monthlyCostCapEur,
+    dailySearchCountCap:
+      (globalDoc?.dailySearchCountCap as number | undefined) ??
+      HARDCODED_DEFAULTS.dailySearchCountCap,
   };
 
   // Fetch per-child override docs
@@ -59,6 +62,7 @@ async function getSettingsData(): Promise<{
     const entry: Partial<Omit<ChildOverride, "key" | "userId">> = {};
     if (doc.dailyCostCapEur != null) entry.dailyCostCapEur = doc.dailyCostCapEur as number;
     if (doc.monthlyCostCapEur != null) entry.monthlyCostCapEur = doc.monthlyCostCapEur as number;
+    if (doc.dailySearchCountCap != null) entry.dailySearchCountCap = doc.dailySearchCountCap as number;
     overrideMap.set(uid, Object.keys(entry).length > 0 ? entry : null as unknown as typeof entry);
   }
 
