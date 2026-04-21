@@ -68,8 +68,9 @@ export async function POST(req: NextRequest) {
 
   await Promise.all(
     stats.map(async (kid) => {
-      // (a) Child day summary
-      if (kid.totalMessages === 0) {
+      // (a) Child day summary — includes image-search queries so the paraphrase
+      //     weaves them into the single summary sentence (no separate section).
+      if (kid.totalMessages === 0 && kid.imageSearchCount === 0) {
         kid.summary = "No activity yesterday.";
       } else {
         try {
@@ -77,6 +78,7 @@ export async function POST(req: NextRequest) {
             kid.name,
             kid.totalMessages,
             kid.conversationExcerpts,
+            kid.imageSearchQueries,
           );
         } catch (e) {
           console.error(
@@ -100,25 +102,6 @@ export async function POST(req: NextRequest) {
           kid.alertSummary = "(alert summary unavailable)";
         }
       }
-
-      // (c) Image-search queries summary (Plan 21-06, OVERSIGHT-03).
-      // DL-1/DL-2: always show count; paraphrase only when >0.
-      if (kid.imageSearchCount > 0 && kid.imageSearchQueries.length > 0) {
-        try {
-          const { summarizeImageSearchQueries } = await import("@/lib/ai-summary");
-          kid.imageSearchSummary = await summarizeImageSearchQueries(
-            kid.name,
-            kid.imageSearchQueries,
-          );
-        } catch (e) {
-          console.error(
-            `[daily-summary] summarizeImageSearchQueries failed for ${kid.name}:`,
-            e,
-          );
-          kid.imageSearchSummary = "(image-search summary unavailable)";
-        }
-      }
-      // When count === 0, imageSearchSummary stays null (template omits the line per DL-2).
     }),
   );
 

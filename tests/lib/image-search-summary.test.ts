@@ -3,26 +3,16 @@
  *
  * Covers:
  *   A. getImageSearchStats — pure aggregation over a Db-shaped fake.
- *   B. summarizeImageSearchQueries — Haiku wrapper (SDK mocked).
- *   C. Prompt sanity — IMAGE_SEARCH_QUERIES_SYSTEM_PROMPT contract.
+ *
+ * NOTE: The standalone summarizeImageSearchQueries Haiku wrapper was removed
+ * in the inline fix that merged image-search paraphrasing into summarizeChildDay.
+ * The remaining Haiku behaviour is covered by ai-summary.test.ts via the unified
+ * summarizeChildDay signature (imageSearchQueries as 4th arg).
  */
 
-import { describe, it, expect, jest, beforeEach } from "@jest/globals";
-
-// Mock the Anthropic SDK before importing the wrapper — B block.
-const mockCreate: jest.Mock = jest.fn();
-jest.mock("@anthropic-ai/sdk", () => ({
-  __esModule: true,
-  default: jest.fn().mockImplementation(() => ({
-    messages: { create: mockCreate },
-  })),
-}));
+import { describe, it, expect } from "@jest/globals";
 
 import { getImageSearchStats } from "@/lib/image-search-summary";
-import {
-  summarizeImageSearchQueries,
-  IMAGE_SEARCH_QUERIES_SYSTEM_PROMPT,
-} from "@/lib/ai-summary";
 
 // ---------------------------------------------------------------
 // Db fake helpers — mirrors the pipeline runner in daily-summary.ts
@@ -199,63 +189,3 @@ describe("getImageSearchStats", () => {
   });
 });
 
-// ---------------------------------------------------------------
-// B. summarizeImageSearchQueries (Haiku wrapper, SDK mocked)
-// ---------------------------------------------------------------
-
-describe("summarizeImageSearchQueries", () => {
-  beforeEach(() => {
-    mockCreate.mockReset();
-  });
-
-  it("calls Haiku with system prompt + model + max_tokens=60 + 10s timeout", async () => {
-    mockCreate.mockResolvedValue({
-      content: [{ type: "text", text: "Penelope looked at animals and origami." }],
-    } as never);
-
-    const result = await summarizeImageSearchQueries("Penelope", [
-      "cats",
-      "origami flowers",
-      "red pandas",
-    ]);
-
-    expect(result).toBe("Penelope looked at animals and origami.");
-    expect(mockCreate).toHaveBeenCalledTimes(1);
-    const [args, opts] = mockCreate.mock.calls[0] as [
-      { model: string; max_tokens: number; system: string; messages: Array<{ role: string; content: string }> },
-      { signal: AbortSignal },
-    ];
-    expect(args.model).toBe("claude-haiku-4-5-20251001");
-    expect(args.max_tokens).toBe(60);
-    expect(args.system).toBe(IMAGE_SEARCH_QUERIES_SYSTEM_PROMPT);
-    expect(args.messages[0].role).toBe("user");
-    expect(args.messages[0].content).toContain("Penelope");
-    expect(args.messages[0].content).toContain("cats");
-    expect(opts.signal).toBeInstanceOf(AbortSignal);
-  });
-
-  it("throws on empty text response", async () => {
-    mockCreate.mockResolvedValue({ content: [{ type: "text", text: "   " }] } as never);
-    await expect(
-      summarizeImageSearchQueries("Penelope", ["cats"]),
-    ).rejects.toThrow(/empty/i);
-  });
-
-  it("throws on SDK rejection (timeout / 5xx)", async () => {
-    mockCreate.mockRejectedValue(new Error("boom") as never);
-    await expect(
-      summarizeImageSearchQueries("Penelope", ["cats"]),
-    ).rejects.toThrow("boom");
-  });
-});
-
-// ---------------------------------------------------------------
-// C. Prompt sanity
-// ---------------------------------------------------------------
-
-describe("IMAGE_SEARCH_QUERIES_SYSTEM_PROMPT", () => {
-  it("enforces the privacy contract (paraphrase, one sentence)", () => {
-    expect(IMAGE_SEARCH_QUERIES_SYSTEM_PROMPT).toMatch(/paraphrase/i);
-    expect(IMAGE_SEARCH_QUERIES_SYSTEM_PROMPT).toMatch(/one sentence/i);
-  });
-});

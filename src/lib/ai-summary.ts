@@ -42,14 +42,13 @@ const CHILD_DAY_SYSTEM_PROMPT = `You are summarising one day of chat between an 
 
 Rules:
 - Output exactly one sentence describing topics/activities, then a "Concerns:" line.
-- Paraphrase — never quote the child verbatim. Words shared in chat may be private; the parent receives topic signals, not raw quotes.
-- If the conversation included sensitive topics (emotions, friendship struggles, body/health, fears, family conflict), name the topic gently in the Concerns line so the parent can check in. Do not quote.
+- If image-search queries are provided, weave them naturally into the topics sentence alongside conversation themes (e.g. "…and also searched for watercolor mountains, puppies, and origami cats"). Do not add a separate section or label.
+- Paraphrase — never quote the child or the queries verbatim. Words shared in chat may be private; the parent receives topic signals, not raw quotes.
+- If the conversation or queries included sensitive topics (emotions, friendship struggles, body/health, fears, family conflict, real people), name the topic gently in the Concerns line so the parent can check in. Do not quote.
 - If nothing concerning, write "Concerns: none."
-- Keep the whole output under 50 words.`;
+- Keep the whole output under 70 words.`;
 
 const ALERTS_SYSTEM_PROMPT = `You are summarising safety alerts triggered by an AI assistant for a parent's daily digest. Output one short sentence paraphrasing what triggered the alert(s). Never quote the child verbatim — describe the pattern or topic, not the words used.`;
-
-export const IMAGE_SEARCH_QUERIES_SYSTEM_PROMPT = `You are summarising a child's image-search queries for a parent's daily digest. Output exactly one sentence that paraphrases the themes or topics the child searched for. Never quote a query verbatim — parents receive topic signals, not the raw words. Keep the whole output under 50 words. If queries touch sensitive topics (body/health, fears, social conflict, real people), name the topic gently so the parent can check in.`;
 
 /**
  * Summarise a child's day of chat into one sentence + a "Concerns:" line.
@@ -61,58 +60,26 @@ export async function summarizeChildDay(
   childName: string,
   totalMessages: number,
   conversationExcerpts: string,
+  imageSearchQueries: string[] = [],
 ): Promise<string> {
   // Lazy import — keeps module build-safe when ANTHROPIC_API_KEY is absent.
   const Anthropic = (await import("@anthropic-ai/sdk")).default;
   const client = new Anthropic(); // reads ANTHROPIC_API_KEY from env
 
-  const userMessage = `Child: ${childName}\nTotal messages: ${totalMessages}\nConversation excerpts (most recent first, truncated):\n${conversationExcerpts}`;
+  const imageBlock =
+    imageSearchQueries.length > 0
+      ? `\nImage searches (${imageSearchQueries.length}, most-recent first):\n${imageSearchQueries
+          .map((q, i) => `${i + 1}. ${q}`)
+          .join("\n")}`
+      : "";
+
+  const userMessage = `Child: ${childName}\nTotal messages: ${totalMessages}\nConversation excerpts (most recent first, truncated):\n${conversationExcerpts}${imageBlock}`;
 
   const resp = await client.messages.create(
     {
       model: MODEL,
-      max_tokens: 100,
+      max_tokens: 160,
       system: CHILD_DAY_SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userMessage }],
-    },
-    { signal: AbortSignal.timeout(TIMEOUT_MS) },
-  );
-
-  const text = resp.content
-    .map((b) => (b.type === "text" ? b.text : ""))
-    .join("")
-    .trim();
-
-  if (!text) {
-    throw new Error("Empty Anthropic response");
-  }
-
-  return text;
-}
-
-/**
- * Summarise a child's image-search queries from the last 24h into one short sentence.
- *
- * @throws on missing ANTHROPIC_API_KEY, SDK error, 10s timeout, or empty response.
- * Caller must wrap in try/catch — identical contract to summarizeChildDay/summarizeAlerts.
- */
-export async function summarizeImageSearchQueries(
-  childName: string,
-  queries: string[],
-): Promise<string> {
-  // Lazy import — keeps module build-safe when ANTHROPIC_API_KEY is absent.
-  const Anthropic = (await import("@anthropic-ai/sdk")).default;
-  const client = new Anthropic(); // reads ANTHROPIC_API_KEY from env
-
-  const userMessage = `Child: ${childName}\nQuery count: ${queries.length}\nRecent queries (most-recent first, up to 5):\n${queries
-    .map((q, i) => `${i + 1}. ${q}`)
-    .join("\n")}`;
-
-  const resp = await client.messages.create(
-    {
-      model: MODEL,
-      max_tokens: 60,
-      system: IMAGE_SEARCH_QUERIES_SYSTEM_PROMPT,
       messages: [{ role: "user", content: userMessage }],
     },
     { signal: AbortSignal.timeout(TIMEOUT_MS) },

@@ -20,7 +20,6 @@ test("DailyChildStats interface has the new shape (no imageRequests / topPresets
     conversationExcerpts: "",
     imageSearchCount: 0,
     imageSearchQueries: [],
-    imageSearchSummary: null,
   };
   assert.equal(typeof stat.name, "string");
   assert.equal(typeof stat.totalMessages, "number");
@@ -40,7 +39,6 @@ test("DailyChildStats no longer exposes imageRequests (compile-time proof)", () 
     conversationExcerpts: "",
     imageSearchCount: 0,
     imageSearchQueries: [],
-    imageSearchSummary: null,
   };
   // @ts-expect-error — imageRequests must NOT exist on the new shape
   const _image = stat.imageRequests;
@@ -57,7 +55,6 @@ test("DailyChildStats no longer exposes topPresets (compile-time proof)", () => 
     conversationExcerpts: "",
     imageSearchCount: 0,
     imageSearchQueries: [],
-    imageSearchSummary: null,
   };
   // @ts-expect-error — topPresets must NOT exist on the new shape
   const _presets = stat.topPresets;
@@ -85,7 +82,6 @@ test("formatDailyStats maps a minimal row to the new shape with defaults", () =>
     conversationExcerpts: "",
     imageSearchCount: 0,
     imageSearchQueries: [],
-    imageSearchSummary: null,
   });
 });
 
@@ -100,7 +96,6 @@ test("formatDailyStats defaults name to 'Unknown Child' when _id is null", () =>
   assert.equal(result[0].conversationExcerpts, "");
   assert.equal(result[0].imageSearchCount, 0);
   assert.deepEqual(result[0].imageSearchQueries, []);
-  assert.equal(result[0].imageSearchSummary, null);
 });
 
 test("formatDailyStats defaults totalMessages to 0 when absent", () => {

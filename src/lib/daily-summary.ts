@@ -31,10 +31,8 @@ export interface DailyChildStats {
   // --- Plan 21-06 / OVERSIGHT-03 ---
   /** Total image-search queries in last 24h (rendered on every kid card). */
   imageSearchCount: number;
-  /** Most-recent-first, dedup'd, capped at 5. Ephemeral — stripped from audit doc. */
+  /** Most-recent-first, dedup'd, capped at 5. Fed to summarizeChildDay alongside conversation excerpts. Ephemeral — stripped from audit doc. */
   imageSearchQueries: string[];
-  /** AI-paraphrased one-sentence summary, or fallback string; null when count === 0. */
-  imageSearchSummary: string | null;
 }
 
 /**
@@ -63,7 +61,6 @@ export function formatDailyStats(raw: RawDailyRow[]): DailyChildStats[] {
     conversationExcerpts: "",
     imageSearchCount: 0,
     imageSearchQueries: [],
-    imageSearchSummary: null,
   }));
 }
 
