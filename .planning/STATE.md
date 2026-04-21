@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: Kid Image Search + Test Mode Preset Parity
 status: executing
-stopped_at: "21-04 partial: Tasks 01+02 complete; Task 00 awaiting parent Telegram reply (swap/deviate/hold); Task 03 gated"
-last_updated: "2026-04-21T11:23:00.151Z"
+stopped_at: 21-04 closed — SAFETY-02/OVERSIGHT-01/OVERSIGHT-02 complete; kids have Image Search ACL; Phase 21-05 UAT unblocked
+last_updated: "2026-04-21T12:34:16.196Z"
 last_activity: 2026-04-21
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 11
-  completed_plans: 8
-  percent: 73
+  total_plans: 12
+  completed_plans: 10
+  percent: 83
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 ## Current Position
 
 Phase: 20 (image-search-research-poc) — EXECUTING
-Plan: 3 of 6
+Plan: 4 of 6
 Status: Ready to execute
 Last activity: 2026-04-21
 
@@ -125,6 +125,9 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 21]: [Phase 21-02]: client.db("test") matches sibling routes verbatim (W3 revision)
 - [Phase 21]: [Phase 21-02]: services/ + tests/ excluded from admin tsconfig — Phase 20 MCP sibling service broke strict TS sweep
 - [Phase 21]: D-21-A supersedes Phase 20 D-10 — dev Gist b0c89395 anointed as production; CONFIG_PATH unchanged; prod Gist archived
+- [Phase 21]: [Phase 21-04]: D-21-A supersedes D-10 — dev Gist b0c89395 anointed as production via gh description rename; CONFIG_PATH unchanged
+- [Phase 21]: [Phase 21-04]: OVERSIGHT-01 closed by audit, not code — 17 image-search conversations + 46 messages persisted by LibreChat native write path; zero new logging code added
+- [Phase 21]: [Phase 21-04]: Preset-distinguishing field = conversations.spec ('image-search'); badge renders on /conversations list + detail (OVERSIGHT-02)
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -197,6 +200,6 @@ Progress: [░░░░░░░░░░] 0%
 
 ## Session Continuity
 
-Last session: 2026-04-21T11:23:00.144Z
-Stopped at: 21-04 partial: Tasks 01+02 complete; Task 00 awaiting parent Telegram reply (swap/deviate/hold); Task 03 gated
+Last session: 2026-04-21T12:34:16.185Z
+Stopped at: 21-04 closed — SAFETY-02/OVERSIGHT-01/OVERSIGHT-02 complete; kids have Image Search ACL; Phase 21-05 UAT unblocked
 Resume file: None

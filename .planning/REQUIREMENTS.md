@@ -20,12 +20,12 @@ Penelope and Sebastian can search the web for images inside LibreChat via a dedi
 ### Safety (defense-in-depth)
 
 - [x] **SAFETY-01**: A configurable domain blocklist filters results after the provider's SafeSearch, before rendering to the kid.
-- [ ] **SAFETY-02**: Existing `detectSafetyEvent` pattern matching runs on the kid's raw query text; concerning patterns fire the existing parent email alert pipeline (no new notification code path required).
+- [x] **SAFETY-02**: Existing `detectSafetyEvent` pattern matching runs on the kid's raw query text; concerning patterns fire the existing parent email alert pipeline (no new notification code path required).
 
 ### Oversight (parent visibility)
 
-- [ ] **OVERSIGHT-01**: Every image-search query + returned URLs are logged to MongoDB via the existing LibreChat conversation/message write path — no custom logging code required.
-- [ ] **OVERSIGHT-02**: The admin dashboard conversation log displays Image Search conversations with a visible preset badge distinguishing them from text-chat conversations.
+- [x] **OVERSIGHT-01**: Every image-search query + returned URLs are logged to MongoDB via the existing LibreChat conversation/message write path — no custom logging code required.
+- [x] **OVERSIGHT-02**: The admin dashboard conversation log displays Image Search conversations with a visible preset badge distinguishing them from text-chat conversations.
 - [ ] **OVERSIGHT-03**: The daily-summary email includes a per-child "Image searches today" count and a sample of recent queries, matching the paraphrased-summary style introduced in quick task 260417-p94.
 
 ### Test Mode (admin parity)
