@@ -76,6 +76,7 @@ export interface GlobalDefaults {
   key: "global_defaults";
   dailyCostCapEur: number;       // e.g. 0.50
   monthlyCostCapEur: number;     // e.g. 2.00
+  dailySearchCountCap?: number;  // Phase 21-02: per-child daily Openverse search cap (default 20)
 }
 
 export interface ChildOverride {
@@ -83,18 +84,21 @@ export interface ChildOverride {
   userId: string;
   dailyCostCapEur?: number;
   monthlyCostCapEur?: number;
+  dailySearchCountCap?: number;  // Phase 21-02: per-child override
 }
 
 export interface EffectiveBudget {
   dailyCostCapEur: number;
   monthlyCostCapEur: number;
+  dailySearchCountCap: number;   // Phase 21-02
 }
 
 /** Hardcoded fallback values — used when no MongoDB settings docs exist */
-export const HARDCODED_DEFAULTS: GlobalDefaults = {
+export const HARDCODED_DEFAULTS: Required<GlobalDefaults> = {
   key: "global_defaults",
   dailyCostCapEur: 0.50, // e.g. 0.50 (Phase 19: raised from 0.10 to cover realistic usage — see 19-RESEARCH.md Area 7)
   monthlyCostCapEur: 2.00,
+  dailySearchCountCap: 20, // Phase 21-02: 20 Openverse searches/day per child
 };
 
 // ---------------------------------------------------------------------------
@@ -162,9 +166,29 @@ export async function getEffectiveBudget(userId: string, db: Db): Promise<Effect
   const d = HARDCODED_DEFAULTS;
 
   return {
-    dailyCostCapEur:   (o.dailyCostCapEur   ?? g.dailyCostCapEur   ?? d.dailyCostCapEur),
-    monthlyCostCapEur: (o.monthlyCostCapEur  ?? g.monthlyCostCapEur ?? d.monthlyCostCapEur),
+    dailyCostCapEur:     (o.dailyCostCapEur     ?? g.dailyCostCapEur     ?? d.dailyCostCapEur),
+    monthlyCostCapEur:   (o.monthlyCostCapEur   ?? g.monthlyCostCapEur   ?? d.monthlyCostCapEur),
+    dailySearchCountCap: (o.dailySearchCountCap ?? g.dailySearchCountCap ?? d.dailySearchCountCap),
   };
+}
+
+/**
+ * Phase 21-02: Returns the effective daily Openverse image-search count cap for a child.
+ * Resolution order mirrors getEffectiveBudget: child_override > global_defaults > HARDCODED_DEFAULTS.
+ */
+export async function getEffectiveSearchCap(userId: string, db: Db): Promise<number> {
+  const col = db.collection<SettingsDoc>("settings");
+  const [globalDoc, overrideDoc] = await Promise.all([
+    col.findOne({ key: "global_defaults" } as Parameters<typeof col.findOne>[0]),
+    col.findOne({ key: "child_override", userId } as Parameters<typeof col.findOne>[0]),
+  ]);
+  const g: Partial<GlobalDefaults> = globalDoc ?? {};
+  const o: Partial<ChildOverride> = overrideDoc ?? {};
+  return (
+    o.dailySearchCountCap ??
+    g.dailySearchCountCap ??
+    HARDCODED_DEFAULTS.dailySearchCountCap
+  );
 }
 
 // ---------------------------------------------------------------------------
