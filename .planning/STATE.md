@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: Kid Image Search + Test Mode Preset Parity
 status: executing
-stopped_at: 21-04 closed — SAFETY-02/OVERSIGHT-01/OVERSIGHT-02 complete; kids have Image Search ACL; Phase 21-05 UAT unblocked
-last_updated: "2026-04-21T12:34:16.196Z"
+stopped_at: 21-06 shipped — OVERSIGHT-03 live (Penelope paraphrased summary verified); awaiting parent GO on Telegram msg 2199
+last_updated: "2026-04-21T13:06:31.217Z"
 last_activity: 2026-04-21
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 12
-  completed_plans: 10
-  percent: 83
+  completed_plans: 11
+  percent: 92
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 ## Current Position
 
 Phase: 20 (image-search-research-poc) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 Status: Ready to execute
 Last activity: 2026-04-21
 
@@ -128,6 +128,7 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 21]: [Phase 21-04]: D-21-A supersedes D-10 — dev Gist b0c89395 anointed as production via gh description rename; CONFIG_PATH unchanged
 - [Phase 21]: [Phase 21-04]: OVERSIGHT-01 closed by audit, not code — 17 image-search conversations + 46 messages persisted by LibreChat native write path; zero new logging code added
 - [Phase 21]: [Phase 21-04]: Preset-distinguishing field = conversations.spec ('image-search'); badge renders on /conversations list + detail (OVERSIGHT-02)
+- [Phase 21]: OVERSIGHT-03 closed in Phase 21 (not Phase 22): daily-summary email now includes per-kid imageSearchCount + Haiku-paraphrased one-sentence summary when count>0; raw queries stripped from email HTML and audit doc (T-21-06-01/02 mitigations)
 
 ### v2.2 Architecture Decisions (from research)
 
@@ -177,6 +178,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 20 P01 | 35 | 3 tasks | 8 files |
 | Phase 21 P01 | 45 | 3 tasks | 9 files |
 | Phase 21 P02 | 30 | 2 tasks | 9 files |
+| Phase 21 P06 | 75 | 3 tasks | 7 files |
 
 ### Roadmap Evolution
 
@@ -200,6 +202,6 @@ Progress: [░░░░░░░░░░] 0%
 
 ## Session Continuity
 
-Last session: 2026-04-21T12:34:16.185Z
-Stopped at: 21-04 closed — SAFETY-02/OVERSIGHT-01/OVERSIGHT-02 complete; kids have Image Search ACL; Phase 21-05 UAT unblocked
+Last session: 2026-04-21T13:06:00.445Z
+Stopped at: 21-06 shipped — OVERSIGHT-03 live (Penelope paraphrased summary verified); awaiting parent GO on Telegram msg 2199
 Resume file: None

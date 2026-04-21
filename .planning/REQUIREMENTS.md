@@ -26,7 +26,7 @@ Penelope and Sebastian can search the web for images inside LibreChat via a dedi
 
 - [x] **OVERSIGHT-01**: Every image-search query + returned URLs are logged to MongoDB via the existing LibreChat conversation/message write path — no custom logging code required.
 - [x] **OVERSIGHT-02**: The admin dashboard conversation log displays Image Search conversations with a visible preset badge distinguishing them from text-chat conversations.
-- [ ] **OVERSIGHT-03**: The daily-summary email includes a per-child "Image searches today" count and a sample of recent queries, matching the paraphrased-summary style introduced in quick task 260417-p94.
+- [x] **OVERSIGHT-03**: The daily-summary email includes a per-child "Image searches today" count and a sample of recent queries, matching the paraphrased-summary style introduced in quick task 260417-p94.
 
 ### Test Mode (admin parity)
 
@@ -67,7 +67,7 @@ Penelope and Sebastian can search the web for images inside LibreChat via a dedi
 | SAFETY-02 | Phase 21 | Planned |
 | OVERSIGHT-01 | Phase 21 | Planned |
 | OVERSIGHT-02 | Phase 21 | Planned |
-| OVERSIGHT-03 | Phase 22 | Planned |
+| OVERSIGHT-03 | Phase 21 | Planned |
 | TESTMODE-01 | Phase 22 | Planned |
 | TESTMODE-02 | Phase 22 | Planned |
 | TESTMODE-03 | Phase 22 | Planned |

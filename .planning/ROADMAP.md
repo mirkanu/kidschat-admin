@@ -176,13 +176,14 @@ Plans:
 ### Phase 21: Image Search — Production rollout (kid-facing)
 **Goal:** Penelope and Sebastian have a production "Image Search" preset with SafeSearch, domain blocklist, per-day search cap, and full parent oversight via existing MongoDB/email pipelines — zero click-through to source sites.
 **Depends on:** Phase 20
-**Requirements:** SEARCH-01, SEARCH-02, SEARCH-03, SEARCH-04, SEARCH-05, SEARCH-06, SEARCH-07, SEARCH-08, SAFETY-01, SAFETY-02, OVERSIGHT-01, OVERSIGHT-02
+**Requirements:** SEARCH-01, SEARCH-02, SEARCH-03, SEARCH-04, SEARCH-05, SEARCH-06, SEARCH-07, SEARCH-08, SAFETY-01, SAFETY-02, OVERSIGHT-01, OVERSIGHT-02, OVERSIGHT-03
 **Success Criteria** (what must be TRUE):
   1. Penelope sees "Image Search" as a sixth preset in the LibreChat preset selector and can select it.
   2. Typing an age-appropriate query (e.g., "lions", "rainbow") returns an inline grid of 8-12 images rendered as plain images (not clickable links), with no AI commentary; hotlink-blocked images render via the proxy fallback.
   3. An attempt to query a blocklist-matching domain or a SafeSearch-tripped term is filtered out before reaching the kid, and suspicious query patterns fire an existing-pipeline parent email alert.
   4. After N searches in a day (configurable per child via admin UI, same pattern as daily cost override), Penelope is blocked from additional searches until the next day.
   5. The admin conversation log shows the Image Search session with a visible preset badge distinguishing it from text-chat conversations; every query + returned URL set is persisted in MongoDB via LibreChat's normal conversation/message write path.
+  6. The 08:00 UTC daily-summary email renders a per-child "Image searches: N" line on every active kid's card, with a Haiku-paraphrased one-sentence summary appearing below the count whenever N > 0 (OVERSIGHT-03; raw queries never reach email HTML or audit doc).
 **Plans:** 6 plans
 **UI hint**: yes
 
@@ -191,19 +192,18 @@ Plans:
 - [x] 21-02-PLAN.md — Admin schema + /api/image-search/quota endpoint + daily-reset cron bolt-on (Wave 1)
 - [x] 21-03-PLAN.md — /settings UI override widget extended with Daily searches column (Wave 2)
 - [x] 21-04-PLAN.md — Safety-pattern extension + preset badge + OVERSIGHT-01 audit + ACL re-grant (Wave 2)
-- [ ] 21-06-PLAN.md — Daily-summary email: image-search count + Haiku-paraphrased query summary (Wave 2, OVERSIGHT-03)
+- [x] 21-06-PLAN.md — Daily-summary email: image-search count + Haiku-paraphrased query summary (Wave 2, OVERSIGHT-03)
 - [ ] 21-05-PLAN.md — Kid UAT as Penelope & Sebastian + phase close (Wave 3)
 
 ### Phase 22: Test Mode preset parity (admin-facing)
 **Goal:** A parent opens admin Test Mode, picks any of the 6 presets (4 text + Drawing Studio + Image Search), and experiences exactly what a kid would — including actual DALL-E image generation and actual image-search results — so preset/tool changes can be verified before reaching the kids.
 **Depends on:** Phase 21
-**Requirements:** TESTMODE-01, TESTMODE-02, TESTMODE-03, OVERSIGHT-03
+**Requirements:** TESTMODE-01, TESTMODE-02, TESTMODE-03
 **Success Criteria** (what must be TRUE):
   1. The admin Test Mode page exposes a preset/agent selector with all 6 presets (Friendly Tutor, Casual Buddy, Balanced Helper, Standard Formal, Drawing Studio, Image Search).
   2. Selecting Drawing Studio and submitting a prompt triggers real DALL-E image generation and renders the resulting image inline in Test Mode.
   3. Selecting Image Search and submitting a query returns the same inline image grid a kid would see for that query (same SafeSearch, same blocklist, same click-through policy).
   4. A side-by-side parity UAT across all 6 presets (parent Test Mode vs Penelope's actual LibreChat session) produces matching behavior within expected variance, documented in the phase's VERIFICATION.md.
-  5. The daily-summary email for each kid includes an "Image searches today" count plus a sample of recent queries, matching the paraphrased-summary style from quick task 260417-p94.
 **Plans:** 5 plans
 **UI hint**: yes
 
@@ -255,5 +255,5 @@ Plans:
 | 18. Email Alert System | v2.7 | 3/3 | Complete | 2026-04-13 |
 | 19. Budget Exhaustion Investigation & Remediation | v2.8 | 4/4 | Complete | 2026-04-18 |
 | 20. Image Search — Research + POC | v2.9 | 6/6 | Complete   | 2026-04-20 |
-| 21. Image Search — Production rollout | v2.9 | 4/6 | In Progress|  |
+| 21. Image Search — Production rollout | v2.9 | 5/6 | In Progress|  |
 | 22. Test Mode preset parity | v2.9 | 0/0 | Not started | — |
