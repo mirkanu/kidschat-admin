@@ -142,7 +142,10 @@ export async function handleProxy(
       method: "GET",
       redirect: "follow",
       signal: AbortSignal.timeout(TIMEOUT_MS),
-      headers: { Accept: "image/*" },
+      // Don't send a restrictive Accept header — Openverse thumb endpoint
+      // returns HTTP 406 on Accept: image/* (content-negotiation quirk).
+      // We validate content-type below after the response.
+      headers: { "User-Agent": "kidschat-image-search-mcp/0.2" },
     });
     if (!upstream.ok) {
       console.log(
