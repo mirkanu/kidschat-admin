@@ -128,6 +128,18 @@ export function SettingsForm({ globals, overrides, lastUpdated }: SettingsFormPr
                 defaultValue={globals.monthlyCostCapEur}
                 step="0.01"
               />
+              <NumberFieldRow
+                label="Daily image-searches per child"
+                name="dailySearchCountCap"
+                defaultValue={globals.dailySearchCountCap ?? 20}
+                step="1"
+              />
+              <div className="grid grid-cols-3 gap-4">
+                <div />
+                <p className="col-span-2 text-xs text-muted-foreground">
+                  Max image searches per child per day. Resets at midnight UTC.
+                </p>
+              </div>
             </div>
 
           </div>

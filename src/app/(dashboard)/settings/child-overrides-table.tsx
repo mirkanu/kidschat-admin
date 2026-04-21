@@ -13,7 +13,7 @@ interface ChildOverridesTableProps {
   users: ChildOverrideRow[];
   globals: Pick<
     GlobalDefaults,
-    "dailyCostCapEur" | "monthlyCostCapEur"
+    "dailyCostCapEur" | "monthlyCostCapEur" | "dailySearchCountCap"
   >;
 }
 
@@ -49,6 +49,11 @@ function OverrideRow({
       ? String(user.override.monthlyCostCapEur)
       : ""
   );
+  const [searchCap, setSearchCap] = useState(
+    user.override?.dailySearchCountCap != null
+      ? String(user.override.dailySearchCountCap)
+      : ""
+  );
 
   const boundSaveAction = saveChildOverride.bind(null, user.userId);
 
@@ -69,6 +74,7 @@ function OverrideRow({
       if (result.ok) {
         setDailyCap("");
         setMonthlyCap("");
+        setSearchCap("");
         toast.success(
           `Override deleted for ${user.childName} — using global defaults`
         );
@@ -80,12 +86,13 @@ function OverrideRow({
 
   const hasOverride =
     dailyCap !== "" ||
-    monthlyCap !== "";
+    monthlyCap !== "" ||
+    searchCap !== "";
 
   return (
     <form
       action={handleSave}
-      className="grid grid-cols-[9rem_1fr_1fr_7rem] items-center gap-2 border-t px-3 py-2 first:border-t-0"
+      className="grid grid-cols-[9rem_1fr_1fr_1fr_7rem] items-center gap-2 border-t px-3 py-2 first:border-t-0"
     >
       <div className="text-sm font-medium truncate">{user.childName}</div>
       <div>
@@ -110,6 +117,19 @@ function OverrideRow({
           value={monthlyCap}
           onChange={(e) => setMonthlyCap(e.target.value)}
           placeholder={String(globals.monthlyCostCapEur)}
+          className="h-8 text-sm"
+          disabled={isPending}
+        />
+      </div>
+      <div>
+        <Input
+          name="dailySearchCountCap"
+          type="number"
+          step="1"
+          min="0"
+          value={searchCap}
+          onChange={(e) => setSearchCap(e.target.value)}
+          placeholder={String(globals.dailySearchCountCap ?? 20)}
           className="h-8 text-sm"
           disabled={isPending}
         />
@@ -170,10 +190,11 @@ export function ChildOverridesTable({
       </p>
       <div className="rounded-md border">
         {/* Header row — matches the form grid template */}
-        <div className="grid grid-cols-[9rem_1fr_1fr_7rem] items-center gap-2 px-3 py-2 bg-muted/50 text-xs font-medium text-muted-foreground">
+        <div className="grid grid-cols-[9rem_1fr_1fr_1fr_7rem] items-center gap-2 px-3 py-2 bg-muted/50 text-xs font-medium text-muted-foreground">
           <div>Child</div>
           <div>Daily allowance (€)</div>
           <div>Monthly cap (€)</div>
+          <div>Daily searches</div>
           <div className="text-right">Actions</div>
         </div>
         {users.map((user) => (

@@ -113,7 +113,7 @@ function SettingsFormSkeleton() {
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-px w-full" />
         </div>
-        {Array.from({ length: 2 }).map((_, i) => (
+        {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="grid grid-cols-3 items-center gap-4">
             <Skeleton className="h-4 w-32 ml-auto" />
             <div className="col-span-2">
