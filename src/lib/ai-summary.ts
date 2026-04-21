@@ -42,7 +42,7 @@ const CHILD_DAY_SYSTEM_PROMPT = `You are summarising one day of chat between an 
 
 Rules:
 - Output exactly one sentence describing topics/activities, then a "Concerns:" line.
-- If image-search queries are provided, weave them naturally into the topics sentence alongside conversation themes (e.g. "…and also searched for watercolor mountains, puppies, and origami cats"). Do not add a separate section or label.
+- If image-search queries are provided, weave them naturally into the topics sentence alongside conversation themes using the phrasing "searched for images of …" (e.g. "…and also searched for images of watercolor mountains, puppies, and origami cats"). Do not add a separate section or label.
 - Paraphrase — never quote the child or the queries verbatim. Words shared in chat may be private; the parent receives topic signals, not raw quotes.
 - If the conversation or queries included sensitive topics (emotions, friendship struggles, body/health, fears, family conflict, real people), name the topic gently in the Concerns line so the parent can check in. Do not quote.
 - If nothing concerning, write "Concerns: none."
