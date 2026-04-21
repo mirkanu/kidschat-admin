@@ -72,6 +72,29 @@ export const IMAGE_PROMPT_PATTERNS: Array<{ pattern: RegExp; label: string }> = 
     pattern: /\b(pretend|imagine|act as if|let's say|suppose|assume)\b.{0,60}\b(allowed|able|can|draw|generate|create|make)\b.{0,40}\b(anything|everything|violence|blood|nude|naked|explicit|no rules|no limits|unrestricted)\b/i,
     label: "bypass framing",
   },
+  // ---- Plan 21-04 · blocklist alignment with services/image-search-mcp/src/blocklist.ts ----
+  // Anatomical / breastfeeding — stricter-wins per D-7 (blanket block across both kids).
+  // `breastfeed\w*` catches breastfeeding/breastfed; `breast(?!stroke)\w*` catches breasts
+  // without false-positive on "breaststroke" (swimming).
+  {
+    pattern: /\b(breastfeed\w*|lactation|nipples?|genitals?|penis|vagina|vulva|breast(?!stroke)\w*)\b/i,
+    label: "sexual/anatomy",
+  },
+  // Self-harm specifics beyond the existing bypass pattern — suicide method, hanging, cutting.
+  {
+    pattern: /\b(suicide\s+method|self[- ]harm|kill\s+myself|hang\s+myself|cutting\s+(myself|wrist)|overdose)\b/i,
+    label: "self_harm",
+  },
+  // Drug-use specifics — named controlled substances + paraphernalia.
+  {
+    pattern: /\b(meth|cocaine|heroin|crack\s+pipe|bong|crystal\s+meth|fentanyl|ecstasy\s+pill)\b/i,
+    label: "drug_use",
+  },
+  // Graphic pregnancy/birth visuals — educational PSA content still passes the broader patterns above.
+  {
+    pattern: /\b(childbirth\s+(photo|graphic)|giving\s+birth\s+(real|graphic|actual))\b/i,
+    label: "graphic_birth",
+  },
 ];
 
 /**
