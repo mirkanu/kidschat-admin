@@ -179,6 +179,7 @@ Progress: [██████████░] 96%
 | Phase 21 P01 | 45 | 3 tasks | 9 files |
 | Phase 21 P02 | 30 | 2 tasks | 9 files |
 | Phase 21 P06 | 75 | 3 tasks | 7 files |
+| 260422-cron-retry-fix | Add --retry 5 to Railway cron curl commands — retries were never applied to railway.toml despite prior intent | 2026-04-22 | e9fa07a | [20260422-cron-retry-fix](./quick/20260422-cron-retry-fix/) |
 
 ### Roadmap Evolution
 
