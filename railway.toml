@@ -1,6 +1,10 @@
 # railway.toml — KidAI admin dashboard configuration
 # Plan 15-04: Config-as-code for reset cron services
 # See: https://docs.railway.app/reference/config-as-code
+#
+# NOTE: These cron services are NOT git-linked to this repo.
+# Changes here are documentation only — apply live via Railway GraphQL
+# serviceInstanceUpdate (service IDs in .planning/quick/260417-afs/).
 
 [build]
 builder = "NIXPACKS"
@@ -9,14 +13,14 @@ builder = "NIXPACKS"
 [[deploy.crons]]
 name = "daily-reset"
 schedule = "0 0 * * *"
-command = "sh -c \"curl --retry 5 --retry-delay 10 --retry-all-errors -fsS -X POST -H 'x-cron-secret: $CRON_SECRET' https://kidschat-admin-production.up.railway.app/api/cron/daily-reset\""
+command = "sh -c \"curl --retry 5 --retry-delay 15 --retry-all-errors -sS -X POST -H 'x-cron-secret: $CRON_SECRET' https://kidschat-admin-production.up.railway.app/api/cron/daily-reset || echo CURL_FAILED\""
 
 [[deploy.crons]]
 name = "monthly-reset"
 schedule = "0 0 1 * *"
-command = "sh -c \"curl --retry 5 --retry-delay 10 --retry-all-errors -fsS -X POST -H 'x-cron-secret: $CRON_SECRET' https://kidschat-admin-production.up.railway.app/api/cron/monthly-reset\""
+command = "sh -c \"curl --retry 5 --retry-delay 15 --retry-all-errors -sS -X POST -H 'x-cron-secret: $CRON_SECRET' https://kidschat-admin-production.up.railway.app/api/cron/monthly-reset || echo CURL_FAILED\""
 
 [[deploy.crons]]
 name = "daily-notifications"
 schedule = "0 8 * * *"
-command = "sh -c \"curl --retry 5 --retry-delay 10 --retry-all-errors -fsS -X POST -H 'x-cron-secret: $CRON_SECRET' https://kidschat-admin-production.up.railway.app/api/notify/daily-summary && curl --retry 5 --retry-delay 10 --retry-all-errors -fsS -X POST -H 'x-cron-secret: $CRON_SECRET' https://kidschat-admin-production.up.railway.app/api/notify/weekly-digest\""
+command = "sh -c \"curl --retry 5 --retry-delay 15 --retry-all-errors -sS -X POST -H 'x-cron-secret: $CRON_SECRET' https://kidschat-admin-production.up.railway.app/api/notify/daily-summary && curl --retry 5 --retry-delay 15 --retry-all-errors -sS -X POST -H 'x-cron-secret: $CRON_SECRET' https://kidschat-admin-production.up.railway.app/api/notify/weekly-digest || echo CURL_FAILED\""
