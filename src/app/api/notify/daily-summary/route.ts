@@ -47,16 +47,22 @@ export async function POST(req: NextRequest) {
 
   const date = getToday();
 
-  // Nothing to send
-  if (toEmails.length === 0 || stats.length === 0) {
+  // Skip only when there are no recipient email addresses.
+  // An empty stats array (all-quiet day) still triggers a send so parents
+  // always receive the email, even when kids had no activity.
+  if (toEmails.length === 0) {
     return NextResponse.json({
       sent: 0,
       children: stats.length,
       date,
       skipped: true,
-      reason: toEmails.length === 0 ? "no_eligible_recipients" : "no_child_stats",
+      reason: "no_eligible_recipients",
     });
   }
+
+  const allQuiet = stats.every(
+    (k) => k.totalMessages === 0 && k.imageSearchCount === 0,
+  );
 
   // --- Enrich with AI-generated per-kid summaries + alert paraphrases ---
   // Both calls run concurrently across kids; per-kid try/catch ensures one
@@ -147,6 +153,7 @@ export async function POST(req: NextRequest) {
     sent: toEmails.length,
     children: stats.length,
     date,
+    ...(allQuiet && { quiet: true }),
   });
 }
 

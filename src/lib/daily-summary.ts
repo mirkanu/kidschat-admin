@@ -147,10 +147,10 @@ export async function getRecentConversations(
 
 /**
  * Aggregate per-child daily stats from MongoDB.
- * Returns DailyChildStats for all non-ADMIN users with messages in the last 24 hours.
+ * Returns DailyChildStats for ALL non-ADMIN users (even those with no activity).
  *
  * Each returned kid has:
- *   - totalMessages  — from the messages aggregation
+ *   - totalMessages  — from the messages aggregation (0 for silent kids)
  *   - alertCount     — from email_notifications (type: safety_alert, last 24h)
  *   - conversationExcerpts — from getRecentConversations (fed to AI later)
  *   - summary / alertSummary — defaults ("" / null); populated by route.ts after AI calls
@@ -210,6 +210,32 @@ export async function getDailyChildStats(db: Db): Promise<DailyChildStats[]> {
     .toArray();
 
   const kids = formatDailyStats(raw);
+
+  // Merge zero-stat entries for kids who had no messages today.
+  // The messages aggregation only returns kids who appeared in the collection,
+  // so silent kids are absent. We fetch all non-ADMIN users and push a
+  // zero-stat entry for each name not already in `kids`.
+  const allUsers = await db
+    .collection("users")
+    .find({ role: { $ne: "ADMIN" } })
+    .project<{ name: string }>({ name: 1 })
+    .toArray();
+
+  const seen = new Set(kids.map((k) => k.name));
+  for (const user of allUsers) {
+    if (user.name && !seen.has(user.name)) {
+      kids.push({
+        name: user.name,
+        totalMessages: 0,
+        alertCount: 0,
+        summary: "",
+        alertSummary: null,
+        conversationExcerpts: "",
+        imageSearchCount: 0,
+        imageSearchQueries: [],
+      });
+    }
+  }
 
   // Enrich each kid in parallel with alertCount + conversationExcerpts.
   // Both are pure DB reads; the AI-generated summary fields are populated by
