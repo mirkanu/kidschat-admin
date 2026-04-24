@@ -180,6 +180,7 @@ Progress: [██████████░] 96%
 | Phase 21 P02 | 30 | 2 tasks | 9 files |
 | Phase 21 P06 | 75 | 3 tasks | 7 files |
 | 260422-cron-retry-fix | Add --retry 5 to Railway cron curl commands — retries were never applied to railway.toml despite prior intent | 2026-04-22 | e9fa07a | [20260422-cron-retry-fix](./quick/20260422-cron-retry-fix/) |
+| 260424-sf8 | Fix blank image results in image-search-mcp — validate thumbnails (drop 424s), add user_message for zero-result searches | 2026-04-24 | d83f6c0 | [260424-sf8-fix-blank-image-results-in-image-search-](./quick/260424-sf8-fix-blank-image-results-in-image-search-/) |
 
 ### Roadmap Evolution
 
