@@ -15,6 +15,13 @@
  *   - Proxy rewrite of every image `thumbnail` when PROXY_BASE is set. Raw
  *     upstream thumbnail URL never leaves the tool boundary (same policy shape
  *     as D-3 foreign_landing_url stripping).
+ *
+ * SF-8 additions:
+ *   - validateThumbnails: HEAD-checks raw thumbnail URLs in parallel (3s timeout)
+ *     and drops non-200 responses before proxy rewrite. Eliminates blank images
+ *     caused by Openverse CDN returning HTTP 424 on thumbnails for newer titles.
+ *   - fetchOpenverseOnce now returns raw (un-proxied) thumbnail URLs.
+ *   - proxyRewrite applied as a final step after validation.
  */
 
 export interface OpenverseImage {
@@ -92,17 +99,13 @@ async function fetchOpenverseOnce(
     }>;
   };
 
-  const proxyBase = process.env.PROXY_BASE;
   const raw = Array.isArray(data.results) ? data.results : [];
   const images: OpenverseImage[] = raw
     .filter((r) => typeof r.thumbnail === "string" && r.thumbnail.length > 0)
     .map((r) => {
       const rawThumb = r.thumbnail as string;
-      const thumb = proxyBase
-        ? `${proxyBase.replace(/\/+$/, "")}/proxy?u=${Buffer.from(rawThumb).toString("base64url")}`
-        : rawThumb;
       return {
-        thumbnail: thumb,
+        thumbnail: rawThumb, // raw — proxy rewrite happens after validation
         title: typeof r.title === "string" ? r.title : "",
         source_domain: typeof r.source === "string" ? r.source : "",
         provider: "openverse" as const,
@@ -111,6 +114,57 @@ async function fetchOpenverseOnce(
     });
 
   return { images, provider: "openverse" };
+}
+
+/**
+ * HEAD-check each raw thumbnail URL in parallel (3s timeout per request).
+ * Drops any image whose thumbnail returns a non-2xx response (e.g. HTTP 424
+ * from Openverse CDN for newer/niche titles).
+ */
+async function validateThumbnails(images: OpenverseImage[]): Promise<OpenverseImage[]> {
+  if (images.length === 0) return images;
+
+  const results = await Promise.allSettled(
+    images.map(async (img) => {
+      try {
+        const res = await fetch(img.thumbnail, {
+          method: "HEAD",
+          signal: AbortSignal.timeout(3000),
+        });
+        return res.ok ? img : null;
+      } catch {
+        return null;
+      }
+    }),
+  );
+
+  const valid = results
+    .map((r) => (r.status === "fulfilled" ? r.value : null))
+    .filter((img): img is OpenverseImage => img !== null);
+
+  console.log(
+    JSON.stringify({
+      event: "openverse.thumbnails_validated",
+      original: images.length,
+      valid: valid.length,
+      dropped: images.length - valid.length,
+    }),
+  );
+
+  return valid;
+}
+
+/**
+ * Rewrite raw thumbnail URLs through the /proxy endpoint.
+ * No-op when PROXY_BASE is not set.
+ */
+function proxyRewrite(images: OpenverseImage[], proxyBase: string | undefined): OpenverseImage[] {
+  if (!proxyBase) return images;
+  const base = proxyBase.replace(/\/+$/, "");
+  return images.map((img) => ({
+    ...img,
+    thumbnail: `${base}/proxy?u=${Buffer.from(img.thumbnail).toString("base64url")}`,
+  }));
 }
 
 export async function searchOpenverseImages(
@@ -124,32 +178,42 @@ export async function searchOpenverseImages(
 
   const first = await fetchOpenverseOnce(query, pageSize, pageNum);
   if (first.error) return first;
-  if (first.images.length > 0) return first;
 
-  const trimmed = stripModifiers(query);
-  const origTokens = query.trim().split(/\s+/).filter(Boolean);
-  const trimTokens = trimmed.split(/\s+/).filter(Boolean);
-  if (trimTokens.length === 0 || trimTokens.length === origTokens.length) {
-    console.log(
-      JSON.stringify({
-        event: "openverse.retry_skipped",
-        reason: "no_strippable_tokens",
-        query,
-      }),
-    );
-    return first;
+  // Determine which raw result to validate (original or retry)
+  let candidate = first;
+  if (first.images.length === 0) {
+    const trimmed = stripModifiers(query);
+    const origTokens = query.trim().split(/\s+/).filter(Boolean);
+    const trimTokens = trimmed.split(/\s+/).filter(Boolean);
+    if (trimTokens.length === 0 || trimTokens.length === origTokens.length) {
+      console.log(
+        JSON.stringify({
+          event: "openverse.retry_skipped",
+          reason: "no_strippable_tokens",
+          query,
+        }),
+      );
+      // no retry; candidate stays as first (empty)
+    } else {
+      console.log(
+        JSON.stringify({ event: "openverse.retry", original: query, trimmed }),
+      );
+      const second = await fetchOpenverseOnce(trimmed, pageSize, pageNum);
+      console.log(
+        JSON.stringify({
+          event: "openverse.retry_result",
+          trimmed,
+          hit: second.images.length > 0,
+        }),
+      );
+      candidate = second;
+    }
   }
 
-  console.log(
-    JSON.stringify({ event: "openverse.retry", original: query, trimmed }),
-  );
-  const second = await fetchOpenverseOnce(trimmed, pageSize, pageNum);
-  console.log(
-    JSON.stringify({
-      event: "openverse.retry_result",
-      trimmed,
-      hit: second.images.length > 0,
-    }),
-  );
-  return second;
+  // Validate thumbnails (HEAD-check raw URLs), then proxy-rewrite valid ones
+  const validImages = await validateThumbnails(candidate.images);
+  const proxyBase = process.env.PROXY_BASE;
+  const finalImages = proxyRewrite(validImages, proxyBase);
+
+  return { images: finalImages, provider: "openverse", error: candidate.error };
 }
