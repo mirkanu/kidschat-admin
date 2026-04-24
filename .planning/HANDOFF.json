@@ -1,0 +1,59 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-04-24T10:01:37.103Z",
+  "phase": null,
+  "phase_name": "ad-hoc session — counselling rule + prompt editor fix",
+  "phase_dir": null,
+  "plan": null,
+  "task": null,
+  "total_tasks": null,
+  "status": "paused",
+  "completed_tasks": [
+    {"id": 1, "name": "Add counselling rule 7 to Gist/YAML", "status": "done"},
+    {"id": 2, "name": "Discover real prompts live in MongoDB agents collection (not YAML)", "status": "done"},
+    {"id": 3, "name": "Add counselling rule to all 4 KidsChat agent instructions in MongoDB", "status": "done"},
+    {"id": 4, "name": "Fix broken YAML (remove misplaced systemPrompt block, now parses correctly)", "status": "done"},
+    {"id": 5, "name": "Restore Image Search preset to YAML modelSpecs (was hidden by YAML fix)", "status": "done"},
+    {"id": 6, "name": "Redeploy LibreChat with valid YAML + 6 modelSpecs", "status": "done"},
+    {"id": 7, "name": "Manually trigger daily summary email (cron hadn't run yet)", "status": "done"},
+    {"id": 8, "name": "Spawn GSD quick task: fix admin UI prompt editor to write agent instructions", "status": "in_progress", "progress": "Agent spawned, directory not yet created — may still be running or stalled"}
+  ],
+  "remaining_tasks": [
+    {"id": 8, "name": "GSD quick: prompt editor writes to MongoDB agents collection", "status": "in_progress"},
+    {"id": 9, "name": "Railway personal token — fix 403 on CONFIG_PATH update from deploy route", "status": "not_started", "notes": "User needs to generate PAT at railway.app/account/tokens and share it"}
+  ],
+  "blockers": [
+    {
+      "description": "RAILWAY_API_TOKEN in env returns 403 on Railway GraphQL mutations — it is a service-scoped token, not a personal token. The deploy route's CONFIG_PATH update silently fails every time.",
+      "type": "human_action",
+      "workaround": "Use railway CLI directly (authenticated as user) — railway variables set + railway redeploy work fine"
+    }
+  ],
+  "human_actions_pending": [
+    {
+      "action": "Generate Railway Personal Access Token at railway.app/account/tokens, name it kidschat-deploy, scope to KidsChat project",
+      "context": "Required to fix the deploy route's silent 403 when updating CONFIG_PATH on LibreChat service after prompt deploy",
+      "blocking": false
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "Counselling rule (rule 7) must live in MongoDB agent instructions, not YAML systemPrompt",
+      "rationale": "YAML systemPrompt was always broken (wrong indentation causing parse failure). LibreChat uses agent instructions from MongoDB agents collection as the authoritative prompt source.",
+      "phase": "ad-hoc"
+    },
+    {
+      "decision": "Removed systemPrompt block from librechat.yaml entirely",
+      "rationale": "It was at wrong indentation (6 spaces after balance: section), invalidating entire YAML parse. Agents store their own instructions in MongoDB — the YAML field was dead code.",
+      "phase": "ad-hoc"
+    },
+    {
+      "decision": "Image Search preset added back to YAML modelSpecs as preset 6",
+      "rationale": "Was hidden when YAML fix enabled enforce:true — previously modelSpecs was being ignored due to parse failure, so all agents showed. Now explicitly listed.",
+      "phase": "ad-hoc"
+    }
+  ],
+  "uncommitted_files": [],
+  "next_action": "Check if GSD quick task (prompt editor fix) completed — look in .planning/quick/ for a new directory. If not, re-run /gsd-quick with same args. Then get Railway PAT from user to fix deploy route.",
+  "context_notes": "The prompt editor UI is currently editing a ghost — changes go to Gist + app_config.active_prompt but NOT to the agent instructions kids actually see. The GSD quick task was spawned to fix this but its status is unknown at pause time."
+}
