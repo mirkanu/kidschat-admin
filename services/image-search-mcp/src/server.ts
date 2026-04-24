@@ -177,11 +177,15 @@ function buildMcpServer(): McpServer {
       );
 
       // Step 5 — response payload (thumbnails already proxy-rewritten by provider)
-      const payload = {
+      const payload: Record<string, unknown> = {
         images: result.images,
         provider_used: "openverse" as const,
         ...(result.error ? { error: result.error } : {}),
       };
+      if (result.images.length === 0) {
+        payload.user_message =
+          `Openverse (the image database set up for safe image searches) doesn't have images for "${query}" — it contains Creative Commons licensed photos and works best for animals, nature, art, and everyday objects. It may not have images for newer movies, TV shows, or specific pop groups yet. Try a simpler or different search!`;
+      }
       return { content: [{ type: "text" as const, text: JSON.stringify(payload) }] };
     },
   );
