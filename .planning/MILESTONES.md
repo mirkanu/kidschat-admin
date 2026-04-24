@@ -1,5 +1,22 @@
 # Milestones
 
+## v2.9 Kid Image Search (Shipped: 2026-04-24)
+
+**Phases completed:** 2 phases, 12 plans, 4 tasks
+
+**Key accomplishments:**
+
+- One-liner:
+- Found during:
+- Outcome:
+- Outcome:
+- 1. [Rule 1 - Bug] Blocklist regex missed inflected forms
+- One-liner:
+- Dev Gist anointed as production (D-21-A); SAFETY-02/OVERSIGHT-01/OVERSIGHT-02 closed without new logging or notification code; Penelope + Sebastian have ACLs on the Image Search agent.
+- Data layer (Task 21-06-01)
+
+---
+
 ## v2.8 Budget Hardening (Shipped: 2026-04-18)
 
 **Phases completed:** 1 phases, 4 plans, 12 tasks

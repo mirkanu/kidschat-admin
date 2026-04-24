@@ -1,13 +1,13 @@
 ---
 gsd_state_version: 1.0
 milestone: v2.9
-milestone_name: Kid Image Search + Test Mode Preset Parity
-status: planning
-stopped_at: Phase 21 closed (APPROVED-WITH-CAVEATS, parent manual sign-off); Phase 22 ready to plan
-last_updated: "2026-04-24T19:10:09.916Z"
-last_activity: 2026-04-21
+milestone_name: Kid Image Search
+status: complete
+stopped_at: v2.9 milestone closed 2026-04-24; TESTMODE-01/02/03 deferred to v3.0
+last_updated: "2026-04-24T00:00:00.000Z"
+last_activity: 2026-04-24
 progress:
-  total_phases: 3
+  total_phases: 2
   completed_phases: 2
   total_plans: 12
   completed_plans: 12
@@ -18,19 +18,18 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-18)
+See: .planning/PROJECT.md (updated 2026-04-24)
 
 **Core value:** Children can safely explore and learn through AI conversation, with content guardrails that a parent controls and trusts.
-**Current focus:** Phase 22 — Test Mode preset parity
+**Current focus:** Planning v3.0 — run /gsd-new-milestone to start
 
 ## Current Position
 
-Phase: 22 (test-mode-preset-parity) — NOT STARTED
-Plan: 0 of 5
-Status: Ready to plan
-Last activity: 2026-04-21
+Milestone v2.9 complete. All phases shipped.
+Next: /gsd-new-milestone to define v3.0 scope (TESTMODE-01/02/03 are strong candidates).
+Last activity: 2026-04-24
 
-Progress: [██████████░] 96%
+Progress: [████████████] 100%
 
 ## Performance Metrics
 

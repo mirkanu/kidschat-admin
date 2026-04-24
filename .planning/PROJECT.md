@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A private, self-hosted AI chat application for two children (Sebastian, 14; Penelope, 12), deployed on Railway using LibreChat. The app provides a safe, parent-controlled interface to Claude Haiku 4.5 with enforced content boundaries rooted in Reformed Christian family values. Each child has their own account with separate chat history and four switchable conversation tone presets that can generate DALL-E 3 images on demand. Parents have full oversight and trust through a dedicated admin dashboard with conversation logs, usage analytics, safety alerts (including image-prompt abuse detection), transparent safety rules, an embedded test mode to verify safety boundaries firsthand, automated email alerts (safety events, daily summaries, weekly digests, account activity) configurable per-recipient, and per-child daily/monthly cost caps with one-click top-ups.
+A private, self-hosted AI chat application for two children (Sebastian, 14; Penelope, 12), deployed on Railway using LibreChat. The app provides a safe, parent-controlled interface to Claude Haiku 4.5 with enforced content boundaries rooted in Reformed Christian family values. Each child has their own account with separate chat history and six switchable presets: four tone-based conversation modes, a Drawing Studio (DALL-E 3), and an Image Search preset backed by a custom Openverse MCP service. Parents have full oversight through a dedicated admin dashboard with conversation logs, usage analytics, safety alerts (including image-prompt and image-query abuse detection), transparent safety rules, an embedded test mode, automated email alerts (safety events, daily summaries, weekly digests, account activity) configurable per-recipient, and per-child daily/monthly cost caps and daily image-search count caps with one-click top-ups.
 
 ## Core Value
 
@@ -74,33 +74,18 @@ Children can safely explore and learn through AI conversation, with content guar
 - ✓ 2MB image-size guardrail (serverFileSizeLimit) caps blast radius of upload-driven token drains — v2.8
 - ✓ Parents auto-refill to 1M tokens via daily-reset cron; preset-aware guidance tells kids to switch presets for image vs text — v2.8
 
+- ✓ Custom Openverse MCP image-search service deployed to Railway (kidschat-image-search-mcp); 7-regex query blocklist, 10-host domain blocklist, server-side /proxy hotlink fallback — v2.9
+- ✓ "Image Search" LibreChat preset live for Penelope and Sebastian; inline image grid with no click-through links, no AI commentary — v2.9
+- ✓ Per-child daily image-search count cap (default 20) enforced at MCP boundary; admin /settings UI override with same pattern as daily cost cap — v2.9
+- ✓ Safety patterns extended with blocklist-aligned categories; image-search queries run through existing detectSafetyEvent → parent email alert pipeline — v2.9
+- ✓ Admin /conversations shows Image Search sessions with "Image Search" preset badge (conversations.spec field) — v2.9
+- ✓ Daily-summary email enriched with per-kid "Image searches: N" + Haiku-paraphrased query topic summary; raw queries stripped from email HTML and audit doc — v2.9
+
 ### Active
 
-## Current Milestone: v2.9 Kid Image Search + Test Mode Preset Parity
-
-**Goal:** Penelope and Sebastian can search the web for images inside LibreChat via a dedicated "Image Search" preset — no external browser, no source-site navigation, full parent oversight. Parents can dry-run any preset (including tool-using ones like Image Search and Drawing Studio) from admin Test Mode before it hits the kids.
-
-**Target features:**
-
-_Kid-facing (LibreChat):_
-- New agent preset "Image Search" alongside existing 5 presets
-- Backend image-search tool (SafeSearch strict) — provider picked in Phase 20 research
-- Agent is a strict router: returns markdown image grid only, no commentary
-- Click-through policy: images render inline for view/save/screenshot, not clickable links — no source-site navigation
-- Hotlink-safe rendering (proxy fallback for sites that block hotlinking)
-- Secondary safety layer: domain/URL blocklist on top of provider SafeSearch
-- Per-day search-count cap per child (separate from cost cap)
-
-_Admin-facing (Test Mode):_
-- Preset/agent selector in Test Mode UI (all 6 presets kids see)
-- Tool-parity: Test Mode handles tool-using presets end-to-end — DALL-E for Drawing Studio, web_image_search for Image Search
-- Parent can verify exactly what a kid experiences for any preset before deploying a change
-
-**Key context:**
-- No LibreChat fork (preset + tool only — maintains v2.5/v2.6 unchanged-upstream pattern)
-- Zero click-through by design — kid sees image, saves/screenshots, done
-- LLM cost negligible (~€0.0001/search) — Haiku is a thin router
-- Oversight is free — reuses MongoDB conversation logging, safety detection, delete-protection, email pipeline
+- [ ] **TESTMODE-01**: Test Mode exposes all 6 presets (4 text + Drawing Studio + Image Search) — deferred from v2.9 (Phase 22 dropped)
+- [ ] **TESTMODE-02**: Test Mode executes selected preset with tool parity (DALL-E for Drawing Studio, Openverse for Image Search) — deferred from v2.9
+- [ ] **TESTMODE-03**: Test Mode parity UAT — parent side-by-side verification before deploying preset changes — deferred from v2.9
 
 ### Out of Scope
 
@@ -114,18 +99,23 @@ _Admin-facing (Test Mode):_
 
 ## Context
 
-Shipped v2.8 on 2026-04-18. Ten milestones complete (v1.0 through v2.8).
+Shipped v2.9 on 2026-04-24. Eleven milestones complete (v1.0 through v2.9).
 - **LibreChat URL:** https://librechat-production-bff2.up.railway.app
 - **Admin Dashboard URL:** https://kidschat-admin-production.up.railway.app
-- **Config:** https://gist.github.com/mirkanu/e23b999f1d3cd77726a97c20e26f0abf
-- **Stack:** LibreChat + Next.js 15 admin dashboard, MongoDB, Meilisearch on Railway
+- **Image Search MCP URL:** https://kidschat-image-search-mcp.up.railway.app
+- **Config Gist (production):** b0c89395 (D-21-A — dev Gist anointed as prod; CONFIG_PATH unchanged)
+- **Stack:** LibreChat + Next.js 15 admin dashboard + custom MCP service, MongoDB, Meilisearch on Railway
 - **Admin dashboard stack:** Next.js 15, NextAuth v5, Tailwind CSS v3, shadcn/ui, Recharts, Anthropic SDK (Haiku + Sonnet), Resend + React Email, react-markdown, MongoDB direct queries, DALL-E 3 via agents endpoint
-- **Accounts:** 4 total (2 ADMIN parents, 2 USER children)
+- **MCP stack:** Node.js/TypeScript, Openverse anonymous API, custom blocklist/proxy/quota-client modules
+- **Accounts:** 4 total (2 ADMIN parents, 2 USER children) + 6 agent presets (4 text, Drawing Studio, Image Search)
 - **Cost enforcement:** Native LibreChat `balances.tokenCredits` — `budget.ts` lib handles EUR↔tokens conversion, Railway crons reset daily/monthly, admin UI for per-child cap overrides, one-click parent top-up
-- **Tests:** 65 passing across 6 suites
+- **Search enforcement:** `search_counters` MongoDB collection, `image-search-quota.ts`, daily-reset cron bolt-on, admin /settings override
+- **Tests:** ~80 passing across 8 suites (65 pre-v2.9 + image-search-quota, budget-search-cap, image-search-summary)
 - **Known limitation:** LibreChat v0.8.4 has outdated config schema warnings (non-blocking)
-- **Known limitation:** Safety detection uses text pattern matching (26 redirect + 15 jailbreak + image-prompt patterns) — may have false positives/negatives
-- **Tech debt from v2.4:** Phase 14 has no VERIFICATION.md; stale LibreChat `agent_F6ITBo7EuorE7vqrXsNAm` test agent never cleaned up; duplicate MongoDB query logic between `alerts/page.tsx` and `/api/alerts/route.ts`; 3/8 UAT checks deferred on Phase 15.3 (hard block at 0 balance, top-up recovery, Railway log grep)
+- **Known limitation:** Safety detection uses text pattern matching — may have false positives/negatives
+- **Known limitation:** Openverse `mature=false` not explicit in MCP URL — relies on anonymous-tier default (SEARCH-03 tech debt)
+- **Tech debt from v2.4:** Phase 14 has no VERIFICATION.md; stale LibreChat `agent_F6ITBo7EuorE7vqrXsNAm` test agent never cleaned up; duplicate MongoDB query logic between `alerts/page.tsx` and `/api/alerts/route.ts`
+- **Tech debt from v2.9:** Phase 21 has no VERIFICATION.md; SEARCH-02 live hit-rate not re-sampled post-rollout; TESTMODE-01/02/03 deferred
 
 ## Constraints
 
@@ -170,6 +160,12 @@ Shipped v2.8 on 2026-04-18. Ten milestones complete (v1.0 through v2.8).
 | Dedicated Railway cron services (one per schedule) | Consolidated multi-cron service had silent failures; isolating each cron makes failures visible and recoverable | ✓ Good (v2.8) — also added `cron_state.daily_reset.lastRunAt` observability |
 | 194k-credit drain left classified as "D (unknown)" rather than forced to a root cause | Forensic evidence was inconclusive; manufacturing a narrative would mislead future debugging — defensive guardrails (image-size limit, context cap) shrink blast radius regardless | ✓ Good (v2.8) — honest uncertainty over false closure |
 | $max operator for daily auto-refill | Preserves parent top-ups above daily allowance; atomic, one-line MongoDB operator | ✓ Good (v2.8 reconfirmed) — renamed UI "Daily cap" → "Daily allowance" to match $max-floor semantics |
+| Openverse over Brave/Google CSE for image search | Google CSE deprecated for whole-web search + 403s at project level; Brave required paid key; Openverse is free, CC-licensed, anonymous-tier SafeSearch sufficient | ✓ Good (v2.9) — zero API cost, kid-safe content |
+| Custom MCP server over LibreChat built-in web_search | MCP gives full control over blocklist, proxy, quota at tool boundary; LibreChat web_search has no kid-safety hooks | ✓ Good (v2.9) — defense-in-depth at the right layer |
+| Option iii click-through policy (no source links) | Kids see inline images only; no navigation to source sites; proxy strips foreign_landing_url and url at MCP boundary | ✓ Good (v2.9) — zero click-through risk without LibreChat fork |
+| Dev Gist anointed as production (D-21-A) | Pivoting away from Google/Brave mid-POC created a dev Gist; promoting it avoids a CONFIG_PATH swap and a production redeploy just to rename | ✓ Good (v2.9) — clean; old prod Gist archived |
+| search_counters collection (not reuse balances) | Search cap is a count (not EUR), resets daily independently of monthly cost cap; separate collection avoids polluting budget semantics | ✓ Good (v2.9) |
+| TESTMODE-01/02/03 deferred to v3.0 | Phase 22 dropped by parent decision after Phase 21 shipped; Test Mode parity is desirable but not blocking kid-facing Image Search | — Pending (v3.0 candidate) |
 
 ---
-*Last updated: 2026-04-18 after v2.8 milestone completion*
+*Last updated: 2026-04-24 after v2.9 milestone completion*
