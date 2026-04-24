@@ -115,13 +115,56 @@ DALL-E 3 image generation across all 4 LibreChat agent presets with child-approp
 - Sessions: ~3 days (2026-04-16 → 2026-04-18) including follow-on quick tasks
 - Notable: One phase, four plans, five distinct root causes fixed — high density thanks to upfront forensic research
 
+## Milestone: v2.9 — Kid Image Search
+
+**Shipped:** 2026-04-24
+**Phases:** 2 (20 research+POC, 21 production rollout) | **Plans:** 12
+**Timeline:** 6 days (2026-04-19 → 2026-04-24) | **Commits:** ~72
+
+### What Was Built
+- Custom Openverse MCP image-search service (Railway service: kidschat-image-search-mcp) with blocklist, hotlink proxy, per-user quota, modifier-trim retry
+- "Image Search" LibreChat preset live for Penelope and Sebastian — inline image grids, no click-through, no AI commentary
+- Per-child daily search-count cap (default 20) with admin /settings override UI
+- Safety pattern extension aligned with MCP blocklist; queries run through existing alert pipeline
+- Admin conversation preset badge (conversations.spec=image-search)
+- Daily-summary email enriched with imageSearchCount + Haiku-paraphrased query topic (privacy-safe: raw queries stripped)
+
+### What Worked
+- Isolated dev Gist approach — POC in Phase 20 without touching production; D-21-A "anoint the dev Gist" was the cleanest promotion path
+- Reusing existing pipelines aggressively — safety alerts, MongoDB conversation logging, daily-summary email all required zero new infrastructure
+- Phase 20 as genuine research phase — spending one phase answering open questions (provider, tool mechanism, hotlink, Test Mode arch) before committing prevented an expensive mid-phase pivot
+- Openverse anonymous tier — free, CC-licensed, no API key management overhead; pivot away from Brave/Google CSE was the right call once CSE 403s appeared
+- chat-test.ts headless CLI (quick task 260420-g6h) — enabled smoke verification without live browser session throughout Phase 21
+
+### What Was Inefficient
+- Phase 22 planned but never executed — milestone was named "…+ Test Mode Preset Parity" from the start but Test Mode scope was deprioritized after Phase 21 shipped. Could have scoped v2.9 to Image Search only from the outset.
+- Openverse zero-result rate (C-2) required modifier-trim retry mid-Phase 21 — partly anticipated from Phase 20 UAT but not fully addressed before production rollout; added complexity to Plan 21-01
+- Phase 21 has no VERIFICATION.md — UAT.md filled the role but the formal verification artifact gap was flagged in the milestone audit
+
+### Patterns Established
+- `railway up --path-as-root <subdir>` for monorepo subdirectory Railway deploys (image-search-mcp as a sibling service)
+- Dev Gist isolation for POC → D-21-A promotion pattern (anoint dev Gist as prod without CONFIG_PATH swap)
+- `conversations.spec` field as preset-type discriminator for admin UI badging
+- `search_counters` + `getEffectiveSearchCap` pattern mirrors `balances` + `getEffectiveBudget` — consistent cap override model across cost and search
+
+### Key Lessons
+- Phase 20 research investment paid off: zero provider pivots in Phase 21 (Openverse decision held)
+- Scope creep via milestone naming: if a phase is dropped during execution, rename the milestone at close rather than carrying forward a name that implies undelivered work
+- Haiku paraphrase + strip pipeline is the right pattern for any kid-content-derived email content — privacy by default, parent-friendly summary, established in v2.9 as a reusable pattern
+
+### Cost Observations
+- Sessions: ~6 days across Phases 20-21 + quick task 260424-sf8
+- Notable: 13/16 requirements satisfied; 3 TESTMODE requirements cleanly deferred rather than partially shipped
+
+---
+
 ## Cross-Milestone Trends
 
-| Metric | v1.0 | v2.4 | v2.8 |
-|--------|------|------|------|
-| Phases | 3 | 5 | 1 |
-| Plans | 10 | 9 | 4 |
-| Timeline | 1 day | 4 days | 3 days |
-| Custom code | 0 lines | ~400 LOC added, ~800 LOC deleted (net −400) | Small edits to librechat.yaml + budget.ts + cron route + forensics docs |
-| Config files | 1 (librechat.yaml) | librechat.yaml + budget.ts + 2 crons + settings UI | librechat.yaml (Gist 7049fc8) + 3 dedicated cron services + cron_state observability |
-| Tests | 0 | 65 passing (6 suites) | 65 passing (unchanged — forensic milestone, not feature) |
+| Metric | v1.0 | v2.4 | v2.8 | v2.9 |
+|--------|------|------|------|------|
+| Phases | 3 | 5 | 1 | 2 |
+| Plans | 10 | 9 | 4 | 12 |
+| Timeline | 1 day | 4 days | 3 days | 6 days |
+| Custom code | 0 lines | ~400 LOC added, ~800 LOC deleted (net −400) | Small edits to librechat.yaml + budget.ts + cron route | ~10,000 LOC added (MCP service + admin API + UI + email) |
+| Config files | 1 (librechat.yaml) | librechat.yaml + budget.ts + 2 crons + settings UI | librechat.yaml (Gist 7049fc8) + 3 dedicated cron services + cron_state observability | librechat.yaml (Gist b0c89395) + MCP service + quota endpoint + daily-reset bolt-on |
+| Tests | 0 | 65 passing (6 suites) | 65 passing (unchanged — forensic milestone, not feature) | ~80 passing (8 suites — added image-search-quota, budget-search-cap, image-search-summary) |
