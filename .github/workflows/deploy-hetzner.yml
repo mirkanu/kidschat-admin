@@ -1,0 +1,36 @@
+name: Deploy to Hetzner VPS
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+env:
+  SERVICE_PATH: /home/services/KidAI
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH to Hetzner VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HETZNER_VPS_IP }}
+          username: root
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          port: 22
+          script: |
+            set -eux
+
+            cd ${{ env.SERVICE_PATH }}
+            git fetch origin master
+            git checkout origin/master
+
+            cd /home/services/hetzner-vps
+            docker compose --env-file /home/services/.env.production \
+              up --build -d kidai-admin image-search-mcp
+
+            sleep 20
+            curl -sf http://localhost:3002/api/health || exit 1
+            curl -sf http://localhost:8080/health || exit 1
+            echo "KidAI deployment successful"
