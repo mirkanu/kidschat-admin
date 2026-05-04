@@ -1,27 +1,13 @@
 /**
  * Openverse provider.
  *
- * Calls the public (unauthenticated) Openverse API and normalizes the response.
- * Strips `foreign_landing_url` and `url` from every result — this is option-iii
- * click-through policy enforcement at the tool boundary, not at the prompt
- * layer. The agent cannot leak a source-site URL because the tool never returns
- * one.
+ * Calls the Openverse API. Supports OAuth2 client-credential auth via
+ * OPENVERSE_CLIENT_ID + OPENVERSE_CLIENT_SECRET env vars (bypasses Cloudflare
+ * bot protection on non-Railway IPs). Falls back to unauthenticated when env
+ * vars are absent.
  *
- * Phase 21 additions:
- *   - Zero-result modifier-trim retry (20-05 C-2, SEARCH-02). When the first
- *     call returns 0 results AND the query has >1 non-stopword tokens AND
- *     stripping modifiers actually shortens the query, retry ONCE with the
- *     trimmed query. No third attempt.
- *   - Proxy rewrite of every image `thumbnail` when PROXY_BASE is set. Raw
- *     upstream thumbnail URL never leaves the tool boundary (same policy shape
- *     as D-3 foreign_landing_url stripping).
- *
- * SF-8 additions:
- *   - validateThumbnails: HEAD-checks raw thumbnail URLs in parallel (3s timeout)
- *     and drops non-200 responses before proxy rewrite. Eliminates blank images
- *     caused by Openverse CDN returning HTTP 424 on thumbnails for newer titles.
- *   - fetchOpenverseOnce now returns raw (un-proxied) thumbnail URLs.
- *   - proxyRewrite applied as a final step after validation.
+ * Strips `foreign_landing_url` and `url` from every result — option-iii
+ * click-through policy. The agent cannot leak a source-site URL.
  */
 
 export interface OpenverseImage {
@@ -39,6 +25,45 @@ export interface OpenverseResult {
 }
 
 const OPENVERSE_BASE = "https://api.openverse.org/v1/images/";
+const OPENVERSE_TOKEN_URL = "https://api.openverse.org/v1/auth_tokens/token/";
+
+// In-process token cache — reuse until 60s before expiry
+let cachedToken: { value: string; expiresAt: number } | null = null;
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const clientId = process.env.OPENVERSE_CLIENT_ID;
+  const clientSecret = process.env.OPENVERSE_CLIENT_SECRET;
+  if (!clientId || !clientSecret) return { Accept: "application/json" };
+
+  const now = Date.now();
+  if (cachedToken && cachedToken.expiresAt > now) {
+    return { Accept: "application/json", Authorization: `Bearer ${cachedToken.value}` };
+  }
+
+  try {
+    const body = new URLSearchParams({
+      grant_type: "client_credentials",
+      client_id: clientId,
+      client_secret: clientSecret,
+    });
+    const res = await fetch(OPENVERSE_TOKEN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!res.ok) {
+      console.log(JSON.stringify({ event: "openverse.token_error", status: res.status }));
+      return { Accept: "application/json" };
+    }
+    const data = (await res.json()) as { access_token: string; expires_in: number };
+    cachedToken = { value: data.access_token, expiresAt: now + (data.expires_in - 60) * 1000 };
+    console.log(JSON.stringify({ event: "openverse.token_refreshed", expires_in: data.expires_in }));
+    return { Accept: "application/json", Authorization: `Bearer ${cachedToken.value}` };
+  } catch {
+    return { Accept: "application/json" };
+  }
+}
 
 // Modifier stopwords — stripped token-by-token on zero-result retry.
 // Curated from 20-UAT.md Q1-Q10 zero-result analysis.
@@ -73,7 +98,7 @@ async function fetchOpenverseOnce(
 
   let res: Response;
   try {
-    res = await fetch(url, { headers: { Accept: "application/json" } });
+    res = await fetch(url, { headers: await getAuthHeaders() });
   } catch {
     return { images: [], provider: "openverse", error: "upstream_error" };
   }
