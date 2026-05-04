@@ -10,44 +10,37 @@ export async function POST() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const serviceId = process.env.RAILWAY_SERVICE_LIBRECHAT_ID;
-  const environmentId = process.env.RAILWAY_ENVIRONMENT_ID;
-  const railwayToken = process.env.RAILWAY_API_TOKEN;
+  const restartUrl = process.env.LIBRECHAT_RESTART_URL;
+  const restartSecret = process.env.LIBRECHAT_RESTART_SECRET;
 
-  if (!serviceId || !environmentId || !railwayToken) {
+  if (!restartUrl || !restartSecret) {
     return NextResponse.json(
-      { error: "Railway redeploy not configured. Set RAILWAY_API_TOKEN and RAILWAY_SERVICE_LIBRECHAT_ID in environment variables." },
+      { error: "LibreChat restart not configured. Set LIBRECHAT_RESTART_URL and LIBRECHAT_RESTART_SECRET in environment variables." },
       { status: 500 }
     );
   }
 
   try {
-    // Railway GraphQL API to trigger a redeploy
-    const res = await fetch("https://backboard.railway.com/graphql/v2", {
+    const res = await fetch(restartUrl, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${railwayToken}`,
+        "x-restart-secret": restartSecret,
       },
-      body: JSON.stringify({
-        query: `mutation { serviceInstanceRedeploy(serviceId: "${serviceId}", environmentId: "${environmentId}") }`,
-      }),
     });
 
-    const data = await res.json();
-
-    if (data.errors) {
+    if (!res.ok) {
+      const body = await res.text();
       return NextResponse.json(
-        { error: `Railway API error: ${data.errors[0]?.message ?? "Unknown"}` },
+        { error: `Restart webhook failed (${res.status}): ${body}` },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ success: true, message: "LibreChat redeploy triggered" });
+    return NextResponse.json({ success: true, message: "LibreChat restart triggered" });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json(
-      { error: `Redeploy failed: ${message}` },
+      { error: `Restart failed: ${message}` },
       { status: 500 }
     );
   }

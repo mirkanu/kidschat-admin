@@ -124,32 +124,20 @@ export async function POST(request: Request) {
     );
   }
 
-  // Step 4b: Update CONFIG_PATH on LibreChat service to point to new Gist commit
-  if (gistVersion) {
-    const railwayToken = process.env.RAILWAY_API_TOKEN;
-    const projectId = process.env.RAILWAY_PROJECT_ID;
-    const libreServiceId = process.env.RAILWAY_SERVICE_LIBRECHAT_ID;
-    const envId = process.env.RAILWAY_ENVIRONMENT_ID;
-
-    if (railwayToken && projectId && libreServiceId && envId) {
-      const newConfigPath = `https://gist.githubusercontent.com/mirkanu/${gistId}/raw/${gistVersion}/${GIST_FILENAME}`;
-      try {
-        const railwayRes = await fetch("https://backboard.railway.com/graphql/v2", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${railwayToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            query: `mutation { variableUpsert(input: { projectId: "${projectId}", serviceId: "${libreServiceId}", environmentId: "${envId}", name: "CONFIG_PATH", value: "${newConfigPath}" }) }`,
-          }),
-        });
-        if (!railwayRes.ok) {
-          console.error("Failed to update CONFIG_PATH:", await railwayRes.text());
-        }
-      } catch (err) {
-        console.error("Failed to update CONFIG_PATH:", err);
+  // Step 4b: Restart LibreChat so it picks up the updated Gist config
+  const restartUrl = process.env.LIBRECHAT_RESTART_URL;
+  const restartSecret = process.env.LIBRECHAT_RESTART_SECRET;
+  if (restartUrl && restartSecret) {
+    try {
+      const restartRes = await fetch(restartUrl, {
+        method: "POST",
+        headers: { "x-restart-secret": restartSecret },
+      });
+      if (!restartRes.ok) {
+        console.error("Failed to restart LibreChat:", await restartRes.text());
       }
+    } catch (err) {
+      console.error("Failed to restart LibreChat:", err);
     }
   }
 
