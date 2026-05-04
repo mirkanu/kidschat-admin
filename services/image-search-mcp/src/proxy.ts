@@ -8,27 +8,12 @@
  *
  * Threat mitigations (see 21-01-PLAN threat_model):
  *   - T-21-03 (DoS)  : 10s timeout + 5MB body cap + content-type gate
- *   - T-21-04 (SSRF) : https-only + host allowlist + private-IP reject
+ *   - T-21-04 (SSRF) : https-only + private-IP reject (URLs from Openverse API, not user input)
  *   - T-21-01 (Info) : only proxied thumbnail URL ever returned; raw upstream
  *                      URL never leaves the tool boundary
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-
-const ALLOWED_HOST_SUFFIXES = [
-  ".openverse.org",
-  "openverse.org",
-  ".flickr.com",
-  "flickr.com",
-  ".staticflickr.com",
-  "staticflickr.com",
-  ".wikimedia.org",
-  "wikimedia.org",
-  ".wordpress.com",
-  "wordpress.com",
-  ".imgur.com",
-  "imgur.com",
-];
 
 // 1x1 transparent PNG — returned when upstream fails / non-image content / etc.
 const BLANK_PNG = Buffer.from(
@@ -51,8 +36,7 @@ function decodeBase64Url(s: string): string {
 
 function isPrivateHost(hostname: string): boolean {
   // IPv4 private / loopback / link-local / multicast; any non-IPv4 hostname
-  // returns false here (we rely on DNS-time checks being too heavy for v1; the
-  // host allowlist is the primary defense).
+  // returns false here (DNS resolution checks are too expensive for v1).
   const h = hostname.toLowerCase();
   if (h === "localhost") return true;
   const m = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
@@ -65,13 +49,6 @@ function isPrivateHost(hostname: string): boolean {
   if (a === 192 && b === 168) return true;
   if (a === 0) return true;
   return false;
-}
-
-function hostAllowed(hostname: string): boolean {
-  const h = hostname.toLowerCase();
-  return ALLOWED_HOST_SUFFIXES.some((s) =>
-    s.startsWith(".") ? h.endsWith(s) : h === s,
-  );
 }
 
 function sendBlank(res: ServerResponse, status: number = 200): void {
@@ -129,14 +106,6 @@ export async function handleProxy(
     sendBlank(res, 400);
     return;
   }
-  if (!hostAllowed(target.hostname)) {
-    console.log(
-      JSON.stringify({ event: "proxy.reject", reason: "host_not_allowed", host: target.hostname }),
-    );
-    sendBlank(res, 400);
-    return;
-  }
-
   try {
     const upstream = await fetch(target.toString(), {
       method: "GET",

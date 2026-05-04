@@ -13,8 +13,9 @@ export const config = {
      * - /login (the auth page itself)
      * - /api/auth/* (NextAuth handlers)
      * - /api/health (Railway health check — must be unauthenticated)
+     * - /image-search-proxy/* (MCP proxy for image thumbnails — no session cookie in img src)
      * - _next/static, _next/image, favicon.ico (Next.js internals)
      */
-    "/((?!login|api/auth|api/health|api/notify|api/cron|api/admin|api/image-search|_next/static|_next/image|favicon.ico).*)",
+    "/((?!login|api/auth|api/health|api/notify|api/cron|api/admin|api/image-search|image-search-proxy|_next/static|_next/image|favicon.ico).*)",
   ],
 };
