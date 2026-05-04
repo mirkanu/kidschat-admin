@@ -23,7 +23,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { searchOpenverseImages } from "./providers/openverse.js";
+import { searchPixabayImages } from "./providers/pixabay.js";
 import { isQueryBlocked, filterBlockedDomains } from "./blocklist.js";
 import { checkAndIncrementQuota } from "./quota-client.js";
 import { handleProxy } from "./proxy.js";
@@ -122,7 +122,7 @@ function buildMcpServer(): McpServer {
         );
         const payload = {
           images: [],
-          provider_used: "openverse" as const,
+          provider_used: "pixabay" as const,
           error: "blocked_query" as const,
           block_reason: blocked.reason,
         };
@@ -143,7 +143,7 @@ function buildMcpServer(): McpServer {
           );
           const payload = {
             images: [],
-            provider_used: "openverse" as const,
+            provider_used: "pixabay" as const,
             error: "quota_exceeded" as const,
           };
           return { content: [{ type: "text" as const, text: JSON.stringify(payload) }] };
@@ -158,7 +158,7 @@ function buildMcpServer(): McpServer {
       }
 
       // Step 3 — upstream call (provider handles internal modifier-trim retry)
-      const result = await searchOpenverseImages(query, count ?? 10, page ?? 1);
+      const result = await searchPixabayImages(query, count ?? 10);
 
       // Step 4 — domain filter (SAFETY-01 post-filter)
       result.images = filterBlockedDomains(result.images);
@@ -179,12 +179,12 @@ function buildMcpServer(): McpServer {
       // Step 5 — response payload (thumbnails already proxy-rewritten by provider)
       const payload: Record<string, unknown> = {
         images: result.images,
-        provider_used: "openverse" as const,
+        provider_used: "pixabay" as const,
         ...(result.error ? { error: result.error } : {}),
       };
       if (result.images.length === 0) {
         payload.user_message =
-          `Openverse (the image database set up for safe image searches) doesn't have images for "${query}" — it contains Creative Commons licensed photos and works best for animals, nature, art, and everyday objects. It may not have images for newer movies, TV shows, or specific pop groups yet. Try a simpler or different search!`;
+          `No images found for "${query}" — try a simpler or different search!`;
       }
       return { content: [{ type: "text" as const, text: JSON.stringify(payload) }] };
     },
