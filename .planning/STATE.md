@@ -183,7 +183,7 @@ Progress: [████████████] 100%
 | 260516-cron | Fix daily summary cron stopped 2026-05-04 — /var/log/kidai-crons.log owned by root, claude user couldn't write; chown to claude | 2026-05-16 | — | ops |
 | 260516-dalle | Fix DALL-E image generation — switched dall-e-3→gpt-image-1 (key lacks dall-e-3 access), removed style param, handle b64_json response; patched via volume mount at /home/services/hetzner-vps/librechat-patches/DALLE3.js; E2E Playwright test passed | 2026-05-16 | — | ops |
 | 260517-aisummary | Fix daily-summary AI summaries failing — ANTHROPIC_API_KEY missing from kidai-admin container; added mapping from DEBATES_ANTHROPIC_API_KEY in docker-compose.yml, redeployed, resent morning email | 2026-05-17 | — | ops |
-| 260518-pmf | Enable web search for LibreChat agents — SearXNG sidecar deployed (safe_search:2, internal only); librechat.yaml webSearch:true + searxngInstanceURL wired; agents no longer say "I don't have internet access" | 2026-05-18 | — | [260518-pmf](./quick/260518-pmf-enable-web-search-for-librechat-agents/) |
+| 260518-pmf | Enable web search for LibreChat agents — SearXNG sidecar deployed (safe_search:2, internal only); librechat.yaml webSearch:true + searxngInstanceUrl:"${SEARXNG_URL}"; SEARXNG_URL env var added to librechat container; web_search tool added to 4 text agent MongoDB docs; E2E verified returning live news | 2026-05-18 | — | [260518-pmf](./quick/260518-pmf-enable-web-search-for-librechat-agents/) |
 
 ### Roadmap Evolution
 
