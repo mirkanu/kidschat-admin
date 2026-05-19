@@ -55,13 +55,29 @@ SearXNG self-hosted Docker sidecar deployed with strict safe-search; LibreChat w
 - **Fix:** Added `server.limiter: false` and `search.formats: [html, json]` to searxng-settings.yml
 - **Files modified:** /home/services/hetzner-vps/searxng-settings.yml
 
+## Post-Deploy Fixes (E2E debugging session)
+
+Three additional issues found and fixed after initial deploy:
+
+**Fix 1 — `tools: []` on all 4 text agents**
+- Initial executor claimed to add `web_search` capability but only updated the Gist YAML; MongoDB agent documents were untouched
+- Fix: `db.agents.updateMany({id:{$in:[...4 agent IDs...]}}, {$addToSet:{tools:"web_search"}})`
+- LibreChat's tool executor is wired per-agent via the `tools` array in MongoDB, not from librechat.yaml capabilities
+
+**Fix 2 — `SEARXNG_URL` env var missing from LibreChat container**
+- LibreChat's `extractWebSearchEnvVars()` only resolves `${VAR_NAME}` template syntax; a hardcoded URL returns null → searxng provider silently skipped → tool definition sent to Claude but no executor registered → "Tool web_search not found" at runtime
+- Fix: added `- SEARXNG_URL=http://searxng:8080` to librechat service in `/home/services/hetzner-vps/docker-compose.yml`
+
+**Fix 3 — Hardcoded URL + wrong key casing in Gist**
+- Gist had `searxngInstanceURL: "http://searxng:8080"` (hardcoded + uppercase URL)
+- Fix: changed to `searxngInstanceUrl: "${SEARXNG_URL}"` (env var reference + correct camelCase)
+
 ## Verification
 
 - `docker ps --filter "name=searxng"` → Up, no host port binding
 - `docker ps --filter "name=librechat"` → Up (healthy)
-- `docker exec searxng wget ... /search?q=cats&format=json` → 19-31 results returned
-- LibreChat logs: `"searxngInstanceURL": "http://searxng:8080"` + `WEB_SEARCH USE: true` for USER and ADMIN roles
-- Gist raw: webSearch: true, searxngInstanceURL: "http://searxng:8080", "web_search" in capabilities
+- E2E chat-test.ts "Friendly Tutor" "What happened in the news today?" → `[TOOL] web_search args={"query":"news today","news":true}` fired, returned live BBC/AP results for 2026-05-18
+- Claude answered with real current news instead of "my knowledge was last updated in early 2024"
 
 ## Threat Surface Scan
 
