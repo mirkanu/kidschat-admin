@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-24)
 
 Milestone v2.9 complete. All phases shipped.
 Next: /gsd-new-milestone to define v3.0 scope (TESTMODE-01/02/03 are strong candidates).
-Last activity: 2026-05-18 - Completed quick task 260518-pmf: Enable web search for LibreChat agents
+Last activity: 2026-05-27 - Completed quick task 260527-p7e: Rename LibreChat preset agent names from KidsChat to LibreChat branding
 
 Progress: [████████████] 100%
 
@@ -184,6 +184,7 @@ Progress: [████████████] 100%
 | 260516-dalle | Fix DALL-E image generation — switched dall-e-3→gpt-image-1 (key lacks dall-e-3 access), removed style param, handle b64_json response; patched via volume mount at /home/services/hetzner-vps/librechat-patches/DALLE3.js; E2E Playwright test passed | 2026-05-16 | — | ops |
 | 260517-aisummary | Fix daily-summary AI summaries failing — ANTHROPIC_API_KEY missing from kidai-admin container; added mapping from DEBATES_ANTHROPIC_API_KEY in docker-compose.yml, redeployed, resent morning email | 2026-05-17 | — | ops |
 | 260518-pmf | Enable web search for LibreChat agents — SearXNG sidecar deployed (safe_search:2, internal only); librechat.yaml webSearch:true + searxngInstanceUrl:"${SEARXNG_URL}"; SEARXNG_URL env var added to librechat container; web_search tool added to 4 text agent MongoDB docs; E2E verified returning live news | 2026-05-18 | — | [260518-pmf](./quick/260518-pmf-enable-web-search-for-librechat-agents/) |
+| 260527-p7e | Rename LibreChat preset agent names from KidsChat to LibreChat branding — updated 5 agent name fields in MongoDB test.agents collection via mongosh | 2026-05-27 | — | [260527-p7e](./quick/260527-p7e-rename-librechat-presets-from-kidschat-t/) |
 
 ### Roadmap Evolution
 
