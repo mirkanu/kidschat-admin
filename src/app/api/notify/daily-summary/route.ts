@@ -149,6 +149,25 @@ export async function POST(req: NextRequest) {
     meta: { childStats: childStatsForAudit },
   });
 
+  // Record successful run so /api/health/crons can detect silence.
+  try {
+    await db.collection("cron_state").updateOne(
+      { key: "daily_summary" },
+      { $set: { key: "daily_summary", lastRunAt: new Date(), lastRunStats: { sent: toEmails.length, children: stats.length } } },
+      { upsert: true }
+    );
+  } catch (err) {
+    console.error("[daily-summary] Failed to write cron_state:", err);
+  }
+
+  // Ping BetterStack heartbeat — silence here means the cron didn't run.
+  const heartbeatUrl = process.env.BETTERSTACK_HEARTBEAT_DAILY_SUMMARY;
+  if (heartbeatUrl) {
+    await fetch(heartbeatUrl).catch((err) =>
+      console.warn("[daily-summary] BetterStack heartbeat ping failed:", err)
+    );
+  }
+
   return NextResponse.json({
     sent: toEmails.length,
     children: stats.length,

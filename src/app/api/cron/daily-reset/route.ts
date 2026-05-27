@@ -82,5 +82,13 @@ export async function POST(req: NextRequest) {
     console.error("[daily-reset] Failed to write cron_state:", err);
   }
 
+  // Ping BetterStack heartbeat — silence here means the cron didn't run.
+  const heartbeatUrl = process.env.BETTERSTACK_HEARTBEAT_DAILY_RESET;
+  if (heartbeatUrl) {
+    await fetch(heartbeatUrl).catch((err) =>
+      console.warn("[daily-reset] BetterStack heartbeat ping failed:", err)
+    );
+  }
+
   return NextResponse.json({ reset, accumulated, admins_refilled, search_counters_reset, errors });
 }
