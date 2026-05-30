@@ -36,3 +36,13 @@ CREDENTIALS.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.planning/phases/
+.planning/quick/
+.planning/debug/
+.planning/threads/
+.planning/config.json
+.planning/phases/
+.planning/quick/
+.planning/debug/
+.planning/threads/
+.planning/config.json
