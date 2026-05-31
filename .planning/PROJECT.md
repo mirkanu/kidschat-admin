@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A private, self-hosted AI chat application for two children (Sebastian, 14; Penelope, 12), deployed on Railway using LibreChat. The app provides a safe, parent-controlled interface to Claude Haiku 4.5 with enforced content boundaries rooted in Reformed Christian family values. Each child has their own account with separate chat history and six switchable presets: four tone-based conversation modes, a Drawing Studio (DALL-E 3), and an Image Search preset backed by a custom Openverse MCP service. Parents have full oversight through a dedicated admin dashboard with conversation logs, usage analytics, safety alerts (including image-prompt and image-query abuse detection), transparent safety rules, an embedded test mode, automated email alerts (safety events, daily summaries, weekly digests, account activity) configurable per-recipient, and per-child daily/monthly cost caps and daily image-search count caps with one-click top-ups.
+A private, self-hosted AI chat application for two children, deployed on Railway using LibreChat. The app provides a safe, parent-controlled interface to Claude Haiku 4.5 with enforced content boundaries rooted in Reformed Christian family values. Each child has their own account with separate chat history and six switchable presets: four tone-based conversation modes, a Drawing Studio (DALL-E 3), and an Image Search preset backed by a custom Openverse MCP service. Parents have full oversight through a dedicated admin dashboard with conversation logs, usage analytics, safety alerts (including image-prompt and image-query abuse detection), transparent safety rules, an embedded test mode, automated email alerts (safety events, daily summaries, weekly digests, account activity) configurable per-recipient, and per-child daily/monthly cost caps and daily image-search count caps with one-click top-ups.
 
 ## Core Value
 
@@ -19,7 +19,7 @@ Children can safely explore and learn through AI conversation, with content guar
 - ✓ Safety system prompt enforced on all conversations — v1.0
 - ✓ Content boundaries: Reformed theology alignment, no profanity, age-appropriate, anti-cheating — v1.0
 - ✓ Tone presets: Friendly Tutor, Casual Buddy, Balanced Helper, Standard Formal — v1.0
-- ✓ Two child accounts created and tested (Sebastian, Penelope) — v1.0
+- ✓ Two child accounts created and tested — v1.0
 - ✓ System prompt resilient to basic jailbreak attempts — v1.0
 - ✓ librechat.yaml hosted as GitHub Gist, referenced via CONFIG_PATH — v1.0
 - ✓ Two admin accounts with conversation oversight capability — v1.0
@@ -75,7 +75,7 @@ Children can safely explore and learn through AI conversation, with content guar
 - ✓ Parents auto-refill to 1M tokens via daily-reset cron; preset-aware guidance tells kids to switch presets for image vs text — v2.8
 
 - ✓ Custom Openverse MCP image-search service deployed to Railway (kidschat-image-search-mcp); 7-regex query blocklist, 10-host domain blocklist, server-side /proxy hotlink fallback — v2.9
-- ✓ "Image Search" LibreChat preset live for Penelope and Sebastian; inline image grid with no click-through links, no AI commentary — v2.9
+- ✓ "Image Search" LibreChat preset live for both children; inline image grid with no click-through links, no AI commentary — v2.9
 - ✓ Per-child daily image-search count cap (default 20) enforced at MCP boundary; admin /settings UI override with same pattern as daily cost cap — v2.9
 - ✓ Safety patterns extended with blocklist-aligned categories; image-search queries run through existing detectSafetyEvent → parent email alert pipeline — v2.9
 - ✓ Admin /conversations shows Image Search sessions with "Image Search" preset badge (conversations.spec field) — v2.9
@@ -100,10 +100,7 @@ Children can safely explore and learn through AI conversation, with content guar
 ## Context
 
 Shipped v2.9 on 2026-04-24. Eleven milestones complete (v1.0 through v2.9).
-- **LibreChat URL:** https://librechat-production-bff2.up.railway.app
-- **Admin Dashboard URL:** https://kidschat-admin-production.up.railway.app
-- **Image Search MCP URL:** https://kidschat-image-search-mcp.up.railway.app
-- **Config Gist (production):** b0c89395 (D-21-A — dev Gist anointed as prod; CONFIG_PATH unchanged)
+- **Config Gist (production):** pinned via CONFIG_PATH env var (D-21-A — dev Gist anointed as prod)
 - **Stack:** LibreChat + Next.js 15 admin dashboard + custom MCP service, MongoDB, Meilisearch on Railway
 - **Admin dashboard stack:** Next.js 15, NextAuth v5, Tailwind CSS v3, shadcn/ui, Recharts, Anthropic SDK (Haiku + Sonnet), Resend + React Email, react-markdown, MongoDB direct queries, DALL-E 3 via agents endpoint
 - **MCP stack:** Node.js/TypeScript, Openverse anonymous API, custom blocklist/proxy/quota-client modules
@@ -114,7 +111,7 @@ Shipped v2.9 on 2026-04-24. Eleven milestones complete (v1.0 through v2.9).
 - **Known limitation:** LibreChat v0.8.4 has outdated config schema warnings (non-blocking)
 - **Known limitation:** Safety detection uses text pattern matching — may have false positives/negatives
 - **Known limitation:** Openverse `mature=false` not explicit in MCP URL — relies on anonymous-tier default (SEARCH-03 tech debt)
-- **Tech debt from v2.4:** Phase 14 has no VERIFICATION.md; stale LibreChat `agent_F6ITBo7EuorE7vqrXsNAm` test agent never cleaned up; duplicate MongoDB query logic between `alerts/page.tsx` and `/api/alerts/route.ts`
+- **Tech debt from v2.4:** Phase 14 has no VERIFICATION.md; stale LibreChat test agent never cleaned up; duplicate MongoDB query logic between `alerts/page.tsx` and `/api/alerts/route.ts`
 - **Tech debt from v2.9:** Phase 21 has no VERIFICATION.md; SEARCH-02 live hit-rate not re-sampled post-rollout; TESTMODE-01/02/03 deferred
 
 ## Constraints

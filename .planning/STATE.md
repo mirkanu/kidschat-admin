@@ -42,8 +42,6 @@ Progress: [████████████] 100%
 ### Decisions
 
 - MongoDB database name is "test" (Railway template default)
-- LibreChat URL: https://librechat-production-bff2.up.railway.app
-- Admin Dashboard URL: https://kidschat-admin-production.up.railway.app
 - Server components query MongoDB directly (not self-referencing fetch)
 - Test mode calls Anthropic API directly (not through LibreChat)
 - System prompt shared via src/lib/system-prompt.ts (single source of truth)
@@ -70,12 +68,12 @@ Progress: [████████████] 100%
 - [Phase 13-parent-email-notifications]: Notification page uses direct MongoDB query (server component) — consistent with rest of project
 - [Phase 13-parent-email-notifications]: NotificationPrefsToggle uses native checkbox — Switch component not installed in shadcn ui folder
 - [Phase 13-parent-email-notifications]: /api/notify/* excluded from auth middleware — routes use cron-secret header auth, not session cookies
-- [Phase 14-enable-safeguard-image-generation]: Drawing agent created directly in MongoDB (agent_id: agent_kidschat_drawing_1775634945891) due to LibreChat rate-limit ban during setup
+- [Phase 14-enable-safeguard-image-generation]: Drawing agent created directly in MongoDB due to LibreChat rate-limit ban during setup
 - [Phase 14-enable-safeguard-image-generation]: interface.agents uses object form {use:true, create:false, share:false, public:false} — not boolean true (deprecated in LibreChat v0.7.5+)
 - [Phase 14-enable-safeguard-image-generation]: DALL-E 3 only: DALLE3_API_KEY set, DALLE2_API_KEY intentionally absent. ENDPOINTS updated to 'anthropic,agents'
 - [Phase 15-safety-alert-extension-rate-limiting]: IMAGE_PROMPT_PATTERNS exported from safety-patterns.ts; horror pattern requires adjacent attack/person context to avoid cartoon-monster false positives
 - [Phase 15-safety-alert-extension-rate-limiting]: settings.ts HARDCODED_DEFAULTS: dailyImageLimit=10, dailyMessageLimit=50, monthlyCostCapEUR=10, weeklyBonusCap=5, bonusPackSize=2
-- [Phase 15-safety-alert-extension-rate-limiting]: CONFIG_PATH pins specific Gist revision 8a4a743 for reproducible deploys; GITHUB_GIST_TOKEN in Railway is expired and needs refresh
+- [Phase 15-safety-alert-extension-rate-limiting]: CONFIG_PATH pins a specific Gist revision for reproducible deploys; GITHUB_GIST_TOKEN in Railway is expired and needs refresh
 - [Phase 15-safety-alert-extension-rate-limiting]: balances collection is plural (not balance) — all Plan 01/02 code uses db.collection('balances')
 - [Phase 15-safety-alert-extension-rate-limiting]: aclentries use principalId (not user) and resourceId is MongoDB ObjectId — must resolve agent _id before ACL query
 - [Phase 15-safety-alert-extension-rate-limiting]: tokenCount is flat integer — cost ledger must apply char-formula for input/output split billing
@@ -97,7 +95,7 @@ Progress: [████████████] 100%
 - [Phase 15.2]: Option 7 validated: agent delivered probe marker verbatim; field path is agents.instructions not model_options.system; query key is {id: agentId}
 - [Phase 15.2]: uuid@9 used (not v13) because v13 is ESM-only and breaks ts-jest
 - [Phase 15.3-simplification]: LibreChat native "Insufficient Funds" hard block replaces all custom 70% warning + bonus offer + YES-confirmation flow; parent top-up is manual one-click €0.10 from admin UI
-- [Phase 15.3-simplification]: ~~balance_state.monthlySpendEur is a dead field never incremented~~ — RESOLVED in Phase 15.4 by `accumulateYesterdaySpend()` in daily-reset cron (verified live 2026-04-17: Penelope €0.50, Sebastian €0.36)
+- [Phase 15.3-simplification]: ~~balance_state.monthlySpendEur is a dead field never incremented~~ — RESOLVED in Phase 15.4 by `accumulateYesterdaySpend()` in daily-reset cron (verified live 2026-04-17)
 - [Phase 15.3-simplification]: instrumentation.ts polling loop deleted; no setInterval listener at Next.js startup
 - [Phase 15.4]: $max operator chosen for daily refill: atomic, one-line, no schema change — preserves parent top-ups above dailyCap
 - [Phase 15.4]: displayedMonthlySpendEur = stored monthlySpendEur + today's partial spend (live view); DB truth only written at midnight UTC via $inc
@@ -110,7 +108,7 @@ Progress: [████████████] 100%
 - [Phase 17-conversation-delete-protection-icon-fix]: customCSS NOT in LibreChat v0.8.x schema — CSS delete button hide skipped to avoid ZodError
 - [Phase 17-conversation-delete-protection-icon-fix]: MongoDB roles are strictly additive (no deny rules) — must enumerate every collection explicitly; wildcards cannot be used to restrict specific collections
 - [Phase 17-conversation-delete-protection-icon-fix]: librechat_safe MongoDB user — find/insert/update on conversations+messages; full readWrite on all 35 other collections; LibreChat MONGO_URI updated and redeployed
-- [Phase 17-conversation-delete-protection-icon-fix]: Railway internal MongoDB accessible externally via switchyard.proxy.rlwy.net:57501 (TCP proxy) — discovered via Railway GraphQL API v2
+- [Phase 17-conversation-delete-protection-icon-fix]: Railway internal MongoDB accessible externally via TCP proxy — discovered via Railway GraphQL API v2
 - [Phase 18]: notification_recipients collection decoupled from users — both parents receive alerts without admin accounts
 - [Phase 18]: ADMIN-user fallback in senders ensures backward compat until recipients are configured
 - [Phase 18]: Green header for daily summary, orange for account activity — four distinct email color themes
@@ -123,8 +121,8 @@ Progress: [████████████] 100%
 - [Phase 21]: 20-05 C-2 APPROVED-WITH-CAVEATS after retry shipped: 'cute red origami cats' now returns 5 results; 21-05 UAT SEARCH-02 threshold stays at ≥60%
 - [Phase 21]: [Phase 21-02]: client.db("test") matches sibling routes verbatim (W3 revision)
 - [Phase 21]: [Phase 21-02]: services/ + tests/ excluded from admin tsconfig — Phase 20 MCP sibling service broke strict TS sweep
-- [Phase 21]: D-21-A supersedes Phase 20 D-10 — dev Gist b0c89395 anointed as production; CONFIG_PATH unchanged; prod Gist archived
-- [Phase 21]: [Phase 21-04]: D-21-A supersedes D-10 — dev Gist b0c89395 anointed as production via gh description rename; CONFIG_PATH unchanged
+- [Phase 21]: D-21-A supersedes Phase 20 D-10 — dev Gist anointed as production; CONFIG_PATH unchanged; prod Gist archived
+- [Phase 21]: [Phase 21-04]: D-21-A supersedes D-10 — dev Gist anointed as production via gh description rename; CONFIG_PATH unchanged
 - [Phase 21]: [Phase 21-04]: OVERSIGHT-01 closed by audit, not code — 17 image-search conversations + 46 messages persisted by LibreChat native write path; zero new logging code added
 - [Phase 21]: [Phase 21-04]: Preset-distinguishing field = conversations.spec ('image-search'); badge renders on /conversations list + detail (OVERSIGHT-02)
 - [Phase 21]: OVERSIGHT-03 closed in Phase 21 (not Phase 22): daily-summary email now includes per-kid imageSearchCount + Haiku-paraphrased one-sentence summary when count>0; raw queries stripped from email HTML and audit doc (T-21-06-01/02 mitigations)
@@ -165,7 +163,7 @@ Progress: [████████████] 100%
 | 260417-njb | Consolidate per-child Usage & Limits (bars + top-up) into /settings; remove from /users/{id} | 2026-04-17 | 5a3a863 | [260417-njb](./quick/260417-njb-consolidate-per-child-usage-limits-into-/) |
 | 260417-p94 | Daily-summary email overhaul: drop image-requests/presets-used; add Alerts + Haiku 4.5 paraphrased per-kid summary | 2026-04-18 | fdd5a92 | [260417-p94](./quick/260417-p94-daily-summary-email-overhaul-drop-image-/) |
 | 260420-g6h | Headless LibreChat chat-test CLI — Claude can drive any preset end-to-end without a browser (JWT + 2-step SSE + tool-call capture) | 2026-04-20 | 950901c | [260420-g6h](./quick/260420-g6h-headless-librechat-chat-test-cli-for-end/) |
-| 260420-upl | Fix image upload on kid LibreChat — raise cap 2→10MB + explicit agents endpoint (Penelope repro) | 2026-04-20 | config-only | [260420-upl](./quick/260420-upl-file-upload-10mb-fix/) |
+| 260420-upl | Fix image upload on kid LibreChat — raise cap 2→10MB + explicit agents endpoint | 2026-04-20 | config-only | [260420-upl](./quick/260420-upl-file-upload-10mb-fix/) |
 | Phase 15-safety-alert-extension-rate-limiting P01 | 35 | 3 tasks | 12 files |
 | Phase 15-safety-alert-extension-rate-limiting P00 | 35 | 4 tasks | 10 files |
 | Phase 15-safety-alert-extension-rate-limiting P02 | 70 | 4 tasks | 21 files |
@@ -199,7 +197,7 @@ Progress: [████████████] 100%
 
 1 pending — see `.planning/todos/pending/`. Most recent:
 
-- **Set up Resend custom domain for multi-recipient email delivery** (2026-04-18) — Emily-Kate alerts disabled until done; daily-summary cron only sends to Manuel
+- **Set up Resend custom domain for multi-recipient email delivery** (2026-04-18) — second parent's alerts disabled until done; daily-summary cron only sends to one recipient
 
 ### Blockers/Concerns
 
