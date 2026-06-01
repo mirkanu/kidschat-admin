@@ -17,7 +17,7 @@ A self-hosted parent control panel for a children's AI chat service built on [Li
 
 ## Stack
 
-- **Chat frontend:** LibreChat (self-hosted, managed via Railway API)
+- **Chat frontend:** LibreChat (self-hosted, Docker)
 - **Admin panel:** Next.js (App Router, TypeScript)
 - **Database:** MongoDB 7
 - **Auth:** NextAuth.js + Cloudflare Access (no passwords to manage)
@@ -35,6 +35,6 @@ This project is a custom admin layer on top of LibreChat. You'll need both runni
 3. **MongoDB URI** — point `MONGODB_URI` at the same MongoDB instance LibreChat uses (or a separate one — the admin stores its own data alongside LibreChat's).
 4. **NextAuth** — generate a secret with `openssl rand -base64 32` and set `NEXTAUTH_SECRET`. Set `NEXTAUTH_URL` to the public URL of the admin panel.
 5. **Resend** — create a free account at [resend.com](https://resend.com), verify a sending domain, and set `RESEND_API_KEY` + `RESEND_FROM_EMAIL`.
-6. **Railway API** (optional) — if you want the admin to start/stop LibreChat automatically on quota hits, set `RAILWAY_API_TOKEN`, `RAILWAY_PROJECT_ID`, and `RAILWAY_SERVICE_LIBRECHAT_ID`.
+6. **Quota restart** (optional) — to have the admin restart LibreChat automatically when quota limits are hit, set `LIBRECHAT_RESTART_URL` and `LIBRECHAT_RESTART_SECRET` to a restart webhook on your LibreChat instance. The repo also has legacy support for Railway (`RAILWAY_API_TOKEN` etc.) from when the author ran LibreChat there, but a cheap VPS running both services via Docker Compose is significantly less expensive and simpler long-term.
 7. **Run** with `docker compose up --build -d` or `npm run dev` for local development.
 8. **Lock down the admin panel** — do not expose it to the internet without authentication. The author uses [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/applications/configure-apps/) (free tier) to add a login gate before traffic reaches the server.
