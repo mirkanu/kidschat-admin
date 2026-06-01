@@ -4,7 +4,7 @@
 
 > **100% AI-generated:** No code was written by hand. Every file was produced by [Claude Code](https://claude.ai/claude-code) via the [GSD workflow](https://github.com/pablof7z/gsd). The author is a non-programmer building personal tools with AI. PRs are welcome — if one arrives, Claude Code will review and merge it. Issues are unlikely to receive a response.
 
-A self-hosted parent control panel for a children's AI chat service built on [LibreChat](https://github.com/danny-avila/LibreChat). The problem it solves: giving kids safe, quota-controlled access to Claude while letting a parent monitor usage, review conversations, and get automatically alerted when anything concerning happens — without having to babysit the chat manually.
+A self-hosted parent control panel for a children's AI chat service built on [LibreChat](https://github.com/danny-avila/LibreChat). The problem it solves: giving kids safe, quota-controlled access to AI while letting a parent monitor usage, review conversations, and get automatically alerted when anything concerning happens — without having to babysit the chat manually. Because it's built on LibreChat, the underlying AI isn't locked in — you can use Claude, GPT-4, Gemini, or any other model LibreChat supports, and swap between them without touching the admin layer.
 
 ## Features
 
