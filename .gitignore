@@ -41,8 +41,5 @@ next-env.d.ts
 .planning/debug/
 .planning/threads/
 .planning/config.json
-.planning/phases/
-.planning/quick/
-.planning/debug/
-.planning/threads/
-.planning/config.json
+.planning/.continue-here.md
+.planning/HANDOFF.json
