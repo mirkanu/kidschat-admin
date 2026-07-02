@@ -20,6 +20,11 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Optional test override: ?testEmail=... sends only to the specified address.
+  // Requires cron auth or admin session (already checked above).
+  const { searchParams } = new URL(req.url);
+  const testEmail = searchParams.get("testEmail");
+
   const client = await getMongoClient();
   const db = client.db("test");
 
@@ -30,19 +35,26 @@ export async function POST(req: NextRequest) {
 
   // Primary: use notification_recipients collection (supports both parents)
   // Fallback: query ADMIN users if recipients collection is empty/not seeded yet
-  const { getRecipientsForType } = await import("@/lib/notification-recipients");
-  let toEmails = await getRecipientsForType("dailySummary");
+  let toEmails: string[];
 
-  if (toEmails.length === 0) {
-    const allAdmins = await db
-      .collection("users")
-      .find({ role: "ADMIN" })
-      .project<{ email: string }>({ email: 1 })
-      .toArray();
+  if (testEmail) {
+    // Test mode: send only to the specified address, skip normal recipient logic.
+    toEmails = [testEmail];
+  } else {
+    const { getRecipientsForType } = await import("@/lib/notification-recipients");
+    toEmails = await getRecipientsForType("dailySummary");
 
-    toEmails = allAdmins
-      .map((admin) => admin.email)
-      .filter((email): email is string => typeof email === "string" && email.length > 0);
+    if (toEmails.length === 0) {
+      const allAdmins = await db
+        .collection("users")
+        .find({ role: "ADMIN" })
+        .project<{ email: string }>({ email: 1 })
+        .toArray();
+
+      toEmails = allAdmins
+        .map((admin) => admin.email)
+        .filter((email): email is string => typeof email === "string" && email.length > 0);
+    }
   }
 
   const date = getToday();
@@ -111,10 +123,17 @@ export async function POST(req: NextRequest) {
     }),
   );
 
-  // --- Build email template props (strip conversationExcerpts — raw kid text
-  // must not flow to email HTML; threat T-p94-02). ---
+  // --- Build email template props ---
+  // conversationExcerpts is stripped by default (threat T-p94-02).
+  // Exception: when alertCount > 0 the parent needs to see what triggered the
+  // concern, so we pass it through as `conversationTranscript`.
   const childrenForTemplate = stats.map(
-    ({ conversationExcerpts: _excerpts, imageSearchQueries: _queries, ...rest }) => rest,
+    ({ conversationExcerpts, imageSearchQueries: _queries, ...rest }) => ({
+      ...rest,
+      ...(rest.alertCount > 0 && conversationExcerpts
+        ? { conversationTranscript: conversationExcerpts }
+        : {}),
+    }),
   );
 
   // Lazy imports so this module is safe to import at build time

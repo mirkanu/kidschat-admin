@@ -18,6 +18,9 @@ import {
  * `conversationExcerpts` field — that's deliberately stripped in the
  * route before being passed to this template, because raw kid text
  * must not flow to email HTML (threat T-p94-02).
+ *
+ * Exception: when `alertCount > 0`, the route passes the transcript as
+ * `conversationTranscript` so parents can see exactly what was said.
  */
 export interface DailyChildStat {
   name: string;
@@ -29,6 +32,8 @@ export interface DailyChildStat {
   // woven into `summary` via summarizeChildDay. Raw query text is stripped by
   // the route (privacy T-21-06-01).
   imageSearchCount: number;
+  /** Full role-prefixed chat transcript — included only when alertCount > 0. */
+  conversationTranscript?: string;
 }
 
 export interface DailySummaryEmailProps {
@@ -189,6 +194,51 @@ export function DailySummaryEmail({ children, date }: DailySummaryEmailProps) {
                     <span style={{ fontWeight: 600 }}>Summary:</span>{" "}
                     {child.summary}
                   </Text>
+
+                  {/* Full transcript — only when concern was flagged (alertCount > 0) */}
+                  {child.alertCount > 0 && child.conversationTranscript && (
+                    <div style={{ marginTop: "16px" }}>
+                      <Hr style={{ borderColor: "#fca5a5", margin: "0 0 12px" }} />
+                      <Text
+                        style={{
+                          color: "#7f1d1d",
+                          fontSize: "13px",
+                          fontWeight: "700",
+                          margin: "0 0 8px",
+                        }}
+                      >
+                        Full Chat Transcript (last 24h)
+                      </Text>
+                      <div
+                        style={{
+                          backgroundColor: "#fff7f7",
+                          border: "1px solid #fca5a5",
+                          borderRadius: "4px",
+                          padding: "12px",
+                          fontFamily: "monospace",
+                        }}
+                      >
+                        {child.conversationTranscript.split("\n").map((line, i) => {
+                          const isChild = line.startsWith("[Child]:");
+                          const isAI = line.startsWith("[AI]:");
+                          return (
+                            <Text
+                              key={i}
+                              style={{
+                                color: isChild ? "#1d4ed8" : isAI ? "#374151" : "#6b7280",
+                                fontSize: "12px",
+                                margin: "0 0 4px",
+                                lineHeight: "1.5",
+                                fontWeight: isChild ? "600" : "400",
+                              }}
+                            >
+                              {line}
+                            </Text>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {index < children.length - 1 && (
