@@ -3,7 +3,9 @@
  * Falls back to Resend's onboarding address for local development without a verified domain.
  */
 export function getFromAddress(): string {
-  return process.env.RESEND_FROM_ADDRESS ?? "KidsChat <onboarding@resend.dev>";
+  const raw = process.env.RESEND_FROM_ADDRESS ?? "KidsChat <onboarding@resend.dev>";
+  // Strip surrounding double-quotes that can be introduced by Docker env var interpolation.
+  return raw.replace(/^"|"$/g, "");
 }
 
 /**
