@@ -266,20 +266,23 @@ async function replayDailySummary(
   replayDate: string,
   testEmail: string,
 ): Promise<NextResponse> {
+  type AuditChildStat = { name: string; totalMessages: number; alertCount: number; summary: string; alertSummary: string | null; imageSearchCount: number };
+  type AuditDoc = { sentAt: Date; meta: { childStats: AuditChildStat[] } };
+
   // Load the stored audit doc for that date.
-  const auditDoc = await db.collection("email_notifications").findOne<{
-    meta: { childStats: Array<{ name: string; totalMessages: number; alertCount: number; summary: string; alertSummary: string | null; imageSearchCount: number }> };
-  }>({ type: "daily_summary", date: replayDate });
+  const auditDoc = await db.collection("email_notifications").findOne<AuditDoc>({ type: "daily_summary", date: replayDate });
 
   if (!auditDoc) {
     return NextResponse.json({ error: `No daily_summary audit doc found for ${replayDate}` }, { status: 404 });
   }
 
   const storedStats = auditDoc.meta.childStats;
+  const sentAt = auditDoc.sentAt;
 
-  // Fetch conversation transcripts from the historical date window.
-  const dayStart = new Date(`${replayDate}T00:00:00.000Z`);
-  const dayEnd = new Date(dayStart.getTime() + 86_400_000);
+  // The daily summary fetches messages from the 24h window ending at sentAt.
+  // Use sentAt (from the audit doc) so the window matches what the original run saw.
+  const dayEnd = new Date(sentAt);
+  const dayStart = new Date(dayEnd.getTime() - 86_400_000);
 
   const { getRecentConversationsInWindow } = await import("@/lib/daily-summary");
 
