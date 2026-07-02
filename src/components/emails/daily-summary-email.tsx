@@ -195,8 +195,8 @@ export function DailySummaryEmail({ children, date }: DailySummaryEmailProps) {
                     {child.summary}
                   </Text>
 
-                  {/* Full transcript — only when concern was flagged (alertCount > 0) */}
-                  {child.alertCount > 0 && child.conversationTranscript && (
+                  {/* Full transcript — only when concern was flagged (set by route when alertCount>0 or summary has non-none Concerns line) */}
+                  {child.conversationTranscript && (
                     <div style={{ marginTop: "16px" }}>
                       <Hr style={{ borderColor: "#fca5a5", margin: "0 0 12px" }} />
                       <Text

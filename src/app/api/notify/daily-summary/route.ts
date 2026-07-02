@@ -24,9 +24,17 @@ export async function POST(req: NextRequest) {
   // Requires cron auth or admin session (already checked above).
   const { searchParams } = new URL(req.url);
   const testEmail = searchParams.get("testEmail");
+  // Optional replay: ?replayDate=YYYY-MM-DD resends a past day's email using the
+  // stored summary from email_notifications + conversation transcripts from that date.
+  const replayDate = searchParams.get("replayDate");
 
   const client = await getMongoClient();
   const db = client.db("test");
+
+  // --- Replay mode: resend a historical day's email with transcript ---
+  if (replayDate && testEmail) {
+    return replayDailySummary(db, replayDate, testEmail);
+  }
 
   // Gather per-child stats from last 24 hours.
   // Each kid arrives with alertCount + conversationExcerpts populated; AI
@@ -125,15 +133,22 @@ export async function POST(req: NextRequest) {
 
   // --- Build email template props ---
   // conversationExcerpts is stripped by default (threat T-p94-02).
-  // Exception: when alertCount > 0 the parent needs to see what triggered the
-  // concern, so we pass it through as `conversationTranscript`.
+  // Exception: when a concern is flagged, pass it through as `conversationTranscript`.
+  // A concern is flagged when:
+  //   (a) alertCount > 0 — a safety pattern triggered, OR
+  //   (b) the AI summary contains "Concerns:" followed by something other than "none"
   const childrenForTemplate = stats.map(
-    ({ conversationExcerpts, imageSearchQueries: _queries, ...rest }) => ({
-      ...rest,
-      ...(rest.alertCount > 0 && conversationExcerpts
-        ? { conversationTranscript: conversationExcerpts }
-        : {}),
-    }),
+    ({ conversationExcerpts, imageSearchQueries: _queries, ...rest }) => {
+      const hasConcerns =
+        rest.alertCount > 0 ||
+        /Concerns:\s+(?!none\.?\s*$)/im.test(rest.summary);
+      return {
+        ...rest,
+        ...(hasConcerns && conversationExcerpts
+          ? { conversationTranscript: conversationExcerpts }
+          : {}),
+      };
+    },
   );
 
   // Lazy imports so this module is safe to import at build time
@@ -238,4 +253,65 @@ async function fetchAlertsForKid(
  */
 function getToday(): string {
   return new Date().toISOString().split("T")[0];
+}
+
+/**
+ * Replay a past day's daily summary email to a single test address.
+ * Loads the stored child stats from the email_notifications audit doc, then
+ * fetches conversation transcripts from the historical date window so the
+ * transcript section is populated for any child whose summary had a concern.
+ */
+async function replayDailySummary(
+  db: Db,
+  replayDate: string,
+  testEmail: string,
+): Promise<NextResponse> {
+  // Load the stored audit doc for that date.
+  const auditDoc = await db.collection("email_notifications").findOne<{
+    meta: { childStats: Array<{ name: string; totalMessages: number; alertCount: number; summary: string; alertSummary: string | null; imageSearchCount: number }> };
+  }>({ type: "daily_summary", date: replayDate });
+
+  if (!auditDoc) {
+    return NextResponse.json({ error: `No daily_summary audit doc found for ${replayDate}` }, { status: 404 });
+  }
+
+  const storedStats = auditDoc.meta.childStats;
+
+  // Fetch conversation transcripts from the historical date window.
+  const dayStart = new Date(`${replayDate}T00:00:00.000Z`);
+  const dayEnd = new Date(dayStart.getTime() + 86_400_000);
+
+  const { getRecentConversationsInWindow } = await import("@/lib/daily-summary");
+
+  const childrenForTemplate = await Promise.all(
+    storedStats.map(async (kid) => {
+      const hasConcerns =
+        kid.alertCount > 0 ||
+        /Concerns:\s+(?!none\.?\s*$)/im.test(kid.summary);
+
+      let conversationTranscript: string | undefined;
+      if (hasConcerns) {
+        const transcript = await getRecentConversationsInWindow(kid.name, db, dayStart, dayEnd, 40);
+        if (transcript) conversationTranscript = transcript;
+      }
+
+      return { ...kid, ...(conversationTranscript ? { conversationTranscript } : {}) };
+    }),
+  );
+
+  const { resend } = await import("@/lib/resend");
+  const { DailySummaryEmail } = await import("@/components/emails/daily-summary-email");
+
+  const { data, error } = await resend.emails.send({
+    from: getFromAddress(),
+    to: [testEmail],
+    subject: `KidsChat Daily Summary — ${replayDate} (resent with transcript)`,
+    react: DailySummaryEmail({ children: childrenForTemplate, date: replayDate }),
+  });
+
+  if (error) {
+    return NextResponse.json({ error: "Failed to send replay email", detail: error }, { status: 500 });
+  }
+
+  return NextResponse.json({ sent: 1, date: replayDate, resendId: data?.id });
 }

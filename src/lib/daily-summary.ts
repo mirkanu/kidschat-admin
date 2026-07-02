@@ -82,6 +82,21 @@ export async function getRecentConversations(
 ): Promise<string> {
   const oneDayAgo = new Date();
   oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+  return getRecentConversationsInWindow(childName, db, oneDayAgo, new Date(), limit);
+}
+
+/**
+ * Same as `getRecentConversations` but for an explicit date window.
+ * Used by the replay endpoint to fetch historical transcripts.
+ */
+export async function getRecentConversationsInWindow(
+  childName: string,
+  db: Db,
+  from: Date,
+  to: Date,
+  limit: number = 20,
+): Promise<string> {
+  const oneDayAgo = from;
 
   const rows = await db
     .collection("messages")
@@ -90,7 +105,7 @@ export async function getRecentConversations(
       isCreatedByUser?: boolean;
       createdAt: Date;
     }>([
-      { $match: { createdAt: { $gte: oneDayAgo } } },
+      { $match: { createdAt: { $gte: oneDayAgo, $lt: to } } },
       {
         $lookup: {
           from: "conversations",
