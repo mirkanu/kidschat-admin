@@ -189,11 +189,10 @@ export async function getGroupedConversationsInWindow(
   const conversations = await db
     .collection("messages")
     .aggregate<{
-      conversationId: string;
+      _id: string;
       title: string;
-      text: string;
-      isCreatedByUser: boolean;
-      createdAt: Date;
+      messages: Array<{ text: string; isCreatedByUser: boolean; createdAt: Date }>;
+      lastMessageAt: Date;
     }>([
       { $match: { createdAt: { $gte: from, $lt: to } } },
       {
