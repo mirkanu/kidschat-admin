@@ -1,5 +1,7 @@
 # KidAI — Codebase Orientation
 
+> **Available Stack:** `/home/services/.claude/available-stack.md` — shared VPS services (endpoints, env var patterns, API docs).
+
 KidAI is the **parents admin panel** for a kids AI chat service built on LibreChat. The admin
 (this repo) handles parent accounts, child quotas, billing controls, and email alerts.
 The LibreChat chat frontend is a **separate service**, still running on Railway.
