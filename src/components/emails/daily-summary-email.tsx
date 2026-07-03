@@ -207,7 +207,7 @@ export function DailySummaryEmail({ children, date }: DailySummaryEmailProps) {
                           margin: "0 0 8px",
                         }}
                       >
-                        Full Chat Transcript (last 24h)
+                        Transcripts of concerning chats
                       </Text>
                       <div
                         style={{
@@ -218,24 +218,31 @@ export function DailySummaryEmail({ children, date }: DailySummaryEmailProps) {
                           fontFamily: "monospace",
                         }}
                       >
-                        {child.conversationTranscript.split("\n").map((line, i) => {
-                          const isChild = line.startsWith("[Child]:");
-                          const isAI = line.startsWith("[AI]:");
-                          return (
-                            <Text
-                              key={i}
-                              style={{
-                                color: isChild ? "#1d4ed8" : isAI ? "#374151" : "#6b7280",
-                                fontSize: "12px",
-                                margin: "0 0 4px",
-                                lineHeight: "1.5",
-                                fontWeight: isChild ? "600" : "400",
-                              }}
-                            >
-                              {line}
-                            </Text>
-                          );
-                        })}
+                        {child.conversationTranscript.split("\n")
+                          .filter((line) => {
+                            // Skip empty AI messages (lines where after [AI]: prefix there's no actual text)
+                            if (!line.startsWith("[AI]:")) return true;
+                            const textAfterPrefix = line.replace(/^\[AI\]:\s*/, "");
+                            return textAfterPrefix.trim().length > 0;
+                          })
+                          .map((line, i) => {
+                            const isChild = line.startsWith("[Child]:");
+                            const isAI = line.startsWith("[AI]:");
+                            return (
+                              <Text
+                                key={i}
+                                style={{
+                                  color: isChild ? "#1d4ed8" : isAI ? "#374151" : "#6b7280",
+                                  fontSize: "12px",
+                                  margin: "0 0 4px",
+                                  lineHeight: "1.5",
+                                  fontWeight: isChild ? "600" : "400",
+                                }}
+                              >
+                                {line}
+                              </Text>
+                            );
+                          })}
                       </div>
                     </div>
                   )}
