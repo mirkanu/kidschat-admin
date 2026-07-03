@@ -8,6 +8,9 @@ import type { Db } from "mongodb";
  *   - v2 (quick task 260417-p94): drops imageRequests + topPresets,
  *     adds alertCount + AI-rendered summary + alertSummary + the raw
  *     conversationExcerpts that were fed to the summariser.
+ *   - v3 (2026-07-03): adds groupedConversationTranscripts — conversations
+ *     grouped by conversationId with titles and LibreChat links, used in
+ *     replay/resend scenarios.
  *
  * `summary`, `alertSummary` and `conversationExcerpts` are populated
  * downstream in `/api/notify/daily-summary/route.ts`:
@@ -33,6 +36,18 @@ export interface DailyChildStats {
   imageSearchCount: number;
   /** Most-recent-first, dedup'd, capped at 5. Fed to summarizeChildDay alongside conversation excerpts. Ephemeral — stripped from audit doc. */
   imageSearchQueries: string[];
+  /** Grouped transcripts by conversation — includes titles, conversationId, and message lines. Used in replay. */
+  groupedConversationTranscripts?: GroupedConversation[];
+}
+
+/**
+ * Grouped conversation structure for email rendering.
+ * Each conversation has a title, LibreChat link URL, and role-prefixed message lines.
+ */
+export interface GroupedConversation {
+  conversationId: string;
+  title: string;
+  lines: string[];
 }
 
 /**
@@ -158,6 +173,99 @@ export async function getRecentConversationsInWindow(
   }
 
   return joined;
+}
+
+/**
+ * Fetch conversations grouped by conversationId with titles and message lines.
+ * Used by the replay endpoint to populate conversation transcripts with titles and links.
+ * Returns conversations sorted by most recent activity, each with chronological message lines.
+ */
+export async function getGroupedConversationsInWindow(
+  childName: string,
+  db: Db,
+  from: Date,
+  to: Date,
+): Promise<GroupedConversation[]> {
+  const conversations = await db
+    .collection("messages")
+    .aggregate<{
+      conversationId: string;
+      title: string;
+      text: string;
+      isCreatedByUser: boolean;
+      createdAt: Date;
+    }>([
+      { $match: { createdAt: { $gte: from, $lt: to } } },
+      {
+        $lookup: {
+          from: "conversations",
+          localField: "conversationId",
+          foreignField: "conversationId",
+          as: "conv",
+        },
+      },
+      { $unwind: { path: "$conv", preserveNullAndEmptyArrays: false } },
+      {
+        $lookup: {
+          from: "users",
+          let: { userId: "$conv.user" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: [{ $toString: "$_id" }, "$$userId"] },
+              },
+            },
+          ],
+          as: "userInfo",
+        },
+      },
+      { $unwind: { path: "$userInfo", preserveNullAndEmptyArrays: false } },
+      { $match: { "userInfo.name": childName } },
+      {
+        $group: {
+          _id: "$conversationId",
+          title: { $first: "$conv.title" },
+          messages: {
+            $push: {
+              text: "$text",
+              isCreatedByUser: "$isCreatedByUser",
+              createdAt: "$createdAt",
+            },
+          },
+          lastMessageAt: { $max: "$createdAt" },
+        },
+      },
+      { $sort: { lastMessageAt: -1 } },
+    ])
+    .toArray();
+
+  // Transform to GroupedConversation with role-prefixed lines (chronological order)
+  return conversations.map((conv) => {
+    // Sort messages chronologically within the conversation
+    const sortedMessages = conv.messages.sort((a, b) =>
+      a.createdAt.getTime() - b.createdAt.getTime()
+    );
+
+    const lines = sortedMessages.map((m) => {
+      const prefix = m.isCreatedByUser ? "[Child]" : "[AI]";
+      const text = typeof m.text === "string" ? m.text : "";
+      const trimmed = text.length > 500 ? text.slice(0, 500) + "…" : text;
+      return `${prefix}: ${trimmed}`;
+    });
+
+    // Filter out empty AI messages (no text after prefix)
+    const filteredLines = lines.filter((line) => {
+      if (!line.startsWith("[AI]:")) return true;
+      const textAfterPrefix = line.replace(/^\[AI\]:\s*/, "");
+      return textAfterPrefix.trim().length > 0;
+    });
+
+    return {
+      conversationId: conv._id,
+      title: conv.title,
+      lines: filteredLines,
+    };
+  });
 }
 
 /**

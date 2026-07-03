@@ -21,6 +21,9 @@ import {
  *
  * Exception: when `alertCount > 0`, the route passes the transcript as
  * `conversationTranscript` so parents can see exactly what was said.
+ *
+ * For replay emails, groupedConversationTranscripts provides conversations
+ * grouped by conversationId with titles and LibreChat links.
  */
 export interface DailyChildStat {
   name: string;
@@ -34,6 +37,12 @@ export interface DailyChildStat {
   imageSearchCount: number;
   /** Full role-prefixed chat transcript — included only when alertCount > 0. */
   conversationTranscript?: string;
+  /** Grouped conversations with titles and links — used in replay emails. */
+  groupedConversationTranscripts?: Array<{
+    conversationId: string;
+    title: string;
+    lines: string[];
+  }>;
 }
 
 export interface DailySummaryEmailProps {
@@ -196,7 +205,70 @@ export function DailySummaryEmail({ children, date }: DailySummaryEmailProps) {
                   </Text>
 
                   {/* Full transcript — only when concern was flagged (set by route when alertCount>0 or summary has non-none Concerns line) */}
-                  {child.conversationTranscript && (
+                  {child.groupedConversationTranscripts && child.groupedConversationTranscripts.length > 0 && (
+                    <div style={{ marginTop: "16px" }}>
+                      <Hr style={{ borderColor: "#fca5a5", margin: "0 0 12px" }} />
+                      <Text
+                        style={{
+                          color: "#7f1d1d",
+                          fontSize: "13px",
+                          fontWeight: "700",
+                          margin: "0 0 8px",
+                        }}
+                      >
+                        Transcripts of concerning chats
+                      </Text>
+                      {child.groupedConversationTranscripts.map((conv, convIdx) => (
+                        <div
+                          key={conv.conversationId}
+                          style={{
+                            backgroundColor: "#fff7f7",
+                            border: "1px solid #fca5a5",
+                            borderRadius: "4px",
+                            padding: "12px",
+                            marginBottom: convIdx < child.groupedConversationTranscripts!.length - 1 ? "12px" : 0,
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {/* Conversation header with title and link */}
+                          <div style={{ marginBottom: "8px" }}>
+                            <Link
+                              href={`${process.env.NEXT_PUBLIC_LIBRECHAT_URL || "https://librechat.gsdlabs.dev"}/chat/${conv.conversationId}`}
+                              style={{
+                                color: "#1d4ed8",
+                                fontSize: "13px",
+                                fontWeight: "600",
+                                textDecoration: "underline",
+                              }}
+                            >
+                              {conv.title}
+                            </Link>
+                          </div>
+                          {/* Message lines */}
+                          {conv.lines.map((line, i) => {
+                            const isChild = line.startsWith("[Child]:");
+                            const isAI = line.startsWith("[AI]:");
+                            return (
+                              <Text
+                                key={i}
+                                style={{
+                                  color: isChild ? "#1d4ed8" : isAI ? "#374151" : "#6b7280",
+                                  fontSize: "12px",
+                                  margin: "0 0 4px",
+                                  lineHeight: "1.5",
+                                  fontWeight: isChild ? "600" : "400",
+                                }}
+                              >
+                                {line}
+                              </Text>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {/* Fallback: flat transcript for non-replay sends */}
+                  {!child.groupedConversationTranscripts && child.conversationTranscript && (
                     <div style={{ marginTop: "16px" }}>
                       <Hr style={{ borderColor: "#fca5a5", margin: "0 0 12px" }} />
                       <Text

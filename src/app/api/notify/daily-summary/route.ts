@@ -284,7 +284,7 @@ async function replayDailySummary(
   const dayEnd = new Date(sentAt);
   const dayStart = new Date(dayEnd.getTime() - 86_400_000);
 
-  const { getRecentConversationsInWindow } = await import("@/lib/daily-summary");
+  const { getGroupedConversationsInWindow } = await import("@/lib/daily-summary");
 
   const childrenForTemplate = await Promise.all(
     storedStats.map(async (kid) => {
@@ -292,13 +292,13 @@ async function replayDailySummary(
         kid.alertCount > 0 ||
         /Concerns:\s+(?!none\.?\s*$)/im.test(kid.summary);
 
-      let conversationTranscript: string | undefined;
+      let groupedConversationTranscripts;
       if (hasConcerns) {
-        const transcript = await getRecentConversationsInWindow(kid.name, db, dayStart, dayEnd, 40);
-        if (transcript) conversationTranscript = transcript;
+        const grouped = await getGroupedConversationsInWindow(kid.name, db, dayStart, dayEnd);
+        if (grouped.length > 0) groupedConversationTranscripts = grouped;
       }
 
-      return { ...kid, ...(conversationTranscript ? { conversationTranscript } : {}) };
+      return { ...kid, ...(groupedConversationTranscripts ? { groupedConversationTranscripts } : {}) };
     }),
   );
 
