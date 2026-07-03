@@ -55,6 +55,10 @@ export function DailySummaryEmail({ children, date }: DailySummaryEmailProps) {
     process.env.NEXT_PUBLIC_ADMIN_URL ??
     "https://kidschat-admin-production.up.railway.app";
 
+  // For conversation links, use the admin panel's conversation view
+  // (LibreChat direct linking is not supported; proxy through KidAI admin instead)
+  const adminUrl = dashboardUrl.replace(/\/$/, "");
+
   return (
     <Html lang="en">
       <Head />
@@ -233,7 +237,7 @@ export function DailySummaryEmail({ children, date }: DailySummaryEmailProps) {
                           {/* Conversation header with title and link */}
                           <div style={{ marginBottom: "8px" }}>
                             <Link
-                              href={`${process.env.NEXT_PUBLIC_LIBRECHAT_URL || "https://librechat.gsdlabs.dev"}/chat/${conv.conversationId}`}
+                              href={`${adminUrl}/conversations/${conv.conversationId}`}
                               style={{
                                 color: "#1d4ed8",
                                 fontSize: "13px",
