@@ -146,10 +146,12 @@ export function PromptEditorClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ draft }),
       });
-      if (!res.ok) {
-        throw new Error(`Review failed: ${res.status}`);
-      }
       const data: ReviewResult = (await readJson(res)) as ReviewResult;
+      if (!res.ok) {
+        throw new Error(
+          (data?.error as string) || `Review failed: ${res.status}`
+        );
+      }
       setReviewResult(data);
       // Reset test messages when a new review is done
       if (lastTestedDraft !== draft) {
