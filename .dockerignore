@@ -6,3 +6,4 @@ node_modules
 .planning
 services
 tests
+.claude

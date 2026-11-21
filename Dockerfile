@@ -11,6 +11,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+# This VPS has 3.7GB of RAM shared by every service, so cap the build heap
+# instead of letting Node grow into the OOM killer.
+ENV NODE_OPTIONS=--max-old-space-size=1400
 # Force clean build - no cached .next
 RUN rm -rf .next && npm run build
 
