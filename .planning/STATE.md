@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-24)
 
 Milestone v2.9 complete. All phases shipped.
 Next: /gsd-new-milestone to define v3.0 scope (TESTMODE-01/02/03 are strong candidates).
-Last activity: 2026-05-27 - Completed quick task 260527-bts: BetterStack heartbeat dead-man's switch for daily crons
+Last activity: 2026-11-21 - Completed quick task 261121-e6i: Drawing Studio image generation fixed (retired gpt-image-1 replaced by env-configurable model + fallback chain)
 
 Progress: [████████████] 100%
 
@@ -184,6 +184,7 @@ Progress: [████████████] 100%
 | 260518-pmf | Enable web search for LibreChat agents — SearXNG sidecar deployed (safe_search:2, internal only); librechat.yaml webSearch:true + searxngInstanceUrl:"${SEARXNG_URL}"; SEARXNG_URL env var added to librechat container; web_search tool added to 4 text agent MongoDB docs; E2E verified returning live news | 2026-05-18 | — | [260518-pmf](./quick/260518-pmf-enable-web-search-for-librechat-agents/) |
 | 260527-p7e | Rename LibreChat preset agent names from KidsChat to LibreChat branding — updated 5 agent name fields in MongoDB test.agents collection via mongosh | 2026-05-27 | — | [260527-p7e](./quick/260527-p7e-rename-librechat-presets-from-kidschat-t/) |
 | 260527-bts | BetterStack heartbeat dead-man's switch — daily-reset + daily-summary crons ping BetterStack on success; /api/health/crons MongoDB staleness check (>26h → 503); uptime monitor on health endpoint | 2026-05-27 | 597f635 | [260527-bts](./quick/260527-bts-betterstack-cron-monitoring/) |
+| 261121-e6i | Fix Drawing Studio image generation — DALL-E tool hardcoded retired model `gpt-image-1`; added env-configurable model + fallback chain | 2026-11-21 | 55e2659 | [261121-e6i](./quick/261121-e6i-seb-is-trying-to-get-an-image-generated-) |
 
 ### Roadmap Evolution
 
