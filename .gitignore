@@ -43,3 +43,6 @@ next-env.d.ts
 .planning/config.json
 .planning/.continue-here.md
 .planning/HANDOFF.json
+
+# Claude Code agent worktrees
+.claude/

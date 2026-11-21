@@ -82,3 +82,17 @@ Claude must never ask the user to perform a programmer action that Claude can do
 | Technical disambiguation questions mid-plan | Use CLAUDE.md defaults; only escalate if truly stuck, framed in plain English |
 | Asking user to paste an API key in the terminal | Use the Global Env Editor panel (Dashboard) |
 <!-- GSD:non-programmer-contract-end -->
+
+<!-- Stack (auto-managed by GSD Dashboard — do not edit manually) -->
+## Stack (auto-managed)
+
+| Service | Key / Reference | Purpose |
+|---------|-----------------|---------|
+| Umami | `KIDAI_UMAMI_WEBSITE_ID` | Analytics (umami.gsdlabs.dev) |
+| BetterStack | monitor: `gsd-KidAI` | Uptime monitoring |
+| Cloudflare R2 | bucket: `gsd-kidai` | Storage |
+| Sentry | `KIDAI_SENTRY_DSN` | Error tracking (sentry.io) |
+| Telegram | `POST http://localhost:4820/api/services/telegram/send-file` | File push to owner's Telegram |
+
+*Last updated: 2026-07-25T09:16:34.317Z — updated automatically on each stage transition.*
+<!-- /Stack -->
