@@ -68,7 +68,7 @@ interface PromptEditorClientProps {
  * not JSON. A non-JSON body means the request never reached the app — the
  * Cloudflare edge answered with an HTML error page instead.
  */
-async function readJson(res: Response): Promise<Record<string, unknown>> {
+async function readJson<T = Record<string, unknown>>(res: Response): Promise<T> {
   const contentType = res.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) {
     const snippet = (await res.text().catch(() => "")).slice(0, 120);
@@ -79,7 +79,7 @@ async function readJson(res: Response): Promise<Record<string, unknown>> {
         `Response: ${snippet}`
     );
   }
-  return res.json();
+  return (await res.json()) as T;
 }
 
 export function PromptEditorClient({
@@ -146,11 +146,9 @@ export function PromptEditorClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ draft }),
       });
-      const data: ReviewResult = (await readJson(res)) as ReviewResult;
+      const data = await readJson<ReviewResult & { error?: string }>(res);
       if (!res.ok) {
-        throw new Error(
-          (data?.error as string) || `Review failed: ${res.status}`
-        );
+        throw new Error(data.error || `Review failed: ${res.status}`);
       }
       setReviewResult(data);
       // Reset test messages when a new review is done
@@ -241,11 +239,11 @@ export function PromptEditorClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ draft }),
       });
-      const data = await readJson(res);
+      const data = await readJson<{ deployedAt?: string; error?: string }>(res);
       if (!res.ok) {
-        throw new Error((data.error as string) || `Deploy failed: ${res.status}`);
+        throw new Error(data.error || `Deploy failed: ${res.status}`);
       }
-      setDeploySuccess({ deployedAt: data.deployedAt as string });
+      setDeploySuccess({ deployedAt: data.deployedAt ?? new Date().toISOString() });
       setShowDeployModal(false);
       // Refresh rollback availability
       const histRes = await fetch("/api/prompt-editor/history");
@@ -270,9 +268,9 @@ export function PromptEditorClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "rollback" }),
       });
-      const data = await readJson(res);
+      const data = await readJson<{ error?: string }>(res);
       if (!res.ok) {
-        throw new Error((data.error as string) || `Rollback failed: ${res.status}`);
+        throw new Error(data.error || `Rollback failed: ${res.status}`);
       }
       toast.success("Previous version restored. Reloading...");
       // The rollback entry is consumed — hide the button until the next deploy.
