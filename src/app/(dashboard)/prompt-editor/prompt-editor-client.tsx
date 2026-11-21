@@ -275,6 +275,8 @@ export function PromptEditorClient({
         throw new Error((data.error as string) || `Rollback failed: ${res.status}`);
       }
       toast.success("Previous version restored. Reloading...");
+      // The rollback entry is consumed — hide the button until the next deploy.
+      setRollbackEntry({ hasHistory: false });
       // Reload to reflect rolled-back prompt
       router.refresh();
     } catch (err) {
