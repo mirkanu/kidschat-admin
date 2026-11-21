@@ -127,12 +127,14 @@ export default async function SafetyRulesPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-blue-600" />
-            Full System Prompt
+            Safety Rules Applied to Every Chat
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            This is the exact instruction text given to the AI. Nothing is hidden.
+            These are the rules the admin manages in the Rules Editor. They are
+            added to every KidsChat preset, on top of each preset&apos;s own
+            tone and role instructions. Nothing is hidden.
           </p>
           <Accordion type="single" collapsible>
             <AccordionItem value="system-prompt">

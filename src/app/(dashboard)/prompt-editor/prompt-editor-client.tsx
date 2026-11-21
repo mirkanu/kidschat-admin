@@ -63,6 +63,25 @@ interface PromptEditorClientProps {
   hardcodedPrompt: string;
 }
 
+/**
+ * Read a JSON response, but fail with a readable message when the response is
+ * not JSON. A non-JSON body means the request never reached the app — the
+ * Cloudflare edge answered with an HTML error page instead.
+ */
+async function readJson(res: Response): Promise<Record<string, unknown>> {
+  const contentType = res.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) {
+    const snippet = (await res.text().catch(() => "")).slice(0, 120);
+    throw new Error(
+      `Server returned HTTP ${res.status} with a non-JSON response ` +
+        `(${contentType.split(";")[0] || "unknown type"}). The request did not ` +
+        `reach the admin app — check that kidai-admin is running. ` +
+        `Response: ${snippet}`
+    );
+  }
+  return res.json();
+}
+
 export function PromptEditorClient({
   initialPrompt,
   hardcodedPrompt,
@@ -81,8 +100,6 @@ export function PromptEditorClient({
     null
   );
   const [isRollingBack, setIsRollingBack] = useState(false);
-  const [isRedeploying, setIsRedeploying] = useState(false);
-  const [redeployTriggered, setRedeployTriggered] = useState(false);
 
   // Load rollback availability on mount
   useEffect(() => {
@@ -132,7 +149,7 @@ export function PromptEditorClient({
       if (!res.ok) {
         throw new Error(`Review failed: ${res.status}`);
       }
-      const data: ReviewResult = await res.json();
+      const data: ReviewResult = (await readJson(res)) as ReviewResult;
       setReviewResult(data);
       // Reset test messages when a new review is done
       if (lastTestedDraft !== draft) {
@@ -214,23 +231,6 @@ export function PromptEditorClient({
     setTestMessages([]);
   }
 
-  async function handleRedeploy() {
-    setIsRedeploying(true);
-    try {
-      const res = await fetch("/api/redeploy-librechat", { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Redeploy failed");
-      }
-      setRedeployTriggered(true);
-      toast.success("LibreChat redeploy triggered! Changes will be live in a few minutes.");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Redeploy failed");
-    } finally {
-      setIsRedeploying(false);
-    }
-  }
-
   async function handleDeploy() {
     setIsDeploying(true);
     try {
@@ -239,11 +239,11 @@ export function PromptEditorClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ draft }),
       });
-      const data = await res.json();
+      const data = await readJson(res);
       if (!res.ok) {
-        throw new Error(data.error || `Deploy failed: ${res.status}`);
+        throw new Error((data.error as string) || `Deploy failed: ${res.status}`);
       }
-      setDeploySuccess({ deployedAt: data.deployedAt });
+      setDeploySuccess({ deployedAt: data.deployedAt as string });
       setShowDeployModal(false);
       // Refresh rollback availability
       const histRes = await fetch("/api/prompt-editor/history");
@@ -268,9 +268,9 @@ export function PromptEditorClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "rollback" }),
       });
-      const data = await res.json();
+      const data = await readJson(res);
       if (!res.ok) {
-        throw new Error(data.error || `Rollback failed: ${res.status}`);
+        throw new Error((data.error as string) || `Rollback failed: ${res.status}`);
       }
       toast.success("Previous version restored. Reloading...");
       // Reload to reflect rolled-back prompt
@@ -290,7 +290,7 @@ export function PromptEditorClient({
       <div>
         <h1 className="text-2xl font-semibold">Rules Editor</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Edit, review, and deploy the system prompt
+          Edit, review, and deploy the safety rules for every KidsChat preset
         </p>
       </div>
 
@@ -359,7 +359,8 @@ export function PromptEditorClient({
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Test Draft Prompt</CardTitle>
                 <p className="text-xs text-muted-foreground">
-                  Send test messages using your draft prompt — not the live one
+                  Send test messages using your draft rules on top of the real
+                  Friendly Tutor prompt — not the live one
                 </p>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -452,37 +453,18 @@ export function PromptEditorClient({
 
         {/* Right column: review results + status panels */}
         <div className="space-y-4">
-          {/* Redeploy banner */}
+          {/* Deploy banner */}
           {deploySuccess && (
-            <Card className={redeployTriggered
-              ? "border-green-400 bg-green-50 dark:bg-green-950/30"
-              : "border-amber-400 bg-amber-50 dark:bg-amber-950/30"
-            }>
+            <Card className="border-green-400 bg-green-50 dark:bg-green-950/30">
               <CardContent className="pt-4 space-y-3">
                 <div className="flex items-start gap-2">
-                  {redeployTriggered ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                  ) : (
-                    <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-                  )}
+                  <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                   <div className="space-y-1">
-                    <p className={`text-sm font-semibold ${
-                      redeployTriggered
-                        ? "text-green-800 dark:text-green-300"
-                        : "text-amber-800 dark:text-amber-300"
-                    }`}>
-                      {redeployTriggered
-                        ? "LibreChat redeploying..."
-                        : "System prompt deployed to Gist"}
+                    <p className="text-sm font-semibold text-green-800 dark:text-green-300">
+                      Safety rules deployed
                     </p>
-                    <p className={`text-xs ${
-                      redeployTriggered
-                        ? "text-green-700 dark:text-green-400"
-                        : "text-amber-700 dark:text-amber-400"
-                    }`}>
-                      {redeployTriggered
-                        ? "Changes will be live for children in a few minutes."
-                        : "Redeploy LibreChat to activate changes for children."}
+                    <p className="text-xs text-green-700 dark:text-green-400">
+                      Live now for every KidsChat preset — no redeploy needed.
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Applied at{" "}
@@ -490,23 +472,6 @@ export function PromptEditorClient({
                     </p>
                   </div>
                 </div>
-                {!redeployTriggered && (
-                  <Button
-                    onClick={handleRedeploy}
-                    disabled={isRedeploying}
-                    size="sm"
-                    className="w-full"
-                  >
-                    {isRedeploying ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Redeploying...
-                      </>
-                    ) : (
-                      "Redeploy LibreChat Now"
-                    )}
-                  </Button>
-                )}
               </CardContent>
             </Card>
           )}
@@ -595,7 +560,7 @@ export function PromptEditorClient({
             <Card className="border-dashed">
               <CardContent className="pt-4">
                 <p className="text-xs text-muted-foreground">
-                  Showing the built-in default prompt. No custom version has been
+                  Showing the built-in default rules. No custom version has been
                   deployed yet.
                 </p>
               </CardContent>
@@ -629,9 +594,11 @@ export function PromptEditorClient({
                   </div>
                 )}
                 <p>
-                  This will update the system prompt in GitHub Gist. The change
-                  will take effect after LibreChat is redeployed. The current
-                  version will be saved for rollback.
+                  This will replace the safety rules for every KidsChat preset
+                  (Friendly Tutor, Casual Buddy, Balanced Helper, Standard
+                  Formal, Drawing Studio, Image Search). The change is live for
+                  children immediately. The current version is saved so you can
+                  roll back.
                 </p>
               </div>
             </AlertDialogDescription>
