@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { auth } from "@/auth";
 import { SYSTEM_PROMPT } from "@/lib/system-prompt";
+import getMongoClient from "@/lib/mongodb";
+import {
+  DEFAULT_AGENT_ID,
+  applyManagedRules,
+  renderRulesForAgent,
+} from "@/lib/agent-rules";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -14,14 +20,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: { messages?: ChatMessage[]; systemPrompt?: string };
+  let body: { messages?: ChatMessage[]; systemPrompt?: string; agentId?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { messages, systemPrompt } = body;
+  const { messages, systemPrompt, agentId } = body;
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json(
@@ -39,12 +45,37 @@ export async function POST(request: Request) {
   }
 
   try {
-    const client = new Anthropic();
+    // Build the prompt the child would actually get: the real agent
+    // instructions with the drafted rules block swapped in.
+    let system = systemPrompt || SYSTEM_PROMPT;
 
-    const response = await client.messages.create({
+    try {
+      const client = await getMongoClient();
+      const db = client.db("test");
+      const agent = await db
+        .collection("agents")
+        .findOne({ id: agentId || DEFAULT_AGENT_ID });
+
+      if (agent?.instructions) {
+        const instructions = agent.instructions as string;
+        const name = (agent.name as string) ?? "KidsChat";
+        system = systemPrompt
+          ? applyManagedRules(
+              instructions,
+              renderRulesForAgent(systemPrompt, name)
+            )
+          : instructions;
+      }
+    } catch {
+      // Fall back to the draft-only prompt when Mongo is unavailable.
+    }
+
+    const anthropic = new Anthropic();
+
+    const response = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 1024,
-      system: systemPrompt || SYSTEM_PROMPT,
+      system,
       messages,
     });
 

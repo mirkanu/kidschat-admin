@@ -1,18 +1,24 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { updateGist } from "@/lib/gist-client";
 import getMongoClient from "@/lib/mongodb";
+import {
+  KIDAI_AGENT_IDS,
+  applyManagedRules,
+  renderRulesForAgent,
+} from "@/lib/agent-rules";
 
 interface PromptHistoryEntry {
   _id?: unknown;
-  previousContent: string;
+  /** Managed rules that were live before this deploy (the rollback target). */
+  previousManagedRules?: string;
+  /** Legacy field — the old implementation stored the Gist YAML here. */
+  previousContent?: string;
   previousPrompt?: string;
   deployedPrompt: string;
   deployedAt: Date;
   deployedBy: string;
+  rolledBackAt?: Date;
 }
-
-const GIST_FILENAME = "librechat.yaml";
 
 async function requireAdmin() {
   const session = await auth();
@@ -34,7 +40,10 @@ export async function GET() {
     const db = client.db("test");
     const entry = await db
       .collection<PromptHistoryEntry>("prompt_history")
-      .findOne({}, { sort: { deployedAt: -1 } });
+      .findOne(
+        { rolledBackAt: { $exists: false } },
+        { sort: { deployedAt: -1 } }
+      );
 
     if (!entry) {
       return NextResponse.json({ hasHistory: false });
@@ -76,70 +85,80 @@ export async function POST(request: Request) {
     );
   }
 
-  const gistId = process.env.GIST_ID;
-  if (!gistId) {
-    return NextResponse.json(
-      { error: "Missing server configuration: GIST_ID" },
-      { status: 500 }
-    );
-  }
-
-  // Fetch most recent history entry
-  let entry: PromptHistoryEntry | null;
-  try {
-    const client = await getMongoClient();
-    const db = client.db("test");
-    entry = await db
-      .collection<PromptHistoryEntry>("prompt_history")
-      .findOne({}, { sort: { deployedAt: -1 } });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json(
-      { error: `Failed to fetch history: ${message}` },
-      { status: 500 }
-    );
-  }
-
-  if (!entry) {
-    return NextResponse.json(
-      { error: "No rollback history available" },
-      { status: 404 }
-    );
-  }
-
-  // Restore the full previous YAML content to Gist
-  try {
-    await updateGist(gistId, GIST_FILENAME, entry.previousContent);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json(
-      { error: `Failed to restore Gist: ${message}` },
-      { status: 502 }
-    );
-  }
-
-  // Update app_config.active_prompt to the restored previous prompt
   const restoredAt = new Date();
+
   try {
     const client = await getMongoClient();
     const db = client.db("test");
+    const historyCol = db.collection<PromptHistoryEntry>("prompt_history");
+
+    const entry = await historyCol.findOne(
+      { rolledBackAt: { $exists: false } },
+      { sort: { deployedAt: -1 } }
+    );
+
+    if (!entry) {
+      return NextResponse.json(
+        { error: "No rollback history available" },
+        { status: 404 }
+      );
+    }
+
+    // The managed rules that were live before this deploy. Entries written by
+    // the old Gist-based implementation have no previousManagedRules — for
+    // those, fall back to an empty block, which removes the managed rules
+    // from the agents and puts them back to their pre-Editor text.
+    const previousManagedRules = entry.previousManagedRules ?? "";
+
+    const agentsCol = db.collection("agents");
+    const agents = await agentsCol
+      .find({ id: { $in: KIDAI_AGENT_IDS } })
+      .toArray();
+
+    if (agents.length > 0) {
+      const operations = agents.map((agent) => {
+        const name = (agent.name as string) ?? "";
+        const instructions = (agent.instructions as string) ?? "";
+        return {
+          updateOne: {
+            filter: { id: agent.id },
+            update: {
+              $set: {
+                instructions: applyManagedRules(
+                  instructions,
+                  renderRulesForAgent(previousManagedRules, name)
+                ),
+              },
+            },
+          },
+        };
+      });
+      await agentsCol.bulkWrite(operations);
+    }
+
+    // Mirror to app_config.active_prompt (editor + Safety Rules page).
     await db.collection("app_config").updateOne(
       { key: "active_prompt" },
-      {
-        $set: {
-          value: entry.previousPrompt ?? entry.deployedPrompt,
-          updatedAt: restoredAt,
-        },
-      },
+      { $set: { value: previousManagedRules, updatedAt: restoredAt } },
       { upsert: true }
     );
-  } catch (err) {
-    // Non-fatal: log but don't fail the rollback
-    console.error("Failed to update app_config.active_prompt during rollback:", err);
-  }
 
-  return NextResponse.json({
-    success: true,
-    restoredAt: restoredAt.toISOString(),
-  });
+    // Mark the entry as rolled back so it is not offered again.
+    await historyCol.updateOne(
+      { _id: entry._id },
+      { $set: { rolledBackAt: restoredAt } }
+    );
+
+    return NextResponse.json({
+      success: true,
+      restoredAt: restoredAt.toISOString(),
+      agentsRestored: agents.length,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json(
+      { error: `Failed to roll back: ${message}` },
+      { status: 500 }
+    );
+  }
 }

@@ -1,40 +1,25 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { fetchGist, updateGist } from "@/lib/gist-client";
 import getMongoClient from "@/lib/mongodb";
-
-const GIST_FILENAME = "librechat.yaml";
+import {
+  KIDAI_AGENT_IDS,
+  applyManagedRules,
+  renderRulesForAgent,
+} from "@/lib/agent-rules";
 
 /**
- * Replace the systemPrompt literal block scalar value in a librechat.yaml string.
+ * Deploy the Rules Editor draft.
  *
- * The YAML structure looks like:
- *   systemPrompt: |
- *     line one
- *     line two
+ * The draft is written into the managed safety-rules block of every kid-facing
+ * LibreChat agent (`agents.instructions` in Mongo), and mirrored to
+ * `app_config.active_prompt` so the editor and the Safety Rules page show
+ * what is actually live.
  *
- * We find that block and replace everything up to the next non-indented key
- * (or end of string).
+ * The draft is NOT written to the LibreChat config Gist: LibreChat's config
+ * schema has no `systemPrompt` key, so such a write is ignored — and the
+ * previous implementation appended it with the wrong indentation, producing
+ * invalid YAML that would have broken LibreChat's config load entirely.
  */
-function replaceSystemPrompt(yaml: string, newPrompt: string): string {
-  // Indent each line of the new prompt with 6 spaces (matching librechat.yaml structure)
-  const indented = newPrompt
-    .split("\n")
-    .map((line) => `      ${line}`)
-    .join("\n");
-
-  // Match `systemPrompt: |` followed by indented lines until a non-indented or less-indented line
-  const pattern = /([ \t]*systemPrompt:\s*\|\n)((?:[ \t]+[^\n]*\n?)*)/;
-  const replacement = `$1${indented}\n`;
-
-  if (pattern.test(yaml)) {
-    return yaml.replace(pattern, replacement);
-  }
-
-  // If systemPrompt key not found, append it (fallback — should not normally happen)
-  return yaml + `\n      systemPrompt: |\n${indented}\n`;
-}
-
 export async function POST(request: Request) {
   // Auth guard: require authenticated ADMIN session
   const session = await auth();
@@ -53,110 +38,88 @@ export async function POST(request: Request) {
   }
 
   const { draft } = body;
-  if (!draft || typeof draft !== "string") {
+  if (!draft || typeof draft !== "string" || !draft.trim()) {
     return NextResponse.json(
-      { error: "draft (string) is required" },
+      { error: "draft (non-empty string) is required" },
       { status: 400 }
     );
   }
 
-  const gistId = process.env.GIST_ID;
-  if (!gistId) {
-    return NextResponse.json(
-      { error: "Missing server configuration: GIST_ID" },
-      { status: 500 }
-    );
-  }
-
-  // Verify token is present (fetchGist will throw if missing, but check early)
-  if (!process.env.GITHUB_GIST_TOKEN) {
-    return NextResponse.json(
-      { error: "Missing server configuration: GITHUB_GIST_TOKEN" },
-      { status: 500 }
-    );
-  }
-
-  // Step 1: Fetch current Gist content
-  let currentGistContent: string;
-  try {
-    const gist = await fetchGist(gistId);
-    currentGistContent = gist.content;
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json(
-      { error: `Failed to fetch current Gist: ${message}` },
-      { status: 502 }
-    );
-  }
-
-  // Step 2: Save rollback entry to MongoDB BEFORE overwriting
+  const trimmedDraft = draft.trim();
   const deployedAt = new Date();
+  const deployedBy = (session.user as { email?: string })?.email ?? "unknown";
+
   try {
     const client = await getMongoClient();
     const db = client.db("test");
+    const agentsCol = db.collection("agents");
+
+    const agents = await agentsCol
+      .find({ id: { $in: KIDAI_AGENT_IDS } })
+      .toArray();
+
+    if (agents.length === 0) {
+      return NextResponse.json(
+        { error: "No KidAI agents found — nothing to deploy to" },
+        { status: 500 }
+      );
+    }
+
+    // Current managed rules (template) — this is what a rollback restores.
+    const activeDoc = await db
+      .collection("app_config")
+      .findOne({ key: "active_prompt" });
+    const previousManagedRules =
+      typeof activeDoc?.value === "string" ? activeDoc.value : "";
+
+    // Save the rollback entry BEFORE overwriting anything.
     await db.collection("prompt_history").insertOne({
-      previousContent: currentGistContent,
-      deployedPrompt: draft,
+      previousManagedRules,
+      previousPrompt: previousManagedRules,
+      deployedPrompt: trimmedDraft,
       deployedAt,
-      deployedBy: (session.user as { email?: string })?.email ?? "unknown",
+      deployedBy,
+    });
+
+    // Write the managed block into every agent.
+    const operations = agents.map((agent) => {
+      const name = (agent.name as string) ?? "";
+      const instructions = (agent.instructions as string) ?? "";
+      return {
+        updateOne: {
+          filter: { id: agent.id },
+          update: {
+            $set: {
+              instructions: applyManagedRules(
+                instructions,
+                renderRulesForAgent(trimmedDraft, name)
+              ),
+            },
+          },
+        },
+      };
+    });
+
+    const result = await agentsCol.bulkWrite(operations);
+
+    // Mirror to app_config.active_prompt (editor + Safety Rules page).
+    await db.collection("app_config").updateOne(
+      { key: "active_prompt" },
+      { $set: { value: trimmedDraft, updatedAt: deployedAt } },
+      { upsert: true }
+    );
+
+    return NextResponse.json({
+      success: true,
+      deployedAt: deployedAt.toISOString(),
+      agentsUpdated: result.modifiedCount,
+      agentNames: agents.map((a) => a.name),
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json(
-      { error: `Failed to save rollback entry: ${message}` },
+      { error: `Deploy failed: ${message}` },
       { status: 500 }
     );
   }
-
-  // Step 3: Build the updated YAML with new prompt
-  const updatedYaml = replaceSystemPrompt(currentGistContent, draft);
-
-  // Step 4: Push updated content to Gist
-  let gistVersion = "";
-  try {
-    const result = await updateGist(gistId, GIST_FILENAME, updatedYaml);
-    gistVersion = result.version;
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json(
-      { error: `Failed to update Gist: ${message}` },
-      { status: 502 }
-    );
-  }
-
-  // Step 4b: Restart LibreChat so it picks up the updated Gist config
-  const restartUrl = process.env.LIBRECHAT_RESTART_URL;
-  const restartSecret = process.env.LIBRECHAT_RESTART_SECRET;
-  if (restartUrl && restartSecret) {
-    try {
-      const restartRes = await fetch(restartUrl, {
-        method: "POST",
-        headers: { "x-restart-secret": restartSecret },
-      });
-      if (!restartRes.ok) {
-        console.error("Failed to restart LibreChat:", await restartRes.text());
-      }
-    } catch (err) {
-      console.error("Failed to restart LibreChat:", err);
-    }
-  }
-
-  // Step 5: Update app_config.active_prompt for Safety Rules sync
-  try {
-    const client = await getMongoClient();
-    const db = client.db("test");
-    await db.collection("app_config").updateOne(
-      { key: "active_prompt" },
-      { $set: { value: draft, updatedAt: deployedAt } },
-      { upsert: true }
-    );
-  } catch (err) {
-    // Non-fatal: log but don't fail the deploy
-    console.error("Failed to update app_config.active_prompt:", err);
-  }
-
-  return NextResponse.json({
-    success: true,
-    deployedAt: deployedAt.toISOString(),
-  });
 }
